@@ -3,9 +3,9 @@
        ※ 카피가 좌하단을 덮으므로 주요 도형은 x>980 또는 y<180 안에 배치 -->
   <defs>
     <linearGradient id="g-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#050F2E"/>
-      <stop offset=".55" stop-color="#0A2A7C"/>
-      <stop offset="1" stop-color="#123FA8"/>
+      <stop offset="0" stop-color="#04143F"/>
+      <stop offset=".55" stop-color="#022E7D"/>
+      <stop offset="1" stop-color="#0B45B4"/>
     </linearGradient>
     <radialGradient id="g-glow" cx=".76" cy=".44" r=".5">
       <stop offset="0" stop-color="#27CAA1" stop-opacity=".36"/>
@@ -37,7 +37,7 @@
 
   <!-- 지구 와이어프레임 -->
   <g transform="translate(1216 272)">
-    <circle r="252" fill="#0C3390" fill-opacity=".7"/>
+    <circle r="252" fill="#073199" fill-opacity=".7"/>
     <circle r="252" fill="none" stroke="#27CAA1" stroke-opacity=".85" stroke-width="1.8"/>
     <g fill="none" stroke="#6FEAC9" stroke-opacity=".42" stroke-width="1.2">
       <ellipse cy="-180" rx="176" ry="28"/>
@@ -80,5 +80,5 @@
   <circle cx="1236" cy="96" r="24" fill="url(#g-node)" opacity=".85"/>
   <circle cx="1236" cy="96" r="5.5" fill="#fff"/>
 
-  <rect width="1600" height="560" fill="#03082A" opacity=".08"/>
+  <rect width="1600" height="560" fill="#02061F" opacity=".08"/>
 </svg>

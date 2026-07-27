@@ -3,9 +3,9 @@
        ※ 카피가 좌하단을 덮으므로 노드·허브를 모두 우측 절반에 배치 -->
   <defs>
     <linearGradient id="c-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#050F2E"/>
-      <stop offset=".5" stop-color="#0A2A7C"/>
-      <stop offset="1" stop-color="#123FA8"/>
+      <stop offset="0" stop-color="#04143F"/>
+      <stop offset=".5" stop-color="#022E7D"/>
+      <stop offset="1" stop-color="#0B45B4"/>
     </linearGradient>
     <radialGradient id="c-glow" cx=".84" cy=".5" r=".46">
       <stop offset="0" stop-color="#27CAA1" stop-opacity=".38"/>
@@ -51,7 +51,7 @@
 
   <!-- 관심제품 노드 -->
   <g>
-    <g fill="#0E357F" fill-opacity=".7" stroke="#7FF0D4" stroke-opacity=".7" stroke-width="1.4">
+    <g fill="#08307F" fill-opacity=".7" stroke="#7FF0D4" stroke-opacity=".7" stroke-width="1.4">
       <rect x="1066" y="34"  width="64" height="64" rx="13"/>
       <rect x="1006" y="126" width="64" height="64" rx="13"/>
       <rect x="1050" y="218" width="64" height="64" rx="13"/>
@@ -74,12 +74,12 @@
     <circle r="160" fill="url(#c-hub)" opacity=".26" filter="url(#c-soft)"/>
     <circle r="104" fill="none" stroke="#27CAA1" stroke-opacity=".26" stroke-width="1.2"/>
     <circle r="76"  fill="none" stroke="#27CAA1" stroke-opacity=".45" stroke-width="1.4"/>
-    <circle r="50"  fill="#081F5E" stroke="#27CAA1" stroke-width="2.4"/>
+    <circle r="50"  fill="#04205C" stroke="#27CAA1" stroke-width="2.4"/>
     <g fill="none" stroke="#3FE9C0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
       <path d="M-21-14h42v28h-42z"/>
       <path d="M-21-14l21 16 21-16"/>
     </g>
   </g>
 
-  <rect width="1600" height="560" fill="#03082A" opacity=".08"/>
+  <rect width="1600" height="560" fill="#02061F" opacity=".08"/>
 </svg>

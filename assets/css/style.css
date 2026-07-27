@@ -13,10 +13,11 @@
   --mk-primary-dark:#1FAF8A;
   --mk-primary-soft:#E9FAF5;
   --mk-accent:#0097E0;             /* 포인트 블루 */
-  /* 로고 색 — 워드마크 네이비 + 화살표 민트 */
-  --mk-navy:#0A2A7C;
-  --mk-navy-deep:#050F2E;
-  --mk-navy-lift:#123FA8;
+  /* 로고에서 직접 추출한 브랜드 색 (assets/img/logo.png 픽셀 분석) */
+  --mk-navy:#022E7D;               /* 워드마크 네이비 */
+  --mk-navy-deep:#04143F;          /* 다크 배경 */
+  --mk-navy-lift:#0B45B4;          /* 그라데이션 밝은 쪽 */
+  --mk-mint:#32D1B1;               /* 화살표 민트 */
   --mk-accent-soft:#E6F4FC;
   --mk-yellow:#FCFC32;             /* 띠배너 강조 텍스트 */
   --mk-ink:#212529;                /* 본문 텍스트 */
