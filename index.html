@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAKENOV — 글로벌 혁신제품 B2B 플랫폼</title>
+<meta name="description" content="MAKENOV는 전 세계 제조사의 혁신 제품을 바이어에게 직접 연결합니다. 사업자 인증 후 가격 열람과 견적 문의가 가능합니다.">
+<link rel="stylesheet" href="assets/css/style.css?v=20260727s">
+</head>
+<body>
+<header class="mk-header" id="mk-header"></header><main><!-- 1. 히어로 슬라이더 (omc: 1/5 카운터 + 대형 카피 + 비주얼) --><section class="omc-hero"><div class="frame" id="hero-frame"></div></section><!-- 2. 추천 제품 --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_featured"></h2><a class="more" href="directory.html" data-i18n="view_more"></a></div><div class="grid" id="featured-grid"></div></div></section><!-- 3. 신규 등록 (omc: 텍스트 리스트형) --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_new"></h2><a class="more" href="directory.html?sort=new" data-i18n="view_more"></a></div><div class="new-list" id="new-list"></div></div></section><!-- 4. 인기 제품 (omc: 후원형/증권형 탭 → 카테고리 탭) --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_spotlight"></h2><div class="subtabs" id="pop-tabs"></div></div><div class="grid" id="popular-grid"></div></div></section><!-- 5. 중간 프로모 배너 --><section class="sec"><div class="wrap"><div class="promo"><div><h2 data-i18n="promo_title"></h2><p data-i18n="promo_desc"></p></div><button class="btn btn-primary btn-lg" onclick="openAuth('signup')" data-i18n="promo_btn"></button></div></div></section><!-- 6. 곧 공개될 제품 (omc: 오픈예정 N명 신청) --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_soon"></h2></div><div class="soon-grid" id="soon-grid"></div></div></section><!-- 7. 새로운 소식 (omc: 날짜 리스트 2열 + 더보기) --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_news"></h2></div><div class="news-list" id="news-list"></div><a class="more-btn" href="columns.html" data-i18n="view_more"></a></div></section><!-- 8. 주목할 카테고리 (omc: 파트너 타일) --><section class="sec"><div class="wrap"><div class="sec-head"><h2 data-i18n="sec_partner"></h2></div><div class="partner-grid" id="partner-grid"></div></div></section><!-- 9. 공지사항 + 제조사 CTA --><section class="sec"><div class="wrap"><div class="notice-row"><div class="notice"><h4 data-i18n="sec_notice"></h4><div id="notice-list"></div></div><div class="notice" style="background:var(--mk-primary-soft)"><h4 data-i18n="kr_cta_title"></h4><p style="font-size:14px;color:var(--mk-body);margin:6px 0 14px;line-height:1.6" data-i18n="kr_cta_desc"></p><a class="btn btn-primary btn-sm" href="maker.html" data-i18n="kr_cta_btn"></a></div></div></div></section>
+</main><footer class="mk-footer" id="mk-footer"></footer><script src="assets/js/config.js?v=20260727s"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/i18n.js?v=20260727s"></script>
+<script src="assets/js/data.js?v=20260727s"></script>
+<script src="assets/js/store.js?v=20260727s"></script>
+<script src="assets/js/verify.js?v=20260727s"></script>
+<script src="assets/js/upload.js?v=20260727s"></script>
+<script src="assets/js/store-supabase.js?v=20260727s"></script>
+<script src="assets/js/app.js?v=20260727s"></script>
+<script>
+let heroIdx = 0, heroTimer = null, popCat = '';
+
+/* ---------- 히어로 슬라이더 ----------
+   제품 자랑이 아니라 플랫폼 메시지를 거는 자리.
+   배경은 브랜드 컬러로 직접 그린 SVG 아트(assets/img/hero/). */
+function renderHero(){
+  const slides = MK_HERO;
+  if(!slides.length) return;
+  if(heroIdx >= slides.length) heroIdx = 0;
+
+  document.getElementById('hero-frame').innerHTML =
+    slides.map((s,i)=>`
+      <div class="slide ${i===heroIdx?'on':''}"><a class="shot" href="${s.link||'directory.html'}"><img src="${mkAsset(s.art)}" alt=""></a><div class="veil"></div><div class="copy"><span class="count"><b>${i+1}</b> / ${slides.length}</span><span class="kick">${esc(L(s.kicker))}</span><h1>${esc(L(s.title)).replace(/\n/g,'<br>')}</h1><p>${esc(L(s.sub))}</p><div class="hero-cta"><a class="btn btn-primary" href="directory.html" data-i18n="hero_cta_browse"></a><button class="btn ghost" onclick="openAuth('signup')" data-i18n="hero_cta_join"></button></div></div></div>`).join('') +
+    `<div class="dots">${slides.map((_,i)=>
+      `<i class="${i===heroIdx?'on':''}" onclick="setHero(${i})"></i>`).join('')}</div>`;
+  applyI18n(document.getElementById('hero-frame'));
+}
+
+/* 회전은 클래스만 토글한다 — innerHTML을 다시 그리면 이미지가 매번 새로 로드돼 화면이 깜빡인다 */
+function setHero(i){
+  const frame = document.getElementById('hero-frame');
+  const slides = frame.querySelectorAll('.slide');
+  if(!slides.length) return;
+  heroIdx = ((i % slides.length) + slides.length) % slides.length;
+  slides.forEach((el,n)=>el.classList.toggle('on', n===heroIdx));
+  frame.querySelectorAll('.dots i').forEach((el,n)=>el.classList.toggle('on', n===heroIdx));
+}
+
+/* ---------- 인기 제품 탭 ---------- */
+function renderPopular(){
+  const list = MK_PRODUCTS.filter(p=>!popCat || p.cat===popCat).sort((a,b)=>b.inquiries-a.inquiries);
+  document.getElementById('popular-grid').innerHTML =
+    (list.length?list:MK_PRODUCTS).slice(0,4).map(productCard).join('');
+  document.getElementById('pop-tabs').innerHTML =
+    `<button class="${!popCat?'on':''}" onclick="popCat='';renderPopular();applyI18n()" data-i18n="tab_all"></button>` +
+    MK_CATEGORIES.filter(c=>MK_PRODUCTS.some(p=>p.cat===c.id)).slice(0,4).map(c=>
+      `<button class="${popCat===c.id?'on':''}" onclick="popCat='${c.id}';renderPopular();applyI18n()">${esc(L(c.name))}</button>`).join('');
+  applyI18n(document.getElementById('popular-grid'));
+}
+
+function pageInit(){
+  /* 히어로 */
+  renderHero();
+  clearInterval(heroTimer);
+  heroTimer = setInterval(()=>setHero(heroIdx+1), 5000);
+
+  /* 추천 */
+  document.getElementById('featured-grid').innerHTML =
+    MK_PRODUCTS.filter(p=>p.featured).slice(0,4).map(productCard).join('');
+
+  /* 신규 — 텍스트 리스트형 */
+  document.getElementById('new-list').innerHTML =
+    [...MK_PRODUCTS].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,4).map(productCard).join('');
+
+  renderPopular();
+
+  /* 곧 공개될 제품 — 문의 적은 순(신규 유입 대상) */
+  document.getElementById('soon-grid').innerHTML =
+    [...MK_PRODUCTS].sort((a,b)=>a.inquiries-b.inquiries).slice(0,4).map(p=>`
+      <a class="soon-card" href="product.html?id=${p.id}"><div class="thumb"><img src="${p.img}" alt="" loading="lazy"></div><div class="brand">${esc(p.brand)}</div><h3>${esc(L(p.name))}</h3><div class="cnt">${p.inquiries} <span data-i18n="soon_cnt"></span></div></a>`).join('');
+
+  /* 새로운 소식 — 칼럼 */
+  document.getElementById('news-list').innerHTML = MK_COLUMNS.map(c=>`
+    <a class="news-item" href="column.html?id=${c.id}"><b>${esc(L(c.title))}</b><p>${esc(L(c.excerpt))}</p><div class="date">${c.date}</div></a>`).join('');
+
+  /* 주목할 카테고리 — 파트너 타일 문법 */
+  document.getElementById('partner-grid').innerHTML = MK_CATEGORIES.slice(0,4).map(c=>{
+    const p = MK_PRODUCTS.find(x=>x.cat===c.id);
+    return `<a class="partner" href="directory.html?category=${c.id}">
+      ${p?`<img src="${p.img}" alt="" loading="lazy">`:''}
+      <span class="st">${MK_PRODUCTS.filter(x=>x.cat===c.id).length}</span><div class="nm">${esc(L(c.name))}</div></a>`;
+  }).join('');
+
+  /* 공지사항 — 칼럼 제목 재활용 */
+  document.getElementById('notice-list').innerHTML =
+    MK_COLUMNS.map(c=>`<a href="column.html?id=${c.id}">${esc(L(c.title))}</a>`).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기업 디렉토리 | MAKENOV</title>
+<meta name="description" content="MAKENOV에 제품을 등록한 제조사를 한눈에. 인증·수출 실적·생산 규모를 확인하고 바로 문의하세요.">
+<link rel="stylesheet" href="assets/css/style.css?v=20260727s">
+</head>
+<body>
+<header class="mk-header" id="mk-header"></header><main class="wrap"><div class="dir-top"><h1 data-i18n="co_dir_title"></h1><p data-i18n="co_dir_desc"></p></div><div class="filterbar" id="co-filter"></div><section class="sec" style="padding-top:28px"><div class="co-grid" id="co-grid"></div><div class="empty" id="co-empty" style="display:none"><div class="big"></div><p data-i18n="dir_empty"></p></div></section>
+</main><footer class="mk-footer" id="mk-footer"></footer><script src="assets/js/config.js?v=20260727s"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/i18n.js?v=20260727s"></script>
+<script src="assets/js/data.js?v=20260727s"></script>
+<script src="assets/js/store.js?v=20260727s"></script>
+<script src="assets/js/verify.js?v=20260727s"></script>
+<script src="assets/js/upload.js?v=20260727s"></script>
+<script src="assets/js/store-supabase.js?v=20260727s"></script>
+<script src="assets/js/app.js?v=20260727s"></script>
+<script>
+function pageInit(){
+  const cat = new URLSearchParams(location.search).get('category') || '';
+
+  document.getElementById('co-filter').innerHTML =
+    `<a class="chip ${!cat?'on':''}" href="companies.html" data-i18n="dir_all"></a>` +
+    MK_CATEGORIES.filter(c=>MK_COMPANIES.some(x=>x.cat===c.id)).map(c=>
+      `<a class="chip ${cat===c.id?'on':''}" href="companies.html?category=${c.id}">${esc(L(c.name))}</a>`).join('');
+
+  const list = MK_COMPANIES.filter(c=>!cat || c.cat===cat);
+  document.getElementById('co-grid').innerHTML = list.map(companyCard).join('');
+  document.getElementById('co-empty').style.display = list.length ? 'none' : 'block';
+  applyI18n(document.querySelector('main'));
+}
+</script>
+</body>
+</html>

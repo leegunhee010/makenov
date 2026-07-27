@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Page — MAKENOV</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20260727s">
+<style>
+.profile-card{border:1px solid var(--mk-line);background:var(--mk-bg-soft);padding:20px 22px;margin-bottom:8px}
+.profile-card h3{font-size:16px;margin-bottom:2px}
+.profile-card .row{display:flex;gap:10px;font-size:13px;padding:3px 0}
+.profile-card .row b{min-width:110px;color:var(--mk-muted);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.05em;padding-top:2px}
+.bulkbar{display:flex;justify-content:flex-end;margin-bottom:14px}
+</style>
+</head>
+<body>
+<header class="mk-header" id="mk-header"></header><main class="wrap"><div class="page-head"><h1 data-i18n="mypage"></h1></div><div class="tabs"><button class="on" data-tab="wish" onclick="showTab('wish')" data-i18n="my_wishlist"></button><button data-tab="inq" onclick="showTab('inq')" data-i18n="my_inquiries"></button><button data-tab="profile" onclick="showTab('profile')" data-i18n="my_profile"></button></div><section id="tab-wish"></section><section id="tab-inq" style="display:none"></section><section id="tab-profile" style="display:none"></section>
+</main><footer class="mk-footer" id="mk-footer"></footer><script src="assets/js/config.js?v=20260727s"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/i18n.js?v=20260727s"></script>
+<script src="assets/js/data.js?v=20260727s"></script>
+<script src="assets/js/store.js?v=20260727s"></script>
+<script src="assets/js/verify.js?v=20260727s"></script>
+<script src="assets/js/upload.js?v=20260727s"></script>
+<script src="assets/js/store-supabase.js?v=20260727s"></script>
+<script src="assets/js/app.js?v=20260727s"></script>
+<script>
+function showTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
+  ['wish','inq','profile'].forEach(x=>document.getElementById('tab-'+x).style.display = x===name?'block':'none');
+}
+function pageInit(){
+  const s = Store.session();
+  // wishlist
+  const cart = Store.cart().map(mkProduct).filter(Boolean);
+  document.getElementById('tab-wish').innerHTML = cart.length ? `
+    <div class="bulkbar"><button class="btn btn-primary" onclick="openInquiry(${JSON.stringify(cart.map(p=>p.id)).replace(/"/g,"'")})" data-i18n="inq_bulk"></button></div>
+    ${cart.map(p=>`
+      <div class="list-item"><img src="${p.img}" alt=""><div class="grow"><a href="product.html?id=${p.id}"><h3>${esc(L(p.name))}</h3></a><div class="sub">${esc(p.brand)} · ${p.inquiries} <span data-i18n="inquiries_count"></span></div></div><button class="btn btn-soft btn-sm" onclick="openInquiry(['${p.id}'])" data-i18n="cta_inquiry"></button><button class="btn btn-ghost btn-sm" onclick="Store.cartRemove('${p.id}');pageInit();applyI18n();updateCartBadge()">✕</button></div>`).join('')}` :
+    `<div class="empty"><div class="big">♡</div><p data-i18n="my_empty_wish"></p><div style="margin-top:16px"><a class="btn btn-primary" href="directory.html" data-i18n="hero_cta"></a></div></div>`;
+  // inquiries
+  const inqs = Store.myInquiries();
+  document.getElementById('tab-inq').innerHTML = inqs.length ? inqs.map(i=>{
+    const p = mkProduct(i.pid);
+    return `<div class="list-item">
+      ${p?`<img src="${p.img}" alt="">`:''}
+      <div class="grow"><h3>${p?esc(L(p.name)):i.pid}</h3><div class="sub">${new Date(i.createdAt).toLocaleDateString()} · ${esc(i.message||'')}</div></div></div>`;}).join('') :
+    `<div class="empty"><div class="big"></div><p data-i18n="my_empty_inq"></p></div>`;
+  // profile
+  document.getElementById('tab-profile').innerHTML = s ? `
+    <div class="profile-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3>${esc(s.company)}</h3><span class="badge-verified">✓ <span data-i18n="my_verified"></span></span></div><div class="row"><b data-i18n="auth_country"></b><span>${s.country?mkCountry(s.country).flag:''} ${esc(s.countryName||'Vietnam')}</span></div><div class="row"><b data-i18n="auth_brn"></b><span>${esc(s.regNo||s.mst||'-')}</span></div>
+      ${s.address?`<div class="row"><b data-i18n="auth_address"></b><span>${esc(s.address)}</span></div>`:''}
+      <div class="row"><b data-i18n="auth_contact_name"></b><span>${esc(s.contactName)} ${s.position?'('+esc(s.position)+')':''}</span></div><div class="row"><b data-i18n="auth_phone"></b><span>${esc(s.phone||s.zalo||'')}</span></div>
+      ${s.messengerId?`<div class="row"><b>${esc(s.messenger||'Zalo')}</b><span>${esc(s.messengerId)}</span></div>`:''}
+      <div class="row"><b data-i18n="auth_email"></b><span>${esc(s.email)}</span></div></div>` :
+    `<div class="empty"><p data-i18n="auth_need"></p><div style="margin-top:16px"><button class="btn btn-primary" onclick="openAuth('signup')" data-i18n="signup"></button></div></div>`;
+}
+</script>
+</body>
+</html>
