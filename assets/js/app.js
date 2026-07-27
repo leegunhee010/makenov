@@ -56,14 +56,16 @@ function renderChrome(active){
   }
 
   hdr.innerHTML = `
-  <div class="wrap"><a class="mk-logo" href="index.html">MAKE<b>NOV</b></a><div class="mk-search"><input id="mk-search-input" type="search" data-i18n-ph="search_ph"
+  <div class="wrap"><a class="mk-logo" href="index.html"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
+        onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></a><div class="mk-search"><input id="mk-search-input" type="search" data-i18n-ph="search_ph"
         onkeydown="if(event.key==='Enter'&&this.value.trim())location.href='directory.html?q='+encodeURIComponent(this.value.trim())"></div><nav class="mk-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></nav><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')">EN</button></div><a class="mk-cart" href="mypage.html" title="Wishlist">♡<span class="badge" id="cart-badge">0</span></a>
       ${s
         ? `<a class="mk-auth" href="mypage.html">${esc(s.contactName||s.email.split('@')[0])}</a><button class="mk-auth" onclick="Store.logout();location.reload()" data-i18n="logout"></button>`
         : `<button class="mk-auth" onclick="openAuth('login')" data-i18n="login"></button><button class="btn btn-primary btn-sm" onclick="openAuth('signup')" data-i18n="signup"></button>`}
     </div></div>`;
   document.getElementById('mk-footer').innerHTML = `
-  <div class="wrap"><div><div class="logo">MAKE<b>NOV</b></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></div><div><h4 data-i18n="ft_support"></h4><a href="#" data-i18n="ft_faq"></a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="#" data-i18n="ft_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;
+  <div class="wrap"><div><div class="logo"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
+      onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></div><div><h4 data-i18n="ft_support"></h4><a href="#" data-i18n="ft_faq"></a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="#" data-i18n="ft_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;
   updateCartBadge();
   applyI18n();
 }

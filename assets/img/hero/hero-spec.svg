@@ -2,9 +2,9 @@
   <!-- MAKENOV hero 03 — 가격·MOQ·납기를 한 화면에 : 스펙 패널 + 잠금 해제 -->
   <defs>
     <linearGradient id="d-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#06111A"/>
-      <stop offset=".55" stop-color="#0A1F2B"/>
-      <stop offset="1" stop-color="#0B2B37"/>
+      <stop offset="0" stop-color="#050F2E"/>
+      <stop offset=".55" stop-color="#0A2A7C"/>
+      <stop offset="1" stop-color="#0A2A7C"/>
     </linearGradient>
     <radialGradient id="d-glow" cx=".7" cy=".4" r=".55">
       <stop offset="0" stop-color="#0097E0" stop-opacity=".24"/>
@@ -12,8 +12,8 @@
       <stop offset="1" stop-color="#27CAA1" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="d-panel" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0F2A38" stop-opacity=".92"/>
-      <stop offset="1" stop-color="#0B1F2B" stop-opacity=".78"/>
+      <stop offset="0" stop-color="#0E357F" stop-opacity=".92"/>
+      <stop offset="1" stop-color="#081F5E" stop-opacity=".78"/>
     </linearGradient>
     <linearGradient id="d-bar" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#27CAA1"/>
@@ -73,7 +73,7 @@
   <!-- 잠금 해제 체크 -->
   <g transform="translate(1272 448)">
     <circle r="42" fill="#27CAA1" fill-opacity=".2" filter="url(#d-soft)"/>
-    <circle r="30" fill="#0B2029" stroke="#27CAA1" stroke-width="2"/>
+    <circle r="30" fill="#081F5E" stroke="#27CAA1" stroke-width="2"/>
     <path d="M-13 1l9 10 18-20" fill="none" stroke="#27CAA1" stroke-width="3.4"
           stroke-linecap="round" stroke-linejoin="round"/>
   </g>
@@ -90,5 +90,5 @@
     <circle cx="150" cy="196" r="4" fill-opacity=".45"/>
   </g>
 
-  <rect width="1600" height="560" fill="#040C12" opacity=".08"/>
+  <rect width="1600" height="560" fill="#03082A" opacity=".08"/>
 </svg>

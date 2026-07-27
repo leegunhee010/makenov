@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- MAKENOV 마크 — 네이비 M 기둥 + 민트 상승 화살표
+       ⚠️ 로고 원본 파일을 받으면 이 파일도 원본에서 다시 뽑을 것 -->
+  <rect width="64" height="64" rx="14" fill="#0A2A7C"/>
+  <!-- M 좌우 기둥 -->
+  <g fill="#fff" fill-opacity=".92">
+    <path d="M15 46V27a7 7 0 0 1 14 0v19a0 0 0 0 1 0 0h-14z" />
+    <path d="M35 46V27a7 7 0 0 1 14 0v19h-14z" />
+  </g>
+  <!-- 기둥 사이를 관통해 우상향하는 민트 화살표 -->
+  <path d="M18 47 L40 22" fill="none" stroke="#3ED9B0" stroke-width="8"
+        stroke-linecap="round"/>
+  <path d="M31 18 h13 v13" fill="none" stroke="#3ED9B0" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

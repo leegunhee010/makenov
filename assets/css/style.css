@@ -12,7 +12,11 @@
   --mk-primary:#27CAA1;            /* 메인 CTA 민트 */
   --mk-primary-dark:#1FAF8A;
   --mk-primary-soft:#E9FAF5;
-  --mk-accent:#0097E0;             /* 띠배너·포인트 블루 */
+  --mk-accent:#0097E0;             /* 포인트 블루 */
+  /* 로고 색 — 워드마크 네이비 + 화살표 민트 */
+  --mk-navy:#0A2A7C;
+  --mk-navy-deep:#050F2E;
+  --mk-navy-lift:#123FA8;
   --mk-accent-soft:#E6F4FC;
   --mk-yellow:#FCFC32;             /* 띠배너 강조 텍스트 */
   --mk-ink:#212529;                /* 본문 텍스트 */
@@ -69,7 +73,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .btn-lg{padding:15px 30px;font-size:16px}
 
 /* ---------- 상단 띠배너 (파랑 + 노랑 텍스트) ---------- */
-.topbar{background:var(--mk-accent);color:#fff;font-size:15px;font-weight:600;position:relative}
+.topbar{background:var(--mk-navy);color:#fff;font-size:15px;font-weight:600;position:relative}
 .topbar .wrap{display:flex;align-items:center;justify-content:center;gap:10px;height:46px;text-align:center}
 .topbar b{color:var(--mk-yellow);font-weight:700}
 .topbar .x{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:17px;color:rgba(255,255,255,.85)}
@@ -78,8 +82,14 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 /* ---------- header ---------- */
 .mk-header{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--mk-line)}
 .mk-header .wrap{display:flex;align-items:center;gap:26px;height:87px}
-.mk-logo{font-family:var(--font-head);font-weight:800;font-size:23px;color:var(--mk-ink);letter-spacing:-.03em;flex-shrink:0}
+/* 로고 — assets/img/logo.png 가 있으면 이미지, 없으면 텍스트로 자동 대체 */
+.mk-logo{display:flex;align-items:center;font-family:var(--font-head);font-weight:800;font-size:23px;
+  color:var(--mk-navy);letter-spacing:-.03em;flex-shrink:0}
+.mk-logo img{height:30px;width:auto;display:block}
+.mk-logo span{display:none}
+.mk-logo.txt span{display:inline}
 .mk-logo b{color:var(--mk-primary)}
+@media(max-width:640px){.mk-logo img{height:24px}.mk-logo{font-size:19px}}
 .mk-nav{display:flex;gap:24px;font-weight:600;font-size:16px;color:var(--mk-ink)}
 .mk-nav a{padding:4px 0;border-bottom:2px solid transparent}
 .mk-nav a:hover{color:var(--mk-primary);border-bottom-color:var(--mk-primary)}
@@ -131,7 +141,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(6px)}
 .omc-hero .hero-cta .ghost:hover{background:rgba(255,255,255,.24)}
 /* 배경 아트는 SVG — object-fit로 프레임에 맞춤 */
-.omc-hero .shot img{background:#06111A}
+.omc-hero .shot img{background:var(--mk-navy-deep)}
 .omc-hero .dots{position:absolute;right:40px;bottom:44px;display:flex;gap:7px;z-index:3}
 .omc-hero .dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);
   cursor:pointer;transition:all .2s}
@@ -408,7 +418,10 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .mk-footer h4{color:var(--mk-ink);font-size:14px;font-weight:700;margin-bottom:12px}
 .mk-footer a{display:block;font-size:14px;padding:4px 0;color:var(--mk-body)}
 .mk-footer a:hover{color:var(--mk-primary)}
-.mk-footer .logo{font-family:var(--font-head);font-size:21px;font-weight:800;color:var(--mk-ink);letter-spacing:-.03em}
+.mk-footer .logo{font-family:var(--font-head);font-size:21px;font-weight:800;color:var(--mk-navy);letter-spacing:-.03em}
+.mk-footer .logo img{height:28px;width:auto;display:block}
+.mk-footer .logo span{display:none}
+.mk-footer .logo.txt span{display:inline}
 .mk-footer .logo b{color:var(--mk-primary)}
 .mk-footer .desc{font-size:13px;margin-top:11px;max-width:300px;color:var(--mk-muted);line-height:1.7}
 .mk-footer .social{display:flex;gap:8px;margin-top:14px}
@@ -688,7 +701,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .lp-wrap{max-width:1110px;margin:0 auto;padding:0 15px}
 
 /* --- 히어로 (다크) --- */
-.lp-hero{background:linear-gradient(135deg,#06111A 0%,#0A1E2A 55%,#0C3040 100%);
+.lp-hero{background:linear-gradient(135deg,var(--mk-navy-deep) 0%,var(--mk-navy) 55%,var(--mk-navy-lift) 100%);
   position:relative;overflow:hidden;color:#fff;padding:96px 0 88px}
 .lp-hero::before{content:"";position:absolute;inset:0;
   background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
@@ -710,7 +723,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 /* --- 섹션 공통 --- */
 .lp-sec{padding:86px 0}
 .lp-sec.soft{background:var(--mk-bg-soft)}
-.lp-sec.dark{background:#0A1E2A;color:#fff}
+.lp-sec.dark{background:var(--mk-navy);color:#fff}
 .lp-head{margin-bottom:44px;max-width:780px}
 .lp-head .tag{font-size:13px;font-weight:600;color:var(--mk-primary);margin-bottom:12px}
 .lp-head h2{font-size:34px;font-weight:700;line-height:1.38;letter-spacing:-.03em;margin-bottom:14px}
@@ -742,7 +755,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 /* --- 숫자 --- */
 .lp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.14);
   border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden}
-.lp-stat{background:#0A1E2A;padding:34px 26px}
+.lp-stat{background:var(--mk-navy);padding:34px 26px}
 .lp-stat .num{font-size:36px;font-weight:700;color:#3FE9C0;letter-spacing:-.03em;line-height:1.2}
 .lp-stat .lbl{font-size:15px;font-weight:600;margin-top:10px}
 .lp-stat .sub{font-size:13px;color:rgba(255,255,255,.55);margin-top:5px;line-height:1.6}
@@ -820,7 +833,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .lp-done p{font-size:15.5px;line-height:1.8;color:var(--mk-body)}
 
 /* --- 마지막 CTA --- */
-.lp-last{background:linear-gradient(135deg,#06111A 0%,#0A1E2A 60%,#0C3040 100%);
+.lp-last{background:linear-gradient(135deg,var(--mk-navy-deep) 0%,var(--mk-navy) 60%,var(--mk-navy-lift) 100%);
   color:#fff;text-align:center;padding:88px 0}
 .lp-last h2{font-size:36px;font-weight:700;line-height:1.4;letter-spacing:-.03em;margin-bottom:16px;color:#fff}
 .lp-last p{font-size:16.5px;color:rgba(255,255,255,.75);margin-bottom:32px;line-height:1.7}

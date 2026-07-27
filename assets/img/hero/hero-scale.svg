@@ -3,9 +3,9 @@
        ※ 카피가 좌하단을 덮으므로 밀도·밝기를 오른쪽으로 몰았다 -->
   <defs>
     <linearGradient id="s-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#060F17"/>
-      <stop offset=".5" stop-color="#0A1D29"/>
-      <stop offset="1" stop-color="#0C3040"/>
+      <stop offset="0" stop-color="#050F2E"/>
+      <stop offset=".5" stop-color="#0A2A7C"/>
+      <stop offset="1" stop-color="#123FA8"/>
     </linearGradient>
     <radialGradient id="s-glow" cx=".8" cy=".46" r=".52">
       <stop offset="0" stop-color="#27CAA1" stop-opacity=".34"/>
@@ -14,7 +14,7 @@
     </radialGradient>
     <!-- 제품 타일 -->
     <pattern id="s-tile" width="62" height="62" patternUnits="userSpaceOnUse">
-      <rect x="7" y="7" width="44" height="44" rx="8" fill="#0E3140" fill-opacity=".5"
+      <rect x="7" y="7" width="44" height="44" rx="8" fill="#0E357F" fill-opacity=".5"
             stroke="#7FF0D4" stroke-opacity=".5" stroke-width="1.2"/>
       <rect x="15" y="34" width="28" height="3.5" rx="1.75" fill="#7FF0D4" fill-opacity=".38"/>
     </pattern>
@@ -67,5 +67,5 @@
     <rect x="1496" y="34" width="3" height="16" rx="1.5"/>
   </g>
 
-  <rect width="1600" height="560" fill="#040C12" opacity=".08"/>
+  <rect width="1600" height="560" fill="#03082A" opacity=".08"/>
 </svg>
