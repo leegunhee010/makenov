@@ -398,8 +398,12 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .switch-auth a{color:var(--mk-primary);font-weight:600;cursor:pointer}
 
 /* ---------- mypage / lists ---------- */
-.page-head{padding:38px 0 8px}
-.page-head h1{font-size:26px;font-weight:700}
+/* 서브페이지 공통 히어로 — .dir-top 과 동일 규격으로 통일 */
+.page-head{padding:38px 0 6px}
+.page-head h1{font-size:26px;font-weight:700;margin-bottom:6px}
+.page-head p{color:var(--mk-body);font-size:15px}
+.soon-tag{display:inline-block;font-size:13px;font-weight:700;color:var(--mk-primary);
+  background:var(--mk-primary-soft);border-radius:var(--r-sm);padding:6px 12px}
 .tabs{display:flex;gap:26px;border-bottom:1px solid var(--mk-line);margin:20px 0 26px}
 .tabs button{padding:12px 0;font-size:16px;font-weight:600;color:var(--mk-muted);
   border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -461,10 +465,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 :root{ --col-card-bg:#F7F8FA; --col-ink:#111111; --col-body-ink:#333333; --col-meta:#8A8A8A; }
 
 /* ---------- 목록 히어로 ---------- */
-.blog-hero{padding:64px 0 44px}
-.blog-hero .tit{font-size:105px;font-weight:700;color:var(--col-ink);line-height:1;letter-spacing:-.04em}
-.blog-hero .sub{font-size:18px;font-weight:600;color:var(--mk-primary);margin-top:20px}
-@media(max-width:860px){.blog-hero{padding:40px 0 28px}.blog-hero .tit{font-size:52px}.blog-hero .sub{font-size:15px;margin-top:14px}}
+/* .blog-hero 는 .dir-top 으로 통일하면서 제거됨 (2026-07-28) */
 
 /* ---------- 2단 레이아웃: 사이드바 220 + 목록 937, gap 60 ---------- */
 .blog-layout{display:grid;grid-template-columns:220px minmax(0,937px);gap:60px;align-items:start}

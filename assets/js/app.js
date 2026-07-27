@@ -267,14 +267,22 @@ function productCard(p){
 /* ---------- boot ---------- */
 document.addEventListener('DOMContentLoaded', async ()=>{
   document.documentElement.lang = MK_LANG;
-  /* Supabase 모드면 세션·콘텐츠를 먼저 받아 전역 배열을 채운다 (렌더 코드는 동기라서) */
+
+  /* 1) 헤더·푸터·번역을 먼저 그린다.
+        Supabase 응답을 기다렸다가 그리면, 그동안 정적 HTML(제목만)이 홀로 떠 있다가
+        데이터가 도착하는 순간 전체가 다시 그려져 화면이 깜빡인다. */
+  renderChrome();
+  applyI18n();
+
+  /* 2) 그다음 데이터 */
   if(typeof MkData !== 'undefined'){
     try{ await MkData.boot(); await Store.loadCart(); }
     catch(e){ console.error('MAKENOV 백엔드 연결 실패 — 시드 데이터로 표시합니다', e); }
   }
-  /* 관리자에서 업로드한 이미지(mkimg: 참조)를 실제 이미지로 바꾼 뒤 렌더한다 */
   if(typeof MkImg !== 'undefined'){ try{ await MkImg.hydrate(); }catch(e){} }
-  renderChrome();
+
+  /* 3) 세션이 잡혔으면 헤더를 한 번 더 (로그인 상태 반영) */
+  if(typeof MkData !== 'undefined' && MkData.session) renderChrome();
   if(typeof pageInit === 'function') pageInit();
   applyI18n();
   unlockIfAuthed();
