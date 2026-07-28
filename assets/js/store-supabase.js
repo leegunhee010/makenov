@@ -296,17 +296,23 @@ Object.assign(Admin, {
 /* ---------- 이미지: IndexedDB → Supabase Storage ---------- */
 const BUCKET = 'product-images';
 Object.assign(MkImg, {
-  async save(file){
-    const { dataUrl, w, h, bytes } = await this.compress(file);
+  /* dataUrl → Storage 업로드 → 공개 URL 반환.
+     ★ 상세페이지 분할(saveDetail/sliceTall)도 이 함수를 거치므로
+       이것만 갈아끼우면 조각들도 IndexedDB가 아니라 Storage로 간다. */
+  async _store(dataUrl){
     const blob = await (await fetch(dataUrl)).blob();
     const ext  = blob.type === 'image/png' ? 'png' : 'jpg';
-    const path = `${new Date().getFullYear()}/${Date.now().toString(36)}${Math.floor(Math.random()*1e6).toString(36)}.${ext}`;
+    const path = `${new Date().getFullYear()}/${Date.now().toString(36)}${Math.floor(Math.random()*1e9).toString(36)}.${ext}`;
     const { error } = await SB.storage.from(BUCKET).upload(path, blob, {
       contentType: blob.type, cacheControl: '31536000', upsert: false,
     });
     if(error) throw new Error('업로드 실패: ' + error.message);
-    const { data } = SB.storage.from(BUCKET).getPublicUrl(path);
-    return { ref: data.publicUrl, dataUrl, w, h, bytes };  // 공개 URL을 그대로 저장
+    return SB.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  },
+  async save(file){
+    const { dataUrl, w, h, bytes } = await this.compress(file);
+    const ref = await this._store(dataUrl);
+    return { ref, dataUrl, w, h, bytes };   // 공개 URL을 그대로 저장
   },
   isRef(){ return false; },        // Storage 공개 URL이라 참조 치환이 필요 없다
   resolve(v){ return v; },

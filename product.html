@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>제품 상세 | MAKENOV</title>
-<link rel="stylesheet" href="assets/css/style.css?v=20260728f">
+<link rel="stylesheet" href="assets/css/style.css?v=20260728i">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 </head>
 <body>
@@ -14,15 +14,15 @@
 
 <footer class="mk-footer" id="mk-footer"></footer>
 
-<script src="assets/js/config.js?v=20260728f"></script>
+<script src="assets/js/config.js?v=20260728i"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260728f"></script>
-<script src="assets/js/data.js?v=20260728f"></script>
-<script src="assets/js/store.js?v=20260728f"></script>
-<script src="assets/js/verify.js?v=20260728f"></script>
-<script src="assets/js/upload.js?v=20260728f"></script>
-<script src="assets/js/store-supabase.js?v=20260728f"></script>
-<script src="assets/js/app.js?v=20260728f"></script>
+<script src="assets/js/i18n.js?v=20260728i"></script>
+<script src="assets/js/data.js?v=20260728i"></script>
+<script src="assets/js/store.js?v=20260728i"></script>
+<script src="assets/js/verify.js?v=20260728i"></script>
+<script src="assets/js/upload.js?v=20260728i"></script>
+<script src="assets/js/store-supabase.js?v=20260728i"></script>
+<script src="assets/js/app.js?v=20260728i"></script>
 <script>
 let gIdx = 0, gImgs = [];
 
@@ -44,13 +44,27 @@ function pageInit(){
   gIdx = 0;
   document.title = L(p.name) + ' | MAKENOV';
 
-  /* 상세 본문 — 문단 / 이미지 / 영상 블록 */
-  const detail = (p.detail||[]).map(b=>{
-    if(b.type==='p')     return `<p>${esc(L(b.text))}</p>`;
-    if(b.type==='img')   return `<img src="${b.src}" alt="" loading="lazy">`;
-    if(b.type==='video') return `<div class="pd-video"><iframe src="${ytEmbed(b.src)}" allowfullscreen loading="lazy"></iframe></div>`;
-    return '';
-  }).join('');
+  /* 상세 본문 — 문단 / 이미지 / 영상 블록
+     seq:true 인 이미지는 통상세페이지를 세로로 자른 조각이므로
+     연속된 것끼리 .pd-strip 으로 묶어 틈 없이 이어 붙인다. */
+  const blocks = p.detail || [];
+  let detail = '', i = 0;
+  while(i < blocks.length){
+    const b = blocks[i];
+    if(b.type === 'img' && b.seq){
+      const group = [];
+      while(i < blocks.length && blocks[i].type === 'img' && blocks[i].seq){
+        group.push(blocks[i]); i++;
+      }
+      detail += `<div class="pd-strip">${group.map((g,n)=>
+        `<img src="${g.src}" alt="${esc(L(p.name))} 상세 ${n+1}"${g.w?` width="${g.w}" height="${g.h}"`:''} loading="${n<2?'eager':'lazy'}">`).join('')}</div>`;
+      continue;
+    }
+    if(b.type==='p')          detail += `<p>${esc(L(b.text))}</p>`;
+    else if(b.type==='img')   detail += `<img src="${b.src}" alt="${esc(L(p.name))}" loading="lazy">`;
+    else if(b.type==='video') detail += `<div class="pd-video"><iframe src="${ytEmbed(b.src)}" allowfullscreen loading="lazy"></iframe></div>`;
+    i++;
+  }
 
   /* 대표 영상 — 등록된 제품만 노출 */
   const mainVideo = p.video
