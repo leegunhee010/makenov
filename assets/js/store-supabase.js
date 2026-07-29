@@ -201,10 +201,25 @@ Object.assign(Store, {
 
   async login(email, password){
     const { error } = await SB.auth.signInWithPassword({ email, password });
-    if(error) return { ok:false, err:'invalid' };
+    if(error){
+      /* ★ 예전엔 전부 'invalid' 로 뭉뚱그려 "비밀번호가 틀렸다"고만 떴다.
+         실제로는 '이메일 미확인'이 가장 흔한 원인이라 사용자가 원인을 못 찾는다. */
+      const m = String(error.message || '');
+      let code = 'invalid';
+      if(/email not confirmed|not confirmed/i.test(m)) code = 'unconfirmed';
+      else if(/rate limit|too many/i.test(m))          code = 'rate';
+      console.warn('로그인 실패:', m);
+      return { ok:false, err:code, raw:m };
+    }
     await MkData.boot();
     await this._flushPendingProfile();
     return { ok:true, session:this.session() };
+  },
+
+  /* 확인 메일 재발송 */
+  async resendConfirm(email){
+    const { error } = await SB.auth.resend({ type:'signup', email });
+    return error ? { ok:false, err:error.message } : { ok:true };
   },
 
   async logout(){ await SB.auth.signOut(); MkData.session = null; MkData.profile = null; },

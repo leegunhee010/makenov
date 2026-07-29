@@ -121,8 +121,13 @@ function openAuth(mode){
     mkModal(`
       <h2 data-i18n="auth_login_title"></h2>
       <p class="sub" data-i18n="auth_signup_sub"></p>
-      <div class="f-row"><label data-i18n="auth_email"></label><input id="li-email" type="email" autocomplete="email"></div>
-      <div class="f-row"><label data-i18n="auth_password"></label><input id="li-pw" type="password"></div>
+      <div class="f-row"><label data-i18n="auth_email"></label>
+        <input id="li-email" type="email" autocomplete="email"
+               onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="f-row"><label data-i18n="auth_password"></label>
+        <input id="li-pw" type="password" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="mst-result err" id="li-err" style="display:none"></div>
       <button class="btn btn-primary btn-block" onclick="doLogin()" data-i18n="login"></button>
       <p class="switch-auth"><span data-i18n="auth_none"></span> <a onclick="openAuth('signup')" data-i18n="signup"></a></p>`);
     return;
@@ -374,12 +379,30 @@ async function sendEasyLead(){
   toast(t('easy_ok'));
 }
 
-function doLogin(){
-  const r = Store.login(document.getElementById('li-email').value.trim(), document.getElementById('li-pw').value);
-  Promise.resolve(r).then(res=>{
-    if(!res || !res.ok){ toast(t('err_login')); return; }
-    closeModal(); setTimeout(()=>location.reload(), 400);
-  });
+async function doLogin(){
+  const email = document.getElementById('li-email').value.trim();
+  const res = await Store.login(email, document.getElementById('li-pw').value);
+  if(res && res.ok){ closeModal(); setTimeout(()=>location.reload(), 400); return; }
+
+  const box = document.getElementById('li-err');
+  const err = (res && res.err) || 'invalid';
+
+  /* 이메일 미확인이면 재발송 버튼까지 같이 준다 — 이게 로그인 실패의 가장 흔한 원인 */
+  if(err === 'unconfirmed'){
+    box.innerHTML = `${t('err_unconfirmed')}
+      <div class="retry"><a onclick="resendConfirm('${esc(email)}')" data-i18n="auth_resend"></a></div>`;
+    applyI18n(box);
+  }else{
+    box.textContent = err === 'rate' ? t('err_rate') : t('err_login');
+  }
+  box.style.display = 'block';
+  if(res && res.raw) console.warn('로그인 실패 원인:', res.raw);
+}
+
+async function resendConfirm(email){
+  if(!Store.resendConfirm){ toast(t('err_login')); return; }
+  const r = await Store.resendConfirm(email);
+  toast(r.ok ? t('auth_resend_ok') : (r.err || t('err_login')));
 }
 
 /* ---------- inquiry modal ---------- */
