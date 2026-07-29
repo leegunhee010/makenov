@@ -124,7 +124,7 @@ async function verifyBusiness(countryCode, payload){
       const r = await fetch(MK_SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/verify-business', {
         method:'POST',
         headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+MK_SUPABASE_ANON },
-        body: JSON.stringify({ method:c.method, regNo:payload.regNo,
+        body: JSON.stringify({ method:c.method, country:countryCode, regNo:payload.regNo,
                                company:payload.company, email:payload.email }),
       });
       if(r.ok) return await r.json();

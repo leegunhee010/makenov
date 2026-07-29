@@ -68,9 +68,32 @@ supabase functions deploy verify-business --no-verify-jwt
 supabase secrets set NTS_KEY=<공공데이터포털에서_발급받은_키>
 ```
 
-> 이 저장소는 공개이므로 실제 키를 파일에 적지 마세요.
-> `assets/js/verify.js` 의 `NTS_KEY` 는 이미 빈 값으로 비워 두었습니다.
-> 함수 배포 전까지는 체크섬 검증만 동작하며, 가입 자체는 정상 진행됩니다.
+### ★ 함수 배포는 보안상 필수입니다
+
+Edge Function 은 국세청 키를 숨기는 것 말고도 **인증 상태를 서버에서 확정**하는 역할을 합니다.
+
+이게 없으면 가입만 한 사람이 브라우저 콘솔에서
+`SB.from('profiles').update({status:'verified'})` 를 실행해
+**스스로 인증 통과 처리하고 모든 단가를 볼 수 있습니다.**
+
+**반드시 이 순서로 진행하세요.**
+
+1. 함수 배포 (위 명령)
+2. `supabase/03_lockdown.sql` 실행 — 클라이언트의 인증 상태 변경을 차단
+
+순서를 바꾸면 신규 가입자가 인증 상태를 못 받아 문의를 넣지 못합니다.
+함수가 배포되기 전까지 클라이언트는 예전 방식으로 되돌아가므로 가입 자체는 계속 됩니다.
+
+### 확인 방법
+
+일반 계정으로 로그인한 뒤 브라우저 콘솔에서:
+
+```js
+await SB.from('profiles').update({status:'verified'}).eq('id',(await SB.auth.getUser()).data.user.id)
+await SB.from('profiles').select('status').single()
+```
+
+`status` 가 여전히 `pending` 이면 차단이 정상 동작하는 것입니다.
 
 ## 6. 이메일 확인 설정
 

@@ -116,31 +116,82 @@ Object.assign(Store, {
     if(!data.user) return { ok:false, err:'signup_failed' };
 
     /* 이메일 확인이 켜져 있으면 세션이 없다. 그 경우 로그인 후 프로필이 채워진다. */
+    /* DB 컬럼과 1:1 대응 — 여기에 컬럼이 아닌 값을 섞으면 update 가 통째로 실패한다 */
     const patch = {
       country:user.country, company:user.company, address:user.address,
       reg_no:user.mst, verified_by:user.verifiedBy, verify_note:user.status,
       status:'verified', contact_name:user.contactName, position:user.position,
-      messenger:user.zalo, phone:user.phone,
+      phone:user.phone,
     };
     if(data.session){
-      await SB.from('profiles').update(patch).eq('id', data.user.id);
+      /* ★ 인증 상태는 서버(Edge Function)가 확정한다.
+         클라이언트가 직접 status='verified' 를 쓰면 누구나 자가 승격이 가능하다.
+         함수가 아직 배포 전이면 예전 방식으로 되돌아간다(03_lockdown.sql 적용 전까지만 동작). */
+      const srv = await this._serverVerify(user.verifyPayload);
+      if(!srv.ok){
+        console.warn('서버 인증 기록 실패 — 클라이언트 기록으로 대체합니다:', srv.why);
+        await SB.from('profiles').update(patch).eq('id', data.user.id);
+      }else{
+        /* 서버가 못 채우는 담당자 정보만 클라이언트가 채운다 (권한과 무관한 필드) */
+        await SB.from('profiles').update({
+          contact_name:user.contactName, position:user.position, phone:user.phone,
+        }).eq('id', data.user.id);
+      }
       await MkData.boot();
       return { ok:true, session:this.session() };
     }
     /* ★ 이메일 확인이 켜져 있으면 여기서 세션이 없다.
        그러면 프로필이 pending 으로 남고, RLS 때문에 문의 등록이 막힌다.
        인증 결과를 보관해 두었다가 첫 로그인 때 반영한다. */
-    try{ localStorage.setItem('mk_pending_profile', JSON.stringify(patch)); }catch(e){}
+    try{
+      localStorage.setItem('mk_pending_profile',
+        JSON.stringify({ ...patch, verifyPayload:user.verifyPayload }));
+    }catch(e){}
     return { ok:true, needConfirm:true, pending:patch };
+  },
+
+  /* 사업자 인증을 서버에서 다시 검증하고, 통과하면 서버 권한으로 프로필을 확정한다.
+     JWT 를 실어 보내야 함수가 '누구를 인증할지' 알 수 있다. */
+  async _serverVerify(payload){
+    if(!payload) return { ok:false, why:'no_payload' };
+    const { data:{ session } } = await SB.auth.getSession();
+    if(!session) return { ok:false, why:'no_session' };
+    try{
+      const r = await fetch(MK_SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/verify-business', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json',
+                  'apikey': MK_SUPABASE_ANON,
+                  'Authorization':'Bearer ' + session.access_token },
+        body: JSON.stringify(payload),
+      });
+      if(!r.ok) return { ok:false, why:'fn_http_'+r.status };
+      const j = await r.json();
+      if(!j.ok) return { ok:false, why:'verify_'+(j.err||'failed') };
+      if(!j.profileWritten) return { ok:false, why: j.profileError || 'not_written' };
+      return { ok:true };
+    }catch(e){ return { ok:false, why:'fn_unreachable' }; }
   },
 
   /* 보관해 둔 인증 결과를 프로필에 반영 (아직 pending 인 경우에만) */
   async _flushPendingProfile(){
     if(!MkData.session) return;
     if(MkData.profile && MkData.profile.status === 'verified') return;
-    let patch = null;
-    try{ patch = JSON.parse(localStorage.getItem('mk_pending_profile') || 'null'); }catch(e){}
-    if(!patch) return;
+    let saved = null;
+    try{ saved = JSON.parse(localStorage.getItem('mk_pending_profile') || 'null'); }catch(e){}
+    if(!saved) return;
+
+    const srv = await this._serverVerify(saved.verifyPayload);
+    if(srv.ok){
+      await SB.from('profiles').update({
+        contact_name:saved.contact_name, position:saved.position, phone:saved.phone,
+      }).eq('id', MkData.session.user.id);
+      localStorage.removeItem('mk_pending_profile');
+      await MkData.boot();
+      return;
+    }
+    /* 함수 미배포 상태에서는 예전 경로로 (lockdown 적용 후엔 트리거가 막는다) */
+    console.warn('서버 인증 기록 실패 — 클라이언트 기록으로 대체합니다:', srv.why);
+    const { verifyPayload, ...patch } = saved;
     const { error } = await SB.from('profiles').update(patch).eq('id', MkData.session.user.id);
     if(!error){
       localStorage.removeItem('mk_pending_profile');

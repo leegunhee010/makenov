@@ -323,6 +323,10 @@ async function suDone(){
     contactName: v('su-name'), position: v('su-position'),
     phone: c.dial + ' ' + v('su-phone'),
     zalo: c.dial + ' ' + v('su-phone'),                   // zalo = 하위호환 필드
+    /* 서버가 같은 값으로 다시 검증해 인증 상태를 확정한다 (자가 승격 차단) */
+    verifyPayload: { method:c.method, country:_suCountry,
+                     regNo:_verified.regNo, company:_verified.company,
+                     email:(_verified.accountEmail || v('su-email')) },
   });
   if(!res.ok){ toast(res.err==='exists' ? t('err_exists') : t('auth_mst_fail')); return; }
   closeModal(); toast(t('auth_welcome'));

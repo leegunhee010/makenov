@@ -99,6 +99,43 @@ async function verifyDomain(email: string, company: string) {
   };
 }
 
+/** 인증 통과 시 프로필에 확정 기록.
+ *  ★ 클라이언트가 직접 status='verified' 를 쓰지 못하게 막았으므로(03_lockdown.sql)
+ *    여기서 service_role 로 쓰는 것이 유일한 경로다. */
+async function markVerified(jwt: string, res: Record<string, unknown>, regNo: string, country: string) {
+  const url = Deno.env.get('SUPABASE_URL');
+  const svc = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const anon = Deno.env.get('SUPABASE_ANON_KEY');
+  if (!url || !svc || !anon) return { written: false, why: 'env_missing' };
+
+  // 토큰의 주인이 누구인지 확인
+  const who = await fetch(`${url}/auth/v1/user`, {
+    headers: { apikey: anon, Authorization: `Bearer ${jwt}` },
+  });
+  if (!who.ok) return { written: false, why: 'bad_token' };
+  const user = await who.json();
+  if (!user?.id) return { written: false, why: 'no_user' };
+
+  const patch = {
+    status: 'verified',
+    verified_by: res.checked,
+    verify_note: res.status ?? '',
+    reg_no: regNo,
+    company: res.company ?? '',
+    address: res.address ?? '',
+    country,
+  };
+  const up = await fetch(`${url}/rest/v1/profiles?id=eq.${user.id}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: svc, Authorization: `Bearer ${svc}`,
+      'Content-Type': 'application/json', Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(patch),
+  });
+  return { written: up.ok, why: up.ok ? '' : await up.text() };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ ok: false, err: 'method' }, 405);
@@ -106,9 +143,25 @@ Deno.serve(async (req) => {
   let body: Record<string, string>;
   try { body = await req.json(); } catch { return json({ ok: false, err: 'bad_json' }, 400); }
 
-  const { method, regNo = '', company = '', email = '' } = body;
-  if (method === 'brn')    return json(await verifyKR(regNo, company));
-  if (method === 'mst')    return json(await verifyVN(regNo));
-  if (method === 'domain') return json(await verifyDomain(email, company));
-  return json({ ok: false, err: 'unknown_method' }, 400);
+  const { method, regNo = '', company = '', email = '', country = '' } = body;
+
+  let res: Record<string, unknown>;
+  if (method === 'brn')         res = await verifyKR(regNo, company);
+  else if (method === 'mst')    res = await verifyVN(regNo);
+  else if (method === 'domain') res = await verifyDomain(email, company);
+  else return json({ ok: false, err: 'unknown_method' }, 400);
+
+  /* 로그인한 사용자가 보낸 요청이고 인증을 통과했다면 프로필에 확정 기록한다.
+     JWT 가 없으면(가입 전 미리보기) 검증 결과만 돌려준다. */
+  const auth = req.headers.get('Authorization') || '';
+  const jwt = auth.replace(/^Bearer\s+/i, '');
+  const isUserToken = jwt && jwt !== Deno.env.get('SUPABASE_ANON_KEY');
+
+  if (res.ok && isUserToken) {
+    const w = await markVerified(jwt, res, regNo, country);
+    res.profileWritten = w.written;
+    if (!w.written) res.profileError = w.why;
+  }
+
+  return json(res);
 });
