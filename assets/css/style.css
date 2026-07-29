@@ -867,3 +867,30 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   .lp-last h2{font-size:26px}
   .lp-last .btn{width:100%;justify-content:center}
 }
+
+/* ============================================================
+   회원가입 — 단일 화면 폼
+   ============================================================ */
+.modal{max-width:560px}
+.fs{border:1px solid var(--mk-line);border-radius:10px;padding:18px 18px 6px;margin-bottom:14px}
+.fs-t{font-size:13px;font-weight:700;color:var(--mk-ink);margin-bottom:14px}
+.f-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media(max-width:520px){.f-2col{grid-template-columns:1fr}.modal{max-width:100%}}
+
+/* 왜 받는지 안내 — 세금코드 입력에서 멈추지 않게 */
+.why-box{background:var(--mk-bg-soft);border-radius:8px;padding:14px 16px;margin:4px 0 14px}
+.why-box b{display:block;font-size:13px;font-weight:700;color:var(--mk-ink);margin-bottom:8px}
+.why-box ul{margin:0;padding:0;list-style:none}
+.why-box li{position:relative;font-size:12.5px;line-height:1.7;color:var(--mk-body);padding-left:14px}
+.why-box li::before{content:"";position:absolute;left:0;top:9px;width:4px;height:4px;
+  border-radius:50%;background:var(--mk-primary)}
+
+/* 인증 결과 안의 대안 링크 */
+.mst-result .retry{margin-top:8px}
+.mst-result .retry a{font-size:12.5px;font-weight:600;color:var(--mk-primary);
+  cursor:pointer;text-decoration:underline}
+
+/* 인증이 막혔을 때 빠져나갈 문 */
+.easy-out{text-align:center;font-size:13px;color:var(--mk-muted);margin-top:16px;line-height:1.7}
+.easy-out a{display:inline-block;margin-left:4px;font-weight:700;color:var(--mk-primary);
+  cursor:pointer;text-decoration:underline}

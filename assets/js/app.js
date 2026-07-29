@@ -109,71 +109,149 @@ function mkModal(html){
 }
 function closeModal(){ const b=document.getElementById('mk-modal-back'); if(b) b.classList.remove('open'); }
 
-/* ---------- auth modal (country-driven 3-step signup) ---------- */
+/* ---------- auth modal — 단일 화면 가입 ----------
+   이전에는 3단계로 나눠 받았는데, 단계마다 이탈이 생겼다.
+   지금은 한 화면에 전부 보여주고, 사업자 인증만 그 자리에서 인라인으로 처리한다.
+   인증에 실패하거나 번호가 없는 바이어도 '간편 문의'로 빠져나가지 않게 한다. */
 let _verified = null;          // 인증 통과 결과
 let _suCountry = 'VN';         // 선택된 국가
 
 function openAuth(mode){
   if(mode==='login'){
     mkModal(`
-      <h2 data-i18n="auth_login_title"></h2><p class="sub" data-i18n="auth_signup_sub"></p><div class="f-row"><label data-i18n="auth_email"></label><input id="li-email" type="email" autocomplete="email"></div><div class="f-row"><label data-i18n="auth_password"></label><input id="li-pw" type="password"></div><button class="btn btn-primary btn-block" onclick="doLogin()" data-i18n="login"></button><p class="switch-auth"><span data-i18n="auth_none"></span> <a onclick="openAuth('signup')" data-i18n="signup"></a></p>`);
+      <h2 data-i18n="auth_login_title"></h2>
+      <p class="sub" data-i18n="auth_signup_sub"></p>
+      <div class="f-row"><label data-i18n="auth_email"></label><input id="li-email" type="email" autocomplete="email"></div>
+      <div class="f-row"><label data-i18n="auth_password"></label><input id="li-pw" type="password"></div>
+      <button class="btn btn-primary btn-block" onclick="doLogin()" data-i18n="login"></button>
+      <p class="switch-auth"><span data-i18n="auth_none"></span> <a onclick="openAuth('signup')" data-i18n="signup"></a></p>`);
     return;
   }
   _verified = null;
   _suCountry = MK_LANG === 'ko' ? 'KR' : (MK_LANG === 'en' ? 'US' : 'VN');
+
   mkModal(`
-    <h2 data-i18n="auth_signup_title"></h2><p class="sub" data-i18n="auth_signup_sub"></p><div class="steps"><i class="on" id="bar1"></i><i id="bar2"></i><i id="bar3"></i></div><div id="su-step1"><div class="f-row"><label data-i18n="auth_country"></label><select id="su-country" onchange="_suCountry=this.value">
+    <h2 data-i18n="auth_signup_title"></h2>
+    <p class="sub" data-i18n="auth_signup_sub"></p>
+
+    <div class="fs">
+      <div class="fs-t" data-i18n="auth_grp_company"></div>
+      <div class="f-row"><label data-i18n="auth_country"></label>
+        <select id="su-country" onchange="suCountryChange(this.value)">
           ${MK_COUNTRIES.map(c=>`<option value="${c.code}">${c.flag} ${esc(L(c.name))}</option>`).join('')}
-        </select></div><div class="f-row"><label data-i18n="auth_email"></label><input id="su-email" type="email" autocomplete="email"></div><div class="f-row"><label data-i18n="auth_password"></label><input id="su-pw" type="password" autocomplete="new-password"></div><button class="btn btn-primary btn-block" onclick="suNext()" data-i18n="auth_next"></button></div><div id="su-step2" style="display:none"></div><div id="su-step3" style="display:none"><div class="mst-result" id="ok-box" style="display:block"></div><div class="f-row"><label data-i18n="auth_contact_name"></label><input id="su-name"></div><div class="f-row"><label data-i18n="auth_position"></label><input id="su-position"></div><div class="f-row"><label data-i18n="auth_phone"></label><div class="mst-row"><input id="su-dial" readonly style="max-width:78px;text-align:center"><input id="su-phone" inputmode="tel"></div></div><div class="f-row"><label id="lbl-msgr"></label><input id="su-msgr" inputmode="tel"></div><button class="btn btn-primary btn-block" onclick="suDone()" data-i18n="auth_done"></button></div><p class="switch-auth"><span data-i18n="auth_have"></span> <a onclick="openAuth('login')" data-i18n="login"></a></p>`);
+        </select></div>
+      <div id="su-verify"></div>
+      <div class="mst-result" id="v-result" style="display:none"></div>
+
+      <!-- 왜 받는지 설명 : 이게 없으면 세금코드 입력에서 멈춘다 -->
+      <div class="why-box">
+        <b data-i18n="auth_why_title"></b>
+        <ul>
+          <li data-i18n="auth_why_1"></li>
+          <li data-i18n="auth_why_2"></li>
+          <li data-i18n="auth_why_3"></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fs">
+      <div class="fs-t" data-i18n="auth_grp_contact"></div>
+      <div class="f-2col">
+        <div class="f-row"><label data-i18n="auth_contact_name"></label><input id="su-name" autocomplete="name"></div>
+        <div class="f-row"><label data-i18n="auth_position"></label><input id="su-position"></div>
+      </div>
+      <div class="f-row"><label data-i18n="auth_phone"></label>
+        <div class="mst-row">
+          <input id="su-dial" readonly style="max-width:78px;text-align:center">
+          <input id="su-phone" inputmode="tel">
+        </div></div>
+      <div class="f-row"><label id="lbl-msgr"></label><input id="su-msgr" inputmode="tel"></div>
+    </div>
+
+    <div class="fs">
+      <div class="fs-t" data-i18n="auth_grp_account"></div>
+      <div class="f-2col">
+        <div class="f-row"><label data-i18n="auth_email"></label><input id="su-email" type="email" autocomplete="email"></div>
+        <div class="f-row"><label data-i18n="auth_password"></label><input id="su-pw" type="password" autocomplete="new-password"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" onclick="suDone()" data-i18n="auth_done"></button>
+
+    <!-- 인증이 막혔을 때 빠져나갈 문 -->
+    <div class="easy-out">
+      <span data-i18n="auth_hard"></span>
+      <a onclick="openEasyLead()" data-i18n="auth_easy_cta"></a>
+    </div>
+
+    <p class="switch-auth"><span data-i18n="auth_have"></span> <a onclick="openAuth('login')" data-i18n="login"></a></p>`);
+
   const sel = document.getElementById('su-country');
   if(sel) sel.value = _suCountry;
+  suCountryChange(_suCountry);
 }
 
-/* 1단계 → 국가별 인증 화면 생성 */
-function suNext(){
-  const email = document.getElementById('su-email').value.trim();
-  const pw = document.getElementById('su-pw').value;
-  if(!/^\S+@\S+\.\S+$/.test(email) || pw.length < 4){ toast(t('auth_need_basic')); return; }
-  _suCountry = document.getElementById('su-country').value;
-  const c = mkCountry(_suCountry);
+/* 국가를 바꾸면 인증란만 그 자리에서 교체된다 (화면 이동 없음) */
+function suCountryChange(code){
+  _suCountry = code;
+  _verified = null;
+  const c = mkCountry(code);
+  const box = document.getElementById('v-result');
+  if(box) box.style.display = 'none';
 
   let inner = '';
   if(c.method === 'mst'){
     inner = `
-      <div class="f-row"><label data-i18n="auth_mst"></label><div class="mst-row"><input id="v-regno" inputmode="numeric" maxlength="14" placeholder="0100109106"><button class="btn btn-soft" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button></div><p class="f-hint" data-i18n="auth_mst_hint"></p></div>`;
+      <div class="f-row"><label data-i18n="auth_mst"></label>
+        <div class="mst-row">
+          <input id="v-regno" inputmode="numeric" maxlength="14" placeholder="0100109106">
+          <button class="btn btn-soft" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button>
+        </div>
+        <p class="f-hint" data-i18n="auth_mst_hint"></p></div>`;
   } else if(c.method === 'brn'){
     inner = `
-      <div class="f-row"><label data-i18n="auth_brn"></label><input id="v-regno" inputmode="numeric" maxlength="12" placeholder="123-45-67890"
-               oninput="this.value=formatBRN(this.value)"><p class="f-hint" data-i18n="auth_brn_hint2"></p></div><div class="f-row"><label data-i18n="auth_company"></label><input id="v-company" placeholder="(주)메이크노브"></div><button class="btn btn-soft btn-block" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button>`;
+      <div class="f-row"><label data-i18n="auth_company"></label><input id="v-company" placeholder="(주)메이크노브"></div>
+      <div class="f-row"><label data-i18n="auth_brn"></label>
+        <div class="mst-row">
+          <input id="v-regno" inputmode="numeric" maxlength="12" placeholder="123-45-67890"
+                 oninput="this.value=formatBRN(this.value)">
+          <button class="btn btn-soft" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button>
+        </div>
+        <p class="f-hint" data-i18n="auth_brn_hint2"></p></div>`;
   } else {
     inner = `
-      <div class="f-row"><label data-i18n="auth_company"></label><input id="v-company"></div><div class="f-row"><label data-i18n="auth_biz_email"></label><input id="v-email" type="email" value="${esc(email)}"><p class="f-hint" data-i18n="auth_domain_hint"></p></div><button class="btn btn-soft btn-block" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button>`;
+      <div class="f-row"><label data-i18n="auth_company"></label><input id="v-company"></div>
+      <div class="f-row"><label data-i18n="auth_biz_email"></label>
+        <div class="mst-row">
+          <input id="v-email" type="email" placeholder="name@company.com">
+          <button class="btn btn-soft" id="v-btn" onclick="runVerify()" data-i18n="auth_mst_check"></button>
+        </div>
+        <p class="f-hint" data-i18n="auth_domain_hint"></p></div>`;
   }
-  document.getElementById('su-step2').innerHTML = inner + `<div class="mst-result" id="v-result"></div>`;
-  document.getElementById('su-step1').style.display='none';
-  document.getElementById('su-step2').style.display='block';
-  document.getElementById('bar2').classList.add('on');
-  applyI18n(document.getElementById('su-step2'));
+  const wrap = document.getElementById('su-verify');
+  wrap.innerHTML = inner;
+  applyI18n(wrap);
+
+  document.getElementById('su-dial').value = c.dial;
+  document.getElementById('su-phone').placeholder = c.phEx;
+  document.getElementById('lbl-msgr').textContent = c.messenger;
 }
 
-/* 국가별 인증 실행 */
+/* 국가별 인증 실행 — 화면 이동 없이 결과만 표시 */
 async function runVerify(){
-  const c = mkCountry(_suCountry);
   const box = document.getElementById('v-result');
   const btn = document.getElementById('v-btn');
   const val = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
 
-  // 재인증 시작 시 직전 결과를 반드시 폐기 — 실패 후 이전 통과분으로 가입되는 것을 차단
+  /* 재인증 시작 시 직전 결과를 반드시 폐기 — 실패 후 이전 통과분으로 가입되는 것을 차단 */
   _verified = null;
-  document.getElementById('su-step3').style.display = 'none';
-  document.getElementById('bar3').classList.remove('on');
 
   btn.disabled = true; btn.textContent = t('auth_verifying');
   box.style.display = 'none';
 
   const res = await verifyBusiness(_suCountry, {
     regNo: val('v-regno'), company: val('v-company'),
-    ownerName: val('v-owner'), email: val('v-email') || val('su-email'),
+    email: val('v-email') || val('su-email'),
   });
 
   btn.disabled = false; btn.textContent = t('auth_mst_check');
@@ -183,52 +261,98 @@ async function runVerify(){
     const key = 'err_' + res.err;
     const dict = I18N[MK_LANG] || I18N.vi;
     box.className = 'mst-result err';
-    box.textContent = dict[key] || I18N.vi[key] || t('auth_mst_fail');
+    box.innerHTML = (dict[key] || I18N.vi[key] || t('auth_mst_fail'))
+      + `<div class="retry"><a onclick="openEasyLead()" data-i18n="auth_easy_cta"></a></div>`;
+    applyI18n(box);
     return;
   }
-  _verified = { ...res, country:_suCountry, regNo: val('v-regno') };
 
-  // 3단계로 이동
-  document.getElementById('su-step2').style.display='none';
-  document.getElementById('su-step3').style.display='block';
-  document.getElementById('bar3').classList.add('on');
-  document.getElementById('ok-box').innerHTML =
-    `✓ <b>${t('auth_mst_ok')}</b><br>${esc(res.company)}` +
-    (res.address ? `<br><span style="color:var(--mk-muted)">${esc(res.address)}</span>` : '') +
-    (res.status  ? `<br><span style="color:var(--mk-muted);font-size:12px">${esc(res.status)}</span>` : '');
-  document.getElementById('su-dial').value = c.dial;
-  document.getElementById('su-phone').placeholder = c.phEx;
-  document.getElementById('lbl-msgr').textContent = c.messenger;
-  applyI18n(document.getElementById('su-step3'));
+  _verified = { ...res, country:_suCountry, regNo: val('v-regno') };
+  box.className = 'mst-result';
+  box.innerHTML = `✓ <b>${t('auth_mst_ok')}</b><br>${esc(res.company)}`
+    + (res.address ? `<br><span style="color:var(--mk-muted)">${esc(res.address)}</span>` : '')
+    + (res.status  ? `<br><span style="color:var(--mk-muted);font-size:12px">${esc(res.status)}</span>` : '');
+
+  /* 회사명이 비어 있으면 인증으로 받아온 상호를 채워준다 */
+  const cf = document.getElementById('v-company');
+  if(cf && !cf.value) cf.value = res.company || '';
 }
 
-function suDone(){
-  if(!_verified){ toast(t('auth_mst_fail')); return; }
+async function suDone(){
+  if(!_verified){ toast(t('auth_need_verify'));
+    const b=document.getElementById('v-result'); if(b) b.scrollIntoView({block:'center'});
+    return; }
   const c = mkCountry(_suCountry);
-  const name = document.getElementById('su-name').value.trim();
-  const phone = document.getElementById('su-phone').value.trim();
-  if(!name || !phone){ toast(t('auth_need_basic')); return; }
-  const res = Store.signup({
-    // 도메인 인증 국가는 인증에 쓴 회사 이메일이 계정 이메일이 된다
-    email: (_verified.accountEmail || document.getElementById('su-email').value.trim()).toLowerCase(),
-    password: document.getElementById('su-pw').value,
+  const v = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
+  const email = (_verified.accountEmail || v('su-email')).toLowerCase();
+  const pw = document.getElementById('su-pw').value;
+
+  if(!v('su-name') || !v('su-phone')){ toast(t('auth_need_basic')); return; }
+  if(!/^\S+@\S+\.\S+$/.test(email) || pw.length < 4){ toast(t('auth_need_basic')); return; }
+
+  const res = await Store.signup({
+    email, password: pw,
     country: _suCountry, countryName: L(c.name),
     regNo: _verified.regNo, mst: _verified.regNo,        // mst = 하위호환 필드
     company: _verified.company, address: _verified.address, status: _verified.status,
     verifiedBy: _verified.checked,                        // gov | nts | checksum | domain
-    contactName: name, position: document.getElementById('su-position').value.trim(),
-    phone: c.dial + ' ' + phone,
-    messenger: c.messenger, messengerId: document.getElementById('su-msgr').value.trim(),
-    zalo: c.dial + ' ' + phone,                           // zalo = 하위호환 필드
+    contactName: v('su-name'), position: v('su-position'),
+    phone: c.dial + ' ' + v('su-phone'),
+    messenger: c.messenger, messengerId: v('su-msgr'),
+    zalo: c.dial + ' ' + v('su-phone'),                   // zalo = 하위호환 필드
   });
-  if(!res.ok){ toast(' ' + (res.err==='exists'?'Email already registered':'Error')); return; }
+  if(!res.ok){ toast(res.err==='exists' ? t('err_exists') : t('auth_mst_fail')); return; }
   closeModal(); toast(t('auth_welcome'));
   setTimeout(()=>location.reload(), 700);
 }
+
+/* ---------- 간편 문의 ----------
+   사업자 인증이 안 되거나 번호가 없는 바이어를 그냥 놓치지 않기 위한 경로.
+   가입 없이 연락처만 받아 관리자가 직접 인증을 도와준다. */
+function openEasyLead(){
+  const c = mkCountry(_suCountry);
+  mkModal(`
+    <h2 data-i18n="easy_title"></h2>
+    <p class="sub" data-i18n="easy_sub"></p>
+    <div class="lp-err" id="easy-err"></div>
+    <div class="f-2col">
+      <div class="f-row"><label data-i18n="auth_company"></label><input id="ez-company"></div>
+      <div class="f-row"><label data-i18n="auth_contact_name"></label><input id="ez-name"></div>
+    </div>
+    <div class="f-2col">
+      <div class="f-row"><label data-i18n="auth_email"></label><input id="ez-email" type="email"></div>
+      <div class="f-row"><label data-i18n="auth_phone"></label><input id="ez-tel" inputmode="tel" placeholder="${esc(c.dial)} ${esc(c.phEx)}"></div>
+    </div>
+    <div class="f-row"><label data-i18n="easy_need"></label>
+      <textarea id="ez-msg" rows="3" data-i18n-ph="easy_need_ph"></textarea></div>
+    <button class="btn btn-primary btn-block" onclick="sendEasyLead()" data-i18n="easy_send"></button>
+    <div class="easy-out"><span data-i18n="easy_back"></span>
+      <a onclick="openAuth('signup')" data-i18n="signup"></a></div>`);
+}
+
+async function sendEasyLead(){
+  const v = id => document.getElementById(id).value.trim();
+  const err = document.getElementById('easy-err');
+  const show = m => { err.textContent = m; err.style.display = 'block'; };
+  if(!v('ez-company') || !v('ez-name')) return show(t('auth_need_basic'));
+  if(!v('ez-email') && !v('ez-tel'))    return show(t('easy_need_contact'));
+
+  await Store.addMakerLead({
+    company: v('ez-company'), name: v('ez-name'),
+    tel: v('ez-tel') || '-', email: v('ez-email') || '-',
+    site: '', cat: 'buyer',                    // cat=buyer → 관리자에서 바이어 문의로 구분
+    message: '[바이어 간편문의 · ' + _suCountry + '] ' + v('ez-msg'),
+  });
+  closeModal();
+  toast(t('easy_ok'));
+}
+
 function doLogin(){
-  const res = Store.login(document.getElementById('li-email').value.trim(), document.getElementById('li-pw').value);
-  if(!res.ok){ toast(''); return; }
-  closeModal(); setTimeout(()=>location.reload(), 400);
+  const r = Store.login(document.getElementById('li-email').value.trim(), document.getElementById('li-pw').value);
+  Promise.resolve(r).then(res=>{
+    if(!res || !res.ok){ toast(t('err_login')); return; }
+    closeModal(); setTimeout(()=>location.reload(), 400);
+  });
 }
 
 /* ---------- inquiry modal ---------- */
