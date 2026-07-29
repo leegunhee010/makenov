@@ -127,14 +127,32 @@ Object.assign(Store, {
       await MkData.boot();
       return { ok:true, session:this.session() };
     }
-    /* 세션이 없으면 확인 메일이 나간 상태 */
+    /* ★ 이메일 확인이 켜져 있으면 여기서 세션이 없다.
+       그러면 프로필이 pending 으로 남고, RLS 때문에 문의 등록이 막힌다.
+       인증 결과를 보관해 두었다가 첫 로그인 때 반영한다. */
+    try{ localStorage.setItem('mk_pending_profile', JSON.stringify(patch)); }catch(e){}
     return { ok:true, needConfirm:true, pending:patch };
+  },
+
+  /* 보관해 둔 인증 결과를 프로필에 반영 (아직 pending 인 경우에만) */
+  async _flushPendingProfile(){
+    if(!MkData.session) return;
+    if(MkData.profile && MkData.profile.status === 'verified') return;
+    let patch = null;
+    try{ patch = JSON.parse(localStorage.getItem('mk_pending_profile') || 'null'); }catch(e){}
+    if(!patch) return;
+    const { error } = await SB.from('profiles').update(patch).eq('id', MkData.session.user.id);
+    if(!error){
+      localStorage.removeItem('mk_pending_profile');
+      await MkData.boot();
+    }
   },
 
   async login(email, password){
     const { error } = await SB.auth.signInWithPassword({ email, password });
     if(error) return { ok:false, err:'invalid' };
     await MkData.boot();
+    await this._flushPendingProfile();
     return { ok:true, session:this.session() };
   },
 

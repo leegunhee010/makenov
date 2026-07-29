@@ -894,3 +894,8 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .easy-out{text-align:center;font-size:13px;color:var(--mk-muted);margin-top:16px;line-height:1.7}
 .easy-out a{display:inline-block;margin-left:4px;font-weight:700;color:var(--mk-primary);
   cursor:pointer;text-decoration:underline}
+
+/* 비밀번호 확인 안내 */
+.pw-msg{font-size:12.5px;line-height:1.6;margin:2px 0 12px;min-height:18px}
+.pw-msg.ok{color:var(--mk-primary);font-weight:600}
+.pw-msg.bad{color:#E03131;font-weight:600}

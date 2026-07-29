@@ -165,15 +165,20 @@ function openAuth(mode){
           <input id="su-dial" readonly style="max-width:78px;text-align:center">
           <input id="su-phone" inputmode="tel">
         </div></div>
-      <div class="f-row"><label id="lbl-msgr"></label><input id="su-msgr" inputmode="tel"></div>
     </div>
 
     <div class="fs">
       <div class="fs-t" data-i18n="auth_grp_account"></div>
+      <div class="f-row"><label data-i18n="auth_email"></label>
+        <input id="su-email" type="email" autocomplete="email" placeholder="name@company.com">
+        <p class="f-hint" data-i18n="auth_id_hint"></p></div>
       <div class="f-2col">
-        <div class="f-row"><label data-i18n="auth_email"></label><input id="su-email" type="email" autocomplete="email"></div>
-        <div class="f-row"><label data-i18n="auth_password"></label><input id="su-pw" type="password" autocomplete="new-password"></div>
+        <div class="f-row"><label data-i18n="auth_password"></label>
+          <input id="su-pw" type="password" autocomplete="new-password" oninput="pwCheck()"></div>
+        <div class="f-row"><label data-i18n="auth_password2"></label>
+          <input id="su-pw2" type="password" autocomplete="new-password" oninput="pwCheck()"></div>
       </div>
+      <p class="pw-msg" id="pw-msg"></p>
     </div>
 
     <button class="btn btn-primary btn-block" onclick="suDone()" data-i18n="auth_done"></button>
@@ -234,7 +239,20 @@ function suCountryChange(code){
 
   document.getElementById('su-dial').value = c.dial;
   document.getElementById('su-phone').placeholder = c.phEx;
-  document.getElementById('lbl-msgr').textContent = c.messenger;
+}
+
+/* 비밀번호 확인 — 오타로 가입해서 못 들어오는 일이 없게 그 자리에서 알려준다 */
+function pwCheck(){
+  const a = document.getElementById('su-pw').value;
+  const b = document.getElementById('su-pw2').value;
+  const el = document.getElementById('pw-msg');
+  if(!el) return true;
+  if(!a && !b){ el.textContent=''; el.className='pw-msg'; return false; }
+  if(a.length < 6){ el.textContent = t('auth_pw_short'); el.className='pw-msg bad'; return false; }
+  if(!b){ el.textContent=''; el.className='pw-msg'; return false; }
+  if(a !== b){ el.textContent = t('auth_pw_diff'); el.className='pw-msg bad'; return false; }
+  el.textContent = t('auth_pw_ok'); el.className='pw-msg ok';
+  return true;
 }
 
 /* 국가별 인증 실행 — 화면 이동 없이 결과만 표시 */
@@ -288,7 +306,13 @@ async function suDone(){
   const pw = document.getElementById('su-pw').value;
 
   if(!v('su-name') || !v('su-phone')){ toast(t('auth_need_basic')); return; }
-  if(!/^\S+@\S+\.\S+$/.test(email) || pw.length < 4){ toast(t('auth_need_basic')); return; }
+  if(!/^\S+@\S+\.\S+$/.test(email)){ toast(t('err_invalid_email')); return; }
+  if(pw.length < 6){ toast(t('auth_pw_short')); document.getElementById('su-pw').focus(); return; }
+  if(pw !== document.getElementById('su-pw2').value){
+    toast(t('auth_pw_diff'));
+    const el = document.getElementById('su-pw2'); el.focus(); el.select();
+    return;
+  }
 
   const res = await Store.signup({
     email, password: pw,
@@ -298,7 +322,6 @@ async function suDone(){
     verifiedBy: _verified.checked,                        // gov | nts | checksum | domain
     contactName: v('su-name'), position: v('su-position'),
     phone: c.dial + ' ' + v('su-phone'),
-    messenger: c.messenger, messengerId: v('su-msgr'),
     zalo: c.dial + ' ' + v('su-phone'),                   // zalo = 하위호환 필드
   });
   if(!res.ok){ toast(res.err==='exists' ? t('err_exists') : t('auth_mst_fail')); return; }
@@ -363,10 +386,30 @@ function openInquiry(pids){    // pids: array of product ids
       <h2 data-i18n="inq_title"></h2><p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p><div class="f-row"><label data-i18n="inq_message"></label><textarea id="inq-msg" rows="4" data-i18n-ph="inq_message_ph"></textarea></div><button class="btn btn-primary btn-block" onclick="sendInquiry('${pids.join(',')}')" data-i18n="inq_send"></button>`);
   });
 }
-function sendInquiry(pidCsv){
+async function sendInquiry(pidCsv){
+  const btn = document.querySelector('#mk-modal-back .btn-primary');
   const msg = document.getElementById('inq-msg').value.trim();
   const pids = pidCsv.split(',');
-  pids.forEach(pid=>Store.addInquiry(pid, msg));
+
+  if(btn){ btn.disabled = true; btn.textContent = t('inq_sending'); }
+
+  /* ★ 예전에는 결과를 확인하지 않고 무조건 '접수 완료'를 띄웠다.
+     저장이 실패해도 성공으로 보여서 문의가 조용히 사라졌다. */
+  const results = await Promise.all(pids.map(pid => Store.addInquiry(pid, msg)));
+  const failed  = results.filter(r => !r || !r.ok);
+
+  if(btn){ btn.disabled = false; btn.textContent = t('inq_send'); }
+
+  if(failed.length){
+    const err = failed[0].err || '';
+    /* RLS가 막은 경우 = 아직 인증 상태가 아님 */
+    const msgKey = /row-level security|permission/i.test(err) ? 'inq_err_verify'
+                 : err === 'auth' ? 'auth_need' : 'inq_err';
+    toast(t(msgKey));
+    console.error('문의 저장 실패:', err);
+    return;
+  }
+
   closeModal(); toast(t('inq_ok'));
   document.dispatchEvent(new CustomEvent('mk:inquiry'));
 }
@@ -400,7 +443,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   /* 2) 그다음 데이터 */
   if(typeof MkData !== 'undefined'){
-    try{ await MkData.boot(); await Store.loadCart(); }
+    try{
+      await MkData.boot();
+      /* 이메일 확인 후 첫 진입이면 보관해 둔 인증 결과를 프로필에 반영한다 */
+      if(Store._flushPendingProfile) await Store._flushPendingProfile();
+      await Store.loadCart();
+    }
     catch(e){ console.error('MAKENOV 백엔드 연결 실패 — 시드 데이터로 표시합니다', e); }
   }
   if(typeof MkImg !== 'undefined'){ try{ await MkImg.hydrate(); }catch(e){} }
