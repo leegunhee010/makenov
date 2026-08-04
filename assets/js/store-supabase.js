@@ -32,6 +32,11 @@ const MkData = {
       ]);
       this.profile = prof || null;
       this.admin   = !!adm;
+      /* 다음 페이지의 첫 헤더 렌더가 쓸 힌트 (sessionHint 참고) */
+      try{ localStorage.setItem('mk_ui_auth', JSON.stringify({
+        email: session.user.email, name: (prof && prof.contact_name) || '' })); }catch(e){}
+    }else{
+      try{ localStorage.removeItem('mk_ui_auth'); }catch(e){}
     }
     await this.loadContent();
   },
@@ -131,6 +136,23 @@ window.MkData = MkData;
 const _cartMem = { list:null };
 
 Object.assign(Store, {
+  /* ---------- 첫 렌더용 세션 힌트 (동기) ----------
+     boot()가 끝나기 전에 헤더를 그리면 비로그인으로 보였다가 로그인으로 바뀌어
+     페이지를 옮길 때마다 깜빡였다. Supabase가 localStorage에 저장한 토큰을
+     동기로 읽어 "아마 로그인 상태"를 먼저 그리고, boot 후 실제 상태로 확정한다. */
+  sessionHint(){
+    if(MkData.session) return this.session();
+    try{
+      const ref = (MK_SUPABASE_URL.match(/\/\/([^.]+)\./) || [])[1];
+      const raw = localStorage.getItem('sb-' + ref + '-auth-token');
+      if(!raw) return null;
+      const tok = JSON.parse(raw);
+      if(!tok || !tok.user || (tok.expires_at && tok.expires_at * 1000 < Date.now() - 60000)) return null;
+      let ui = {}; try{ ui = JSON.parse(localStorage.getItem('mk_ui_auth')||'{}'); }catch(e){}
+      return { email: tok.user.email, contactName: ui.name || '', _hint: true };
+    }catch(e){ return null; }
+  },
+
   session(){
     if(!MkData.session) return null;
     const p = MkData.profile || {};
@@ -265,7 +287,11 @@ Object.assign(Store, {
     return error ? { ok:false, err:error.message } : { ok:true };
   },
 
-  async logout(){ await SB.auth.signOut(); MkData.session = null; MkData.profile = null; },
+  async logout(){
+    await SB.auth.signOut();
+    MkData.session = null; MkData.profile = null;
+    try{ localStorage.removeItem('mk_ui_auth'); }catch(e){}   // 힌트도 지워야 다음 렌더가 로그인으로 안 보인다
+  },
 
   /* ---- 관심제품 ---- */
   cart(){ return _cartMem.list || []; },

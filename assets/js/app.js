@@ -54,7 +54,10 @@ const MK_ICO = {
 
 /* ---------- header / footer ---------- */
 function renderChrome(active){
-  const s = Store.session();
+  /* 부팅 전 첫 렌더는 세션 힌트로 그린다 — 안 그러면 페이지를 옮길 때마다
+     비로그인 → 로그인으로 헤더가 두 번 그려져 로그인이 풀렸다 붙었다 하는 것처럼 보인다.
+     boot 완료 후 다시 renderChrome이 돌면서 실제 상태로 확정된다. */
+  const s = Store.session() || (Store.sessionHint ? Store.sessionHint() : null);
 
   /* 상단 띠배너 (헤더 바깥 · 스티키 아님)
      문구·노출여부·링크는 관리자 설정(MK_SETTINGS)에서 온다.
@@ -544,8 +547,10 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   }
   if(typeof MkImg !== 'undefined'){ try{ await MkImg.hydrate(); }catch(e){} }
 
-  /* 3) 세션이 잡혔으면 헤더를 한 번 더 (로그인 상태 반영) */
-  if(typeof MkData !== 'undefined' && MkData.session) renderChrome();
+  /* 3) 부팅이 끝나면 헤더를 실제 세션 상태로 확정한다.
+        힌트가 로그인이라고 그렸는데 토큰이 만료된 경우까지 바로잡아야 하므로
+        세션 유무와 무관하게 항상 다시 그린다. */
+  if(typeof MkData !== 'undefined') renderChrome();
   if(typeof pageInit === 'function') pageInit();
   applyI18n();
   unlockIfAuthed();
