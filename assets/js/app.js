@@ -452,20 +452,39 @@ async function resendConfirm(email){
 function openInquiry(pids){    // pids: array of product ids
   requireAuth(()=>{
     const items = pids.map(id=>mkProduct(id)).filter(Boolean);
+    inqMode = 'quick';          // 열 때마다 간단 문의로 시작 (문턱을 낮게)
     /* 문의 모달을 연 시점 = 퍼널 중간. 발송(Lead)보다 볼륨이 많아
        초기 광고 최적화 이벤트로 쓸 수 있다. */
     mkTrack('InitiateCheckout', {
       content_ids: items.map(p=>p.id), content_type:'product',
       contents: items.map(p=>({ id:p.id, quantity:1 })), num_items: items.length,
     });
-    /* 견적 문의는 자유 텍스트 한 칸으로는 답이 안 나온다.
-       제조사가 견적을 내려면 수량·시기·채널이 있어야 하므로 구조화해서 받는다.
+    /* 문의는 두 갈래다.
+       ① 간단히 물어보기 — 아직 수량이 없는 사람. 질문 한 칸이면 충분하고,
+          여기서 구조화된 폼을 들이대면 그냥 나가버린다.
+       ② 견적 요청 — 살 마음이 선 사람. 제조사가 단가를 내려면
+          수량·시기·채널이 반드시 있어야 한다.
        (DB는 message 한 칸이라, 아래 값들을 라벨 붙여 조립해 넣는다) */
     const opt = (v,k)=>`<option value="${v}">${esc(t(k))}</option>`;
     mkModal(`
       <h2 data-i18n="inq_title"></h2>
       <p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p>
 
+      <div class="inq-modes">
+        <button type="button" class="on" data-mode="quick" onclick="setInqMode('quick')">
+          <b data-i18n="inq_mode_quick"></b><span data-i18n="inq_mode_quick_d"></span></button>
+        <button type="button" data-mode="quote" onclick="setInqMode('quote')">
+          <b data-i18n="inq_mode_quote"></b><span data-i18n="inq_mode_quote_d"></span></button>
+      </div>
+
+      <!-- ① 간단히 물어보기 -->
+      <div id="inq-quick">
+        <div class="f-row"><label data-i18n="inq_q_msg"></label>
+          <textarea id="inq-qmsg" rows="5" data-i18n-ph="inq_q_ph"></textarea></div>
+      </div>
+
+      <!-- ② 견적 요청 -->
+      <div id="inq-quote" hidden>
       <div class="f-3col">
         <div class="f-row"><label data-i18n="inq_qty"></label>
           <input id="inq-qty" inputmode="numeric" data-i18n-ph="inq_qty_ph"></div>
@@ -494,22 +513,36 @@ function openInquiry(pids){    // pids: array of product ids
 
       <div class="f-row"><label data-i18n="inq_more"></label>
         <textarea id="inq-msg" rows="3" data-i18n-ph="inq_more_ph"></textarea></div>
+      </div>
 
       <p class="inq-auto" data-i18n="inq_auto"></p>
       <button class="btn btn-primary btn-block" onclick="sendInquiry('${pids.join(',')}')" data-i18n="inq_send"></button>`);
   });
 }
 
-/* 폼 값을 제조사가 그대로 읽을 수 있는 형태로 조립한다 */
+/* 간단히 물어보기 ↔ 견적 요청 전환 */
+let inqMode = 'quick';
+function setInqMode(m){
+  inqMode = m;
+  document.querySelectorAll('.inq-modes button').forEach(b=>b.classList.toggle('on', b.dataset.mode===m));
+  document.getElementById('inq-quick').hidden = m !== 'quick';
+  document.getElementById('inq-quote').hidden = m !== 'quote';
+}
+
+/* 폼 값을 제조사가 그대로 읽을 수 있는 형태로 조립한다.
+   맨 앞의 [간단 문의] / [견적 요청] 표시로 제조사가 답변 무게를 바로 안다. */
 function buildInquiryMessage(){
   const v  = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
   const ck = id => { const el=document.getElementById(id); return el && el.checked; };
   const sel = id => { const el=document.getElementById(id); return el ? el.options[el.selectedIndex].text : ''; };
 
+  if(inqMode === 'quick') return `[${t('inq_mode_quick')}]\n${v('inq-qmsg')}`;
+
   const docs = [ck('inq-d1')&&t('inq_d_ingr'), ck('inq-d2')&&t('inq_d_co'),
                  ck('inq-d3')&&t('inq_d_test'), ck('inq-d4')&&t('inq_d_cat')].filter(Boolean);
 
   const lines = [
+    `[${t('inq_mode_quote')}]`,
     `${t('inq_qty')}: ${v('inq-qty')} ${sel('inq-unit')}`,
     `${t('inq_when')}: ${sel('inq-when')}`,
     `${t('inq_channel')}: ${sel('inq-ch')}`,
@@ -524,9 +557,14 @@ async function sendInquiry(pidCsv){
   const btn = document.querySelector('#mk-modal-back .btn-primary');
   const pids = pidCsv.split(',');
 
-  /* 수량이 없으면 제조사가 단가를 못 낸다 — 유일한 필수값 */
-  const qty = document.getElementById('inq-qty');
-  if(qty && !qty.value.trim()){ toast(t('inq_need_qty')); qty.focus(); return; }
+  /* 모드별 필수값 — 간단 문의는 질문, 견적 요청은 수량(없으면 단가를 못 낸다) */
+  if(inqMode === 'quick'){
+    const q = document.getElementById('inq-qmsg');
+    if(q && !q.value.trim()){ toast(t('inq_need_msg')); q.focus(); return; }
+  }else{
+    const qty = document.getElementById('inq-qty');
+    if(qty && !qty.value.trim()){ toast(t('inq_need_qty')); qty.focus(); return; }
+  }
 
   const msg = buildInquiryMessage();
 
@@ -549,12 +587,14 @@ async function sendInquiry(pidCsv){
     return;
   }
 
-  /* ★ 주 전환 — 저장 성공을 확인한 뒤에만 쏜다 */
+  /* ★ 주 전환 — 저장 성공을 확인한 뒤에만 쏜다.
+     간단 문의와 견적 요청은 의도 온도가 달라 카테고리를 나눈다(광고 최적화 분리용). */
   const items = pids.map(id=>mkProduct(id)).filter(Boolean);
   mkTrack('Lead', {
     content_ids: items.map(p=>p.id), content_type:'product',
     contents: items.map(p=>({ id:p.id, quantity:1 })),
-    num_items: items.length, content_category:'inquiry',
+    num_items: items.length,
+    content_category: inqMode === 'quick' ? 'inquiry_quick' : 'inquiry_quote',
   });
 
   closeModal(); toast(t('inq_ok'));
