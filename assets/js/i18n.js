@@ -242,7 +242,9 @@ const I18N = {
     my_st_done: "Đã trả lời",
     my_pf_company: "Thông tin doanh nghiệp",
     my_pf_contact: "Người phụ trách",
-    my_pf_locked: "Tên công ty, mã số và địa chỉ được xác định khi xác thực nên không sửa tại đây. Nếu có thay đổi, xin liên hệ hỗ trợ.",
+    my_pf_locked: "Tên công ty, mã số và địa chỉ được xác định qua xác thực doanh nghiệp. Nếu thông tin thay đổi, hãy dùng nút Xác thực lại phía trên.",
+    my_pf_reverify: "Xác thực lại",
+    my_pf_reverify_sub: "Xác thực lại doanh nghiệp để cập nhật tên công ty, mã số và địa chỉ.",
     my_pf_edit: "Sửa thông tin",
     my_pf_edit_sub: "Sửa thông tin người phụ trách để chúng tôi liên hệ đúng người.",
     my_pf_save: "Lưu",
@@ -296,6 +298,8 @@ const I18N = {
 
     // 이용 가이드
     gd_kick: "Hướng dẫn sử dụng",
+    gd_g_start: "Bắt đầu",
+    gd_a_welcome: "Welcome",
     gd_title: "Từ lúc đăng ký\nđến khi nhận báo giá",
     gd_lead: "Toàn bộ quá trình mất chưa tới mười phút. Phần lâu nhất là chờ nhà sản xuất trả lời.",
     gd_b_tag: "Dành cho nhà mua",
@@ -574,7 +578,9 @@ const I18N = {
     my_st_done: "답변 완료",
     my_pf_company: "기업 정보",
     my_pf_contact: "담당자 정보",
-    my_pf_locked: "회사명·사업자등록번호·주소는 인증으로 확정된 값이라 여기서 수정할 수 없습니다. 변경이 필요하면 고객센터로 연락 주세요.",
+    my_pf_locked: "회사명·사업자등록번호·주소는 사업자 인증으로 채워지는 값입니다. 정보가 바뀌었으면 위의 재인증하기로 다시 인증해 주세요.",
+    my_pf_reverify: "재인증하기",
+    my_pf_reverify_sub: "사업자 인증을 다시 하면 회사명·등록번호·주소가 새로 채워집니다.",
     my_pf_edit: "정보 수정",
     my_pf_edit_sub: "연락이 닿아야 하는 담당자 정보를 수정합니다.",
     my_pf_save: "저장",
@@ -628,6 +634,8 @@ const I18N = {
 
     // 이용 가이드
     gd_kick: "이용 가이드",
+    gd_g_start: "시작하기",
+    gd_a_welcome: "Welcome",
     gd_title: "가입부터\n견적을 받기까지",
     gd_lead: "전 과정이 10분이 안 걸립니다. 가장 오래 걸리는 건 제조사의 답변을 기다리는 시간입니다.",
     gd_b_tag: "바이어",
@@ -906,7 +914,9 @@ const I18N = {
     my_st_done: "Answered",
     my_pf_company: "Company",
     my_pf_contact: "Contact person",
-    my_pf_locked: "Company name, registration number and address are fixed at verification and cannot be edited here. Contact support if they change.",
+    my_pf_locked: "Company name, registration number and address are filled by business verification. If they change, use the Re-verify button above.",
+    my_pf_reverify: "Re-verify",
+    my_pf_reverify_sub: "Verify your business again to refresh company name, number and address.",
     my_pf_edit: "Edit details",
     my_pf_edit_sub: "Update the contact person we should reach.",
     my_pf_save: "Save",
@@ -960,6 +970,8 @@ const I18N = {
 
     // Guide
     gd_kick: "How it works",
+    gd_g_start: "Getting started",
+    gd_a_welcome: "Welcome",
     gd_title: "From signing up\nto getting a quote",
     gd_lead: "The whole process takes under ten minutes. The longest part is waiting for the manufacturer to reply.",
     gd_b_tag: "Buyers",

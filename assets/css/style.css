@@ -833,6 +833,58 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
    ============================================================ */
 .lp-wrap{max-width:var(--maxw);margin:0 auto;padding:0 15px}
 
+/* ---------- 이용 가이드 (문서형) ----------
+   trevity 헬프센터 실측: 좌측 목차 288px sticky + 우측 아티클(패딩 44 60),
+   활성 링크 = 브랜드 소프트 배경 필(r8) */
+.gdoc{display:flex;align-items:flex-start;gap:24px;padding-top:34px;min-height:60vh}
+.gdoc-side{width:288px;flex-shrink:0;position:sticky;top:154px;
+  background:var(--mk-bg-soft);border-radius:var(--r-card);padding:18px 14px}
+.gdoc-g{margin-bottom:18px}
+.gdoc-g:last-child{margin-bottom:4px}
+.gdoc-g > span{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  color:var(--mk-muted);letter-spacing:.03em;padding:0 12px 7px}
+.gdoc-g > span svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.gdoc-g > span i{font-style:normal}
+.gdoc-g a{display:block;font-size:14px;color:var(--mk-body);padding:8px 12px;border-radius:8px;
+  transition:background .15s,color .15s}
+.gdoc-g a:hover{background:#fff;color:var(--mk-ink)}
+.gdoc-g a.on{background:var(--mk-primary-soft);color:var(--mk-primary-dark);font-weight:600}
+.gdoc-main{flex:1;min-width:0;padding:24px 60px 90px}
+.gdoc-crumb{font-size:13px;color:var(--mk-muted);margin-bottom:18px}
+.gdoc-crumb b{color:var(--mk-ink);font-weight:600}
+.gdoc-main h1{font-size:30px;font-weight:800;line-height:1.35;letter-spacing:-.02em;margin-bottom:14px}
+.gdoc-lead{font-size:16px;line-height:1.7;color:var(--mk-body);max-width:640px;margin-bottom:34px}
+.gdoc-cards{display:grid;grid-template-columns:repeat(2,minmax(0,373px));gap:16px}
+.gdoc-cards a{border:1px solid var(--mk-line);border-radius:12px;padding:22px 24px;transition:border-color .15s}
+.gdoc-cards a:hover{border-color:var(--mk-primary)}
+.gdoc-cards h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.gdoc-cards p{font-size:14px;color:var(--mk-muted)}
+.gdoc-steps{list-style:none;counter-reset:gd;max-width:680px}
+.gdoc-steps li{counter-increment:gd;position:relative;padding:0 0 30px 58px}
+.gdoc-steps li::before{content:counter(gd,decimal-leading-zero);position:absolute;left:0;top:0;
+  width:40px;height:40px;border-radius:50%;background:var(--mk-primary-soft);color:var(--mk-primary-dark);
+  font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.gdoc-steps li:not(:last-child)::after{content:"";position:absolute;left:19px;top:44px;bottom:6px;
+  width:2px;background:var(--mk-line)}
+.gdoc-steps h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.gdoc-steps p{font-size:15px;line-height:1.7;color:var(--mk-body)}
+.gdoc-list{max-width:680px}
+.gdoc-list > div{padding:18px 0;border-bottom:1px solid var(--mk-line)}
+.gdoc-list h3{font-size:16px;font-weight:700;margin-bottom:5px}
+.gdoc-list p{font-size:15px;line-height:1.7;color:var(--mk-body)}
+.gdoc-main .faq-list{max-width:680px}
+.gdoc-cta{display:flex;gap:10px;margin-top:34px}
+@media(max-width:960px){
+  .gdoc{flex-direction:column;gap:18px}
+  .gdoc-side{position:static;width:100%;display:flex;flex-wrap:wrap;gap:4px 14px;padding:12px}
+  .gdoc-g{margin:0;display:flex;align-items:center;gap:4px}
+  .gdoc-g > span{padding:0 4px 0 0}
+  .gdoc-g > span i{display:none}
+  .gdoc-main{padding:6px 4px 60px}
+  .gdoc-cards{grid-template-columns:1fr}
+}
+
 /* ---------- 서비스 소개 / 고객센터 전용 ---------- */
 /* 바이어용 · 제조사용 2열 */
 .ab-two{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}

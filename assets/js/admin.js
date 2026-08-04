@@ -738,9 +738,16 @@ let cEditing = null;
 function renderColumns(){
   const el = document.getElementById('tab-columns');
   if(cEditing !== null){
+    /* 이 칼럼에 달린 FAQ를 작업 사본으로 뜬다 — 저장 버튼을 누르기 전엔 원본을 건드리지 않는다 */
+    cFaqs = (typeof MK_FAQ !== 'undefined' ? MK_FAQ : [])
+      .filter(f => f.page === cEditing)
+      .sort((a,b)=>(a.sort||0)-(b.sort||0))
+      .map(f => ({ id:f.id, q:{...(f.q||{})}, a:{...(f.a||{})} }));
+    cFaqsDeleted = [];
     el.innerHTML = columnForm(cEditing);
     const col = cEditing ? MK_COLUMNS.find(c=>c.id===cEditing) : null;
     initColumnEditors(col ? col.body : {});
+    renderColFaqs();
     return;
   }
   el.innerHTML = `
@@ -754,7 +761,37 @@ function columnForm(id){
   const g = (o,k)=> (o && o[k]) ? o[k] : '';
   const ti=c?c.title:{}, ca=c?c.cat:{}, ex=c?c.excerpt:{}, bo=c?c.body:{};
   return `
-    <div class="card"><div class="bar"><h3 style="margin:0">${c?'칼럼 수정':'새 칼럼 작성'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['c-cat','c-title','c-ex','c-body'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="cEditing=null;renderColumns()">취소</button><button class="btn btn-primary btn-sm" onclick="saveColumn('${id}')">저장</button></div><div class="sect" style="border-top:0;margin-top:0;padding-top:0"><h4>대표 이미지</h4>${uploader('c-img', c?c.img:'', {hint:'칼럼 카드와 상세 상단에 쓰입니다. 16:9 비율을 권장합니다.'})}</div><div class="fld"><label>발행일</label><input id="c-date" value="${esc(c?c.date:today())}"></div><div class="sect"><h4>분류</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><input id="c-cat-ko" value="${esc(g(ca,'ko'))}" placeholder="트렌드"></div><div class="fld"><label><span class="lang-tag">VI</span></label><input id="c-cat-vi" value="${esc(g(ca,'vi'))}" placeholder="Xu hướng"></div><div class="fld"><label><span class="lang-tag">EN</span></label><input id="c-cat-en" value="${esc(g(ca,'en'))}" placeholder="Trends"></div></div></div><div class="sect"><h4>제목</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="c-title-ko">${esc(g(ti,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="c-title-vi">${esc(g(ti,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="c-title-en">${esc(g(ti,'en'))}</textarea></div></div></div><div class="sect"><h4>요약 (목록 카드에 표시)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="c-ex-ko">${esc(g(ex,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="c-ex-vi">${esc(g(ex,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="c-ex-en">${esc(g(ex,'en'))}</textarea></div></div></div><div class="sect"><h4>SEO · 주소</h4><div class="fld"><label>주소 슬러그 (영문) — <code>columns/슬러그.html</code> 로 구워집니다</label><div style="display:flex;gap:8px"><input id="c-slug" style="flex:1" value="${esc(c&&c.slug?c.slug:'')}" placeholder="vietnam-import-guide"><button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('c-slug').value=slugify(rteGet('c-title-en')||rteGet('c-title-vi'))" title="영문(없으면 베트남어) 제목에서 자동 생성">제목에서 생성</button></div><p class="hint">영문 소문자·숫자·하이픈만. 비워두면 <code>${esc(id||'c#')}</code> 같은 번호 주소가 됩니다. 발행 후에는 바꾸지 않는 것이 좋습니다(주소가 바뀌면 기존 링크가 깨짐).</p></div><div class="fgrid two"><div class="fld"><label>SEO 제목 (검색결과·공유 카드용, 비우면 제목 사용)</label><input id="c-seo-title" value="${esc(c&&c.seoTitle?c.seoTitle:'')}" placeholder="예: 베트남 첫 수입 가이드 — MOQ·결제조건 총정리"></div><div class="fld"><label>SEO 설명 (비우면 요약 사용, 100~155자 권장)</label><input id="c-seo-desc" value="${esc(c&&c.seoDesc?c.seoDesc:'')}" placeholder="검색결과에 표시될 설명"></div></div></div><div class="sect"><h4>본문</h4><div class="fld"><label><span class="lang-tag">KO</span>한국어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-ko',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-ko"></div><textarea id="src-c-body-ko" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px" placeholder="<p>HTML을 직접 붙여넣으세요</p>"></textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-vi',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-vi"></div><textarea id="src-c-body-vi" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px"></textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-en',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-en"></div><textarea id="src-c-body-en" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px"></textarea></div><p class="hint">툴바로 제목·굵게·목록·인용·링크·이미지를 넣으세요. 태그를 직접 다루려면 <b>HTML 소스</b> 버튼으로 전환하면 됩니다. (한국어만 쓰고 <b>🌐 한국어 자동번역</b>을 눌러도 됩니다)</p></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="cEditing=null;renderColumns()">취소</button><button class="btn btn-primary" onclick="saveColumn('${id}')">저장</button></div></div>`;
+    <div class="card"><div class="bar"><h3 style="margin:0">${c?'칼럼 수정':'새 칼럼 작성'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['c-cat','c-title','c-ex','c-body'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="cEditing=null;renderColumns()">취소</button><button class="btn btn-primary btn-sm" onclick="saveColumn('${id}')">저장</button></div><div class="sect" style="border-top:0;margin-top:0;padding-top:0"><h4>대표 이미지</h4>${uploader('c-img', c?c.img:'', {hint:'칼럼 카드와 상세 상단에 쓰입니다. 16:9 비율을 권장합니다.'})}</div><div class="fld"><label>발행일</label><input id="c-date" value="${esc(c?c.date:today())}"></div><div class="sect"><h4>분류</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><input id="c-cat-ko" value="${esc(g(ca,'ko'))}" placeholder="트렌드"></div><div class="fld"><label><span class="lang-tag">VI</span></label><input id="c-cat-vi" value="${esc(g(ca,'vi'))}" placeholder="Xu hướng"></div><div class="fld"><label><span class="lang-tag">EN</span></label><input id="c-cat-en" value="${esc(g(ca,'en'))}" placeholder="Trends"></div></div></div><div class="sect"><h4>제목</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="c-title-ko">${esc(g(ti,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="c-title-vi">${esc(g(ti,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="c-title-en">${esc(g(ti,'en'))}</textarea></div></div></div><div class="sect"><h4>요약 (목록 카드에 표시)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="c-ex-ko">${esc(g(ex,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="c-ex-vi">${esc(g(ex,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="c-ex-en">${esc(g(ex,'en'))}</textarea></div></div></div><div class="sect"><h4>SEO · 주소</h4><div class="fld"><label>주소 슬러그 (영문) — <code>columns/슬러그.html</code> 로 구워집니다</label><div style="display:flex;gap:8px"><input id="c-slug" style="flex:1" value="${esc(c&&c.slug?c.slug:'')}" placeholder="vietnam-import-guide"><button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('c-slug').value=slugify(rteGet('c-title-en')||rteGet('c-title-vi'))" title="영문(없으면 베트남어) 제목에서 자동 생성">제목에서 생성</button></div><p class="hint">영문 소문자·숫자·하이픈만. 비워두면 <code>${esc(id||'c#')}</code> 같은 번호 주소가 됩니다. 발행 후에는 바꾸지 않는 것이 좋습니다(주소가 바뀌면 기존 링크가 깨짐).</p></div><div class="fgrid two"><div class="fld"><label>SEO 제목 (검색결과·공유 카드용, 비우면 제목 사용)</label><input id="c-seo-title" value="${esc(c&&c.seoTitle?c.seoTitle:'')}" placeholder="예: 베트남 첫 수입 가이드 — MOQ·결제조건 총정리"></div><div class="fld"><label>SEO 설명 (비우면 요약 사용, 100~155자 권장)</label><input id="c-seo-desc" value="${esc(c&&c.seoDesc?c.seoDesc:'')}" placeholder="검색결과에 표시될 설명"></div></div></div><div class="sect"><h4>본문</h4><div class="fld"><label><span class="lang-tag">KO</span>한국어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-ko',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-ko"></div><textarea id="src-c-body-ko" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px" placeholder="<p>HTML을 직접 붙여넣으세요</p>"></textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-vi',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-vi"></div><textarea id="src-c-body-vi" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px"></textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어<button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="rteToggleSrc('c-body-en',this)">HTML 소스</button></label><div class="rte" id="rte-c-body-en"></div><textarea id="src-c-body-en" class="hidden" rows="10" style="width:100%;font-family:monospace;font-size:13px"></textarea></div><p class="hint">툴바로 제목·굵게·목록·인용·링크·이미지를 넣으세요. 태그를 직접 다루려면 <b>HTML 소스</b> 버튼으로 전환하면 됩니다. (한국어만 쓰고 <b>🌐 한국어 자동번역</b>을 눌러도 됩니다)</p></div><div class="sect"><h4>이 칼럼의 FAQ <span style="color:var(--adm-sub);font-size:11px"> 본문 아래에 붙고, 검색·AI용 FAQPage 스키마로도 나갑니다</span></h4><div id="cfaq-list"></div><div class="bar" style="margin:12px 0 0"><button type="button" class="btn btn-ghost btn-sm" onclick="addColFaq()">+ 질문 추가</button><span class="hint" style="margin:0">칼럼과 함께 저장됩니다. 메인페이지 FAQ는 FAQ 탭에서 관리하세요.</span></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="cEditing=null;renderColumns()">취소</button><button class="btn btn-primary" onclick="saveColumn('${id}')">저장</button></div></div>`;
+}
+
+/* ---------- 칼럼 안 FAQ 편집기 ----------
+   FAQ 탭의 '위치 선택'은 어느 칼럼인지 찾기 번거로워서(사용자 지시로 폐기),
+   칼럼을 쓰는 화면에서 바로 붙이게 했다. 저장은 saveColumn 이 칼럼과 함께 처리한다. */
+let cFaqs = [], cFaqsDeleted = [];
+
+function renderColFaqs(){
+  const el = document.getElementById('cfaq-list');
+  if(!el) return;
+  el.innerHTML = cFaqs.length ? cFaqs.map((f,i)=>`
+    <div class="cfaq" data-i="${i}"><div class="bar" style="margin-bottom:10px"><b style="font-size:13px">Q${i+1}</b><span class="grow"></span><button type="button" class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['cf${i}-q','cf${i}-a'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐</button><button type="button" class="btn btn-ghost btn-sm" onclick="delColFaq(${i})">삭제</button></div><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>질문</label><input id="cf${i}-q-ko" value="${esc(f.q.ko||'')}"></div><div class="fld"><label><span class="lang-tag">VI</span></label><input id="cf${i}-q-vi" value="${esc(f.q.vi||'')}"></div><div class="fld"><label><span class="lang-tag">EN</span></label><input id="cf${i}-q-en" value="${esc(f.q.en||'')}"></div></div><div class="fgrid" style="margin-top:8px"><div class="fld"><label><span class="lang-tag">KO</span>답변</label><textarea id="cf${i}-a-ko" rows="3">${esc(f.a.ko||'')}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="cf${i}-a-vi" rows="3">${esc(f.a.vi||'')}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="cf${i}-a-en" rows="3">${esc(f.a.en||'')}</textarea></div></div></div>`).join('')
+    : `<p class="hint" style="margin:0">아직 질문이 없습니다. 바이어가 이 글을 읽고 물어볼 만한 것을 넣어주세요.</p>`;
+}
+/* 화면의 입력값을 작업 사본으로 되읽는다 — 추가·삭제로 다시 그리기 전에 호출 */
+function syncColFaqs(){
+  cFaqs.forEach((f,i)=>{
+    ['ko','vi','en'].forEach(l=>{
+      const q=document.getElementById(`cf${i}-q-${l}`), a=document.getElementById(`cf${i}-a-${l}`);
+      if(q) f.q[l]=q.value.trim();
+      if(a) f.a[l]=a.value.trim();
+    });
+  });
+}
+function addColFaq(){ syncColFaqs(); cFaqs.push({ id:null, q:{}, a:{} }); renderColFaqs(); }
+function delColFaq(i){
+  syncColFaqs();
+  const [rm] = cFaqs.splice(i,1);
+  if(rm && rm.id) cFaqsDeleted.push(rm.id);
+  renderColFaqs();
 }
 
 function saveColumn(id){
@@ -763,12 +800,31 @@ function saveColumn(id){
   const slug = slugify(av('c-slug'));
   if(slug && MK_COLUMNS.some(c=>c.slug===slug && c.id!==id)){ toastA('이미 다른 칼럼이 쓰는 슬러그입니다'); return; }
   toastA(id ? '칼럼을 저장하는 중…' : '칼럼을 발행하는 중…');
-  admDo(Admin.upsertColumn({
-    id: id || Admin.newColumnId(),
-    cat: tri('c-cat'), date: av('c-date')||today(), img: av('c-img'),
-    title, excerpt: tri('c-ex'), body: tri('c-body'),
-    slug, seoTitle: av('c-seo-title'), seoDesc: av('c-seo-desc'),
-  }));
+
+  const colId = id || Admin.newColumnId();
+
+  /* 칼럼 + 이 칼럼의 FAQ를 한 흐름으로 저장한다.
+     새 칼럼이면 FAQ의 page 에 방금 딴 colId 가 들어간다. */
+  syncColFaqs();
+  const faqJobs = async () => {
+    for(const fid of cFaqsDeleted) await Admin.deleteFaq(fid);
+    for(let i=0;i<cFaqs.length;i++){
+      const f = cFaqs[i];
+      if(!f.q.ko && !f.q.vi && !f.q.en) continue;          // 빈 질문은 버린다
+      await Admin.upsertFaq({ id: f.id || Admin.newFaqId(), page: colId,
+        q: f.q, a: f.a, sort: i+1, published: true });
+    }
+  };
+
+  admDo((async ()=>{
+    await Admin.upsertColumn({
+      id: colId,
+      cat: tri('c-cat'), date: av('c-date')||today(), img: av('c-img'),
+      title, excerpt: tri('c-ex'), body: tri('c-body'),
+      slug, seoTitle: av('c-seo-title'), seoDesc: av('c-seo-desc'),
+    });
+    await faqJobs();
+  })());
 }
 
 /* ============================================================
@@ -780,14 +836,17 @@ function renderFaqTab(){
   const el = document.getElementById('tab-faq');
   if(!el) return;
   if(fEditing !== null){ el.innerHTML = faqForm(fEditing); return; }
-  /* 위치(홈/칼럼)별로 묶어서 보여준다 — 섞여 있으면 어느 페이지 것인지 구분이 안 된다 */
+  /* 이 탭은 메인페이지 FAQ 전용 — 칼럼 FAQ는 그 칼럼을 쓰는 화면에서 함께 편집한다 */
   const list = (typeof MK_FAQ !== 'undefined' ? [...MK_FAQ] : [])
-    .sort((a,b)=> String(a.page||'home').localeCompare(String(b.page||'home')) || (a.sort||0)-(b.sort||0));
+    .filter(f => (f.page || 'home') === 'home')
+    .sort((a,b)=>(a.sort||0)-(b.sort||0));
+  const colCnt = (typeof MK_FAQ !== 'undefined' ? MK_FAQ : []).filter(f => (f.page||'home') !== 'home').length;
   el.innerHTML = `
-    <div class="card"><p class="note"><b>자주 묻는 질문</b>을 관리합니다. <b>위치</b>를 골라 메인페이지에 넣을지, 특정 <b>칼럼 본문 아래</b>에 넣을지 정하세요.
+    <div class="card"><p class="note">메인페이지 하단 <b>자주 묻는 질문</b>입니다.
       검색엔진과 AI(FAQPage 스키마)에도 전달되므로 바이어가 실제로 묻는 질문 위주로 관리하세요.
-      수정 후 배포 전에는 <code>node bake.js</code>를 다시 실행해야 스키마에 반영됩니다.</p><div class="bar"><span class="grow"></span><button class="btn btn-primary btn-sm" onclick="fEditing='';renderFaqTab()">+ 새 질문</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:64px">순서</th><th style="width:190px">위치</th><th>질문</th><th style="width:80px">노출</th><th style="width:120px"></th></tr></thead><tbody>${list.length ? list.map(f=>`
-        <tr class="row-hover"><td>${f.sort||0}</td><td>${faqPageLabel(f.page)}</td><td><b>${esc((f.q&&(f.q.ko||f.q.vi))||'')}</b><div class="sub">${esc((f.q&&f.q.vi)||'')}</div></td><td>${f.published!==false?'노출':'<span style="color:#B02A37">숨김</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="fEditing='${f.id}';renderFaqTab()">수정</button><button class="btn btn-ghost btn-sm" onclick="if(confirm('삭제할까요?')){admDo(Admin.deleteFaq('${f.id}'));}">삭제</button></td></tr>`).join('') : `<tr class="empty-row"><td colspan="5">FAQ가 없습니다</td></tr>`}
+      ${colCnt?`칼럼에 달린 FAQ ${colCnt}개는 <b>칼럼 탭 → 해당 칼럼 수정</b> 화면에서 편집합니다.`:'칼럼별 FAQ는 <b>칼럼 수정 화면</b>에서 함께 작성합니다.'}
+      수정 후 배포 전에는 <code>node bake.js</code>를 다시 실행해야 스키마에 반영됩니다.</p><div class="bar"><span class="grow"></span><button class="btn btn-primary btn-sm" onclick="fEditing='';renderFaqTab()">+ 새 질문</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:64px">순서</th><th>질문</th><th style="width:80px">노출</th><th style="width:120px"></th></tr></thead><tbody>${list.length ? list.map(f=>`
+        <tr class="row-hover"><td>${f.sort||0}</td><td><b>${esc((f.q&&(f.q.ko||f.q.vi))||'')}</b><div class="sub">${esc((f.q&&f.q.vi)||'')}</div></td><td>${f.published!==false?'노출':'<span style="color:#B02A37">숨김</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="fEditing='${f.id}';renderFaqTab()">수정</button><button class="btn btn-ghost btn-sm" onclick="if(confirm('삭제할까요?')){admDo(Admin.deleteFaq('${f.id}'));}">삭제</button></td></tr>`).join('') : `<tr class="empty-row"><td colspan="4">FAQ가 없습니다</td></tr>`}
       </tbody></table></div></div>`;
 }
 
@@ -811,7 +870,7 @@ function faqForm(id){
   const g = (o,k)=> (o && o[k]) ? o[k] : '';
   const q = f?f.q:{}, a = f?f.a:{};
   return `
-    <div class="card"><div class="bar"><h3 style="margin:0">${f?'질문 수정':'새 질문'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['q-q','q-a'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary btn-sm" onclick="saveFaq('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>위치 — 이 질문을 어디에 넣을지</label><select id="q-page">${faqPageOptions(f?f.page:'home')}</select><p class="hint">칼럼을 고르면 그 칼럼 본문 아래에 붙습니다.</p></div><div class="fld"><label>순서 (작을수록 위)</label><input id="q-sort" type="number" value="${f?(f.sort||0):((typeof MK_FAQ!=='undefined'?MK_FAQ.length:0)+1)}"></div></div><div class="fld"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="q-pub" ${!f||f.published!==false?'checked':''} style="width:auto"> 사이트에 노출</label></div><div class="sect"><h4>질문</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-q-ko">${esc(g(q,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-q-vi">${esc(g(q,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-q-en">${esc(g(q,'en'))}</textarea></div></div></div><div class="sect"><h4>답변</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-a-ko" rows="4">${esc(g(a,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-a-vi" rows="4">${esc(g(a,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-a-en" rows="4">${esc(g(a,'en'))}</textarea></div></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary" onclick="saveFaq('${id}')">저장</button></div></div>`;
+    <div class="card"><div class="bar"><h3 style="margin:0">${f?'질문 수정':'새 질문'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['q-q','q-a'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary btn-sm" onclick="saveFaq('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>순서 (작을수록 위)</label><input id="q-sort" type="number" value="${f?(f.sort||0):((typeof MK_FAQ!=='undefined'?MK_FAQ.length:0)+1)}"></div><div class="fld"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="q-pub" ${!f||f.published!==false?'checked':''} style="width:auto"> 사이트에 노출</label></div></div><div class="sect"><h4>질문</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-q-ko">${esc(g(q,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-q-vi">${esc(g(q,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-q-en">${esc(g(q,'en'))}</textarea></div></div></div><div class="sect"><h4>답변</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-a-ko" rows="4">${esc(g(a,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-a-vi" rows="4">${esc(g(a,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-a-en" rows="4">${esc(g(a,'en'))}</textarea></div></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary" onclick="saveFaq('${id}')">저장</button></div></div>`;
 }
 
 function saveFaq(id){
@@ -819,7 +878,7 @@ function saveFaq(id){
   if(!q.ko && !q.vi && !q.en){ toastA('질문을 입력하세요'); return; }
   toastA('저장하는 중…');
   admDo(Admin.upsertFaq({
-    id: id || Admin.newFaqId(), page: av('q-page') || 'home',
+    id: id || Admin.newFaqId(), page:'home',
     q, a, sort:+av('q-sort')||0, published:ac('q-pub'),
   }));
 }

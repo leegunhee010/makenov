@@ -281,6 +281,24 @@ Object.assign(Store, {
   },
 
   /* ---- 문의 ---- */
+  /* 기업 재인증 — 인증 결과(회사명·번호·주소)를 프로필에 다시 쓴다.
+     인증 상태 확정은 signup 과 같은 서버 함수를 먼저 거치고, 실패 시 직접 기록으로 폴백. */
+  async reverify(v){
+    if(!MkData.session) return { ok:false, err:'auth' };
+    const payload = { method: mkCountry(v.country).method, country: v.country,
+                      regNo: v.regNo, company: v.company,
+                      email: v.accountEmail || MkData.session.user.email };
+    const patch = { country:v.country, company:v.company, address:v.address,
+                    reg_no:v.regNo, verified_by:v.checked, verify_note:v.status, status:'verified' };
+    const srv = await this._serverVerify(payload);
+    if(!srv.ok){
+      const { error } = await SB.from('profiles').update(patch).eq('id', MkData.session.user.id);
+      if(error) return { ok:false, err:error.message };
+    }
+    Object.assign(MkData.profile, patch);
+    return { ok:true };
+  },
+
   /* 담당자 정보 수정 — 회사·사업자번호·인증 상태는 못 바꾼다(인증으로 확정된 값) */
   async updateProfile(patch){
     if(!MkData.session) return { ok:false, err:'auth' };

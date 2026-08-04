@@ -22,6 +22,10 @@ const Store = {
     return {ok:true, session:s};
   },
   logout(){ localStorage.removeItem('mk_session'); },
+  reverify(v){
+    return this.updateProfile({ country:v.country, company:v.company, address:v.address,
+      regNo:v.regNo, mst:v.regNo, verifiedBy:v.checked, status:v.status });
+  },
   updateProfile(patch){
     const s = this.session(); if(!s) return {ok:false, err:'auth'};
     const users = this._users();
