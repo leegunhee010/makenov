@@ -1182,9 +1182,9 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
   background:radial-gradient(circle,rgba(39,202,161,.30) 0%,rgba(0,151,224,.10) 50%,transparent 72%)}
 .lp-hero .lp-wrap{position:relative;z-index:2}
 .lp-kick{font-size:13px;font-weight:600;color:#7FF0D4;letter-spacing:.02em;margin-bottom:18px}
-.lp-hero h1{font-size:46px;font-weight:700;line-height:1.32;letter-spacing:-.03em;margin-bottom:22px;max-width:800px;color:#fff}
+.lp-hero h1{font-size:56px;font-weight:800;line-height:1.26;letter-spacing:-.035em;margin-bottom:22px;max-width:880px;color:#fff}
 .lp-hero h1 em{font-style:normal;color:#3FE9C0}
-.lp-hero .lead{font-size:18px;line-height:1.7;color:rgba(255,255,255,.8);max-width:660px;margin-bottom:34px}
+.lp-hero .lead{font-size:18px;line-height:1.75;color:rgba(255,255,255,.8);max-width:600px;margin-bottom:34px}
 .lp-hero-cta{display:flex;gap:12px;flex-wrap:wrap}
 .lp-hero-cta .btn{height:54px;padding:0 32px;font-size:16px;font-weight:600;
   display:inline-flex;align-items:center;border-radius:var(--r-sm)}
@@ -1208,12 +1208,12 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-sec{padding:86px 0}
 .lp-sec.soft{background:var(--mk-bg-soft)}
 .lp-sec.dark{background:var(--mk-navy);color:#fff}
-.lp-head{margin-bottom:44px;max-width:780px}
+.lp-head{margin-bottom:48px;max-width:860px}
 .lp-head .tag{font-size:13px;font-weight:600;color:var(--mk-primary);margin-bottom:12px}
-.lp-head h2{font-size:34px;font-weight:700;line-height:1.38;letter-spacing:-.03em;margin-bottom:14px}
+.lp-head h2{font-size:38px;font-weight:800;line-height:1.34;letter-spacing:-.03em;margin-bottom:16px}
 .lp-sec.dark .lp-head h2{color:#fff}
 .lp-sec.dark .lp-stat .lbl,.lp-sec.dark .lp-market b{color:#fff}
-.lp-head p{font-size:16px;line-height:1.75;color:var(--mk-body)}
+.lp-head p{font-size:16px;line-height:1.8;color:var(--mk-body);max-width:620px}
 .lp-sec.dark .lp-head p{color:rgba(255,255,255,.72)}
 .lp-sec.dark .lp-head .tag{color:#3FE9C0}
 
@@ -1226,12 +1226,12 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-card p{font-size:15px;line-height:1.75;color:var(--mk-body)}
 
 /* --- 비교표 --- */
-.lp-vs{width:100%;border-collapse:collapse;background:#fff;
+.lp-vs{width:100%;max-width:1080px;margin:0 auto;border-collapse:collapse;background:#fff;
   border:1px solid var(--mk-line);border-radius:12px;overflow:hidden}
 .lp-vs th,.lp-vs td{padding:20px 24px;text-align:left;font-size:15px;border-bottom:1px solid var(--mk-line)}
 .lp-vs thead th{background:var(--mk-bg-soft);font-size:14px;font-weight:700}
 .lp-vs thead th:last-child{background:var(--mk-primary-soft);color:var(--mk-ink)}
-.lp-vs tbody th{width:210px;font-weight:600;color:var(--mk-muted);font-size:14px}
+.lp-vs tbody th{width:180px;font-weight:600;color:var(--mk-muted);font-size:14px}
 .lp-vs td.old{color:var(--mk-muted)}
 .lp-vs td.new{font-weight:600;color:var(--mk-ink);background:rgba(39,202,161,.05)}
 .lp-vs tr:last-child th,.lp-vs tr:last-child td{border-bottom:0}
@@ -1259,7 +1259,7 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-step p{font-size:14.5px;line-height:1.75;color:var(--mk-body)}
 
 /* --- 혜택 2열 --- */
-.lp-bens{display:grid;grid-template-columns:repeat(2,1fr);gap:0 46px}
+.lp-bens{display:grid;grid-template-columns:repeat(3,1fr);gap:0 40px}
 .lp-ben{display:flex;gap:16px;padding:24px 0;border-bottom:1px solid var(--mk-line)}
 .lp-ben .k{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--mk-primary-soft);
   color:var(--mk-primary);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -1278,7 +1278,7 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-fit-box.yes li{color:var(--mk-ink)}
 
 /* --- FAQ --- */
-.lp-faq{border-top:1px solid var(--mk-line)}
+.lp-faq{border-top:1px solid var(--mk-line);max-width:940px;margin:0 auto}
 .lp-faq details{border-bottom:1px solid var(--mk-line)}
 .lp-faq summary{list-style:none;cursor:pointer;padding:24px 40px 24px 0;font-size:17px;font-weight:600;
   position:relative;letter-spacing:-.01em}
@@ -1320,7 +1320,7 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-last{background:linear-gradient(135deg,var(--mk-navy-deep) 0%,var(--mk-navy) 60%,var(--mk-navy-lift) 100%);
   color:#fff;text-align:center;padding:88px 0}
 .lp-last h2{font-size:36px;font-weight:700;line-height:1.4;letter-spacing:-.03em;margin-bottom:16px;color:#fff}
-.lp-last p{font-size:16.5px;color:rgba(255,255,255,.75);margin-bottom:32px;line-height:1.7}
+.lp-last p{font-size:16.5px;color:rgba(255,255,255,.75);margin:0 auto 32px;line-height:1.7;max-width:600px}
 .lp-last .btn{height:56px;padding:0 40px;font-size:16.5px;font-weight:600;
   display:inline-flex;align-items:center;border-radius:var(--r-sm)}
 
