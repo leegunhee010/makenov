@@ -693,22 +693,20 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   transition:transform .2s,box-shadow .2s}
 .blog-item-link:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.08)}
 
-/* 커버 — 이미지 + 그라데이션 오버레이 위에 뱃지·제목·브랜드 */
-.blog-item-img{position:relative;aspect-ratio:16/9;overflow:hidden;background:#EEF0F2}
+/* 커버 — 일러스트를 그대로 보여주고 뱃지·브랜드만 얹는다.
+   제목은 카드 아래(.blog-item-tit)에 이미 있으므로 커버에 또 쓰지 않는다. */
+.blog-item-img{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0B2050}
 .blog-item-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .blog-item-link:hover .blog-item-img img{transform:scale(1.05)}
-.blog-item-img .veil{position:absolute;inset:0;
-  background:linear-gradient(150deg,rgba(24,110,95,.93) 0%,rgba(39,202,161,.88) 100%)}
-.blog-item-img .on-cover{position:absolute;inset:0;padding:24px 26px;display:flex;flex-direction:column}
-.blog-item-img .badge{align-self:flex-start;background:rgba(255,255,255,.18);color:#fff;
-  border:1px solid rgba(255,255,255,.4);border-radius:var(--r-pill);
-  font-size:11px;font-weight:700;padding:5px 12px}
-.blog-item-img .ct{font-size:21px;font-weight:700;color:#fff;line-height:1.42;letter-spacing:-.02em;margin-top:16px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.blog-item-img .cs{font-size:12px;color:rgba(255,255,255,.82);margin-top:8px;
-  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.blog-item-img .brand{margin-top:auto;font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.75)}
-@media(max-width:640px){.blog-item-img .ct{font-size:18px}}
+/* 뱃지·브랜드 글자가 뜨도록 위아래에만 얇게 깐다 */
+.blog-item-img .veil{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(4,20,63,.34) 0%,rgba(4,20,63,0) 34%,
+                              rgba(4,20,63,0) 66%,rgba(4,20,63,.34) 100%)}
+.blog-item-img .on-cover{position:absolute;inset:0;padding:20px 22px;display:flex;flex-direction:column}
+.blog-item-img .badge{align-self:flex-start;background:rgba(255,255,255,.16);color:#fff;
+  border:1px solid rgba(255,255,255,.38);border-radius:var(--r-pill);
+  font-size:11px;font-weight:700;padding:5px 12px;backdrop-filter:blur(2px)}
+.blog-item-img .brand{margin-top:auto;font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.72)}
 
 /* 카드 하단 정보 */
 .blog-item-info{padding:28px 28px 24px}
