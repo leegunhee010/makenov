@@ -458,14 +458,77 @@ function openInquiry(pids){    // pids: array of product ids
       content_ids: items.map(p=>p.id), content_type:'product',
       contents: items.map(p=>({ id:p.id, quantity:1 })), num_items: items.length,
     });
+    /* 견적 문의는 자유 텍스트 한 칸으로는 답이 안 나온다.
+       제조사가 견적을 내려면 수량·시기·채널이 있어야 하므로 구조화해서 받는다.
+       (DB는 message 한 칸이라, 아래 값들을 라벨 붙여 조립해 넣는다) */
+    const opt = (v,k)=>`<option value="${v}">${esc(t(k))}</option>`;
     mkModal(`
-      <h2 data-i18n="inq_title"></h2><p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p><div class="f-row"><label data-i18n="inq_message"></label><textarea id="inq-msg" rows="4" data-i18n-ph="inq_message_ph"></textarea></div><button class="btn btn-primary btn-block" onclick="sendInquiry('${pids.join(',')}')" data-i18n="inq_send"></button>`);
+      <h2 data-i18n="inq_title"></h2>
+      <p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p>
+
+      <div class="f-3col">
+        <div class="f-row"><label data-i18n="inq_qty"></label>
+          <input id="inq-qty" inputmode="numeric" data-i18n-ph="inq_qty_ph"></div>
+        <div class="f-row"><label data-i18n="inq_unit"></label>
+          <select id="inq-unit">${opt('ea','inq_u_ea')}${opt('box','inq_u_box')}${opt('set','inq_u_set')}${opt('kg','inq_u_kg')}</select></div>
+        <div class="f-row"><label data-i18n="inq_when"></label>
+          <select id="inq-when">${opt('asap','inq_w_asap')}${opt('1m','inq_w_1m')}${opt('3m','inq_w_3m')}${opt('plan','inq_w_plan')}</select></div>
+      </div>
+
+      <div class="f-2col">
+        <div class="f-row"><label data-i18n="inq_channel"></label>
+          <select id="inq-ch">${opt('pharmacy','inq_c_pharmacy')}${opt('cosmetic','inq_c_cosmetic')}${opt('mart','inq_c_mart')}${opt('online','inq_c_online')}${opt('whole','inq_c_whole')}${opt('etc','inq_c_etc')}</select></div>
+        <div class="f-row"><label data-i18n="inq_dest"></label>
+          <input id="inq-dest" data-i18n-ph="inq_dest_ph"></div>
+      </div>
+
+      <div class="f-row"><label data-i18n="inq_docs"></label>
+        <div class="chk-row">
+          <label><input type="checkbox" id="inq-d1"><span data-i18n="inq_d_ingr"></span></label>
+          <label><input type="checkbox" id="inq-d2"><span data-i18n="inq_d_co"></span></label>
+          <label><input type="checkbox" id="inq-d3"><span data-i18n="inq_d_test"></span></label>
+          <label><input type="checkbox" id="inq-d4"><span data-i18n="inq_d_cat"></span></label>
+        </div></div>
+
+      <label class="chk-one"><input type="checkbox" id="inq-sample"><span data-i18n="inq_sample"></span></label>
+
+      <div class="f-row"><label data-i18n="inq_more"></label>
+        <textarea id="inq-msg" rows="3" data-i18n-ph="inq_more_ph"></textarea></div>
+
+      <p class="inq-auto" data-i18n="inq_auto"></p>
+      <button class="btn btn-primary btn-block" onclick="sendInquiry('${pids.join(',')}')" data-i18n="inq_send"></button>`);
   });
+}
+
+/* 폼 값을 제조사가 그대로 읽을 수 있는 형태로 조립한다 */
+function buildInquiryMessage(){
+  const v  = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
+  const ck = id => { const el=document.getElementById(id); return el && el.checked; };
+  const sel = id => { const el=document.getElementById(id); return el ? el.options[el.selectedIndex].text : ''; };
+
+  const docs = [ck('inq-d1')&&t('inq_d_ingr'), ck('inq-d2')&&t('inq_d_co'),
+                 ck('inq-d3')&&t('inq_d_test'), ck('inq-d4')&&t('inq_d_cat')].filter(Boolean);
+
+  const lines = [
+    `${t('inq_qty')}: ${v('inq-qty')} ${sel('inq-unit')}`,
+    `${t('inq_when')}: ${sel('inq-when')}`,
+    `${t('inq_channel')}: ${sel('inq-ch')}`,
+  ];
+  if(v('inq-dest'))   lines.push(`${t('inq_dest')}: ${v('inq-dest')}`);
+  if(ck('inq-sample'))lines.push(`${t('inq_sample')}`);
+  if(docs.length)     lines.push(`${t('inq_docs')}: ${docs.join(', ')}`);
+  if(v('inq-msg'))    lines.push('', v('inq-msg'));
+  return lines.join('\n');
 }
 async function sendInquiry(pidCsv){
   const btn = document.querySelector('#mk-modal-back .btn-primary');
-  const msg = document.getElementById('inq-msg').value.trim();
   const pids = pidCsv.split(',');
+
+  /* 수량이 없으면 제조사가 단가를 못 낸다 — 유일한 필수값 */
+  const qty = document.getElementById('inq-qty');
+  if(qty && !qty.value.trim()){ toast(t('inq_need_qty')); qty.focus(); return; }
+
+  const msg = buildInquiryMessage();
 
   if(btn){ btn.disabled = true; btn.textContent = t('inq_sending'); }
 
