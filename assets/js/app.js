@@ -93,7 +93,7 @@ function renderChrome(active){
       ${s
         ? `<a class="mk-util" href="mypage.html">${MK_ICO.user}<span class="lb">${esc(s.contactName||s.email.split('@')[0])}</span></a><a class="mk-util" onclick="Store.logout();location.reload()" style="cursor:pointer">${MK_ICO.logout}<span class="lb" data-i18n="logout"></span></a>`
         : `<a class="mk-util" onclick="openAuth('login')" style="cursor:pointer">${MK_ICO.user}<span class="lb" data-i18n="login"></span></a><button class="btn btn-primary btn-sm" style="margin-left:6px;height:40px;padding:0 18px" onclick="openAuth('signup')" data-i18n="signup"></button>`}
-    </div></div><nav class="mk-nav mk-head-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><span class="gnb"><span class="drop"><a href="about.html" data-i18n="nav_about"></a><span class="menu"><a href="about.html" data-i18n="nav_about_buyer"></a><a href="maker.html" data-i18n="nav_about_maker"></a></span></span><a href="guide.html" data-i18n="nav_guide"></a><a href="support.html" data-i18n="nav_support"></a></span></nav></div>`;
+    </div></div><nav class="mk-nav mk-head-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><span class="gnb"><span class="drop"><a href="about.html" data-i18n="nav_about"></a><span class="menu"><a href="about.html" data-i18n="nav_about_buyer"></a><a href="maker.html" data-i18n="nav_about_maker"></a></span></span><a href="guide.html" data-i18n="nav_guide"></a><span class="drop"><a href="support.html" data-i18n="nav_support"></a><span class="menu"><a href="support.html#notice" data-i18n="nav_sp_notice"></a><a href="support.html#faq" data-i18n="nav_sp_faq"></a><a href="support.html#ask" data-i18n="nav_sp_ask"></a></span></span></span></nav></div>`;
   document.getElementById('mk-footer').innerHTML = `
   <div class="wrap"><div><div class="logo"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
       onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a></div><div><h4 data-i18n="ft_support"></h4><a href="support.html" data-i18n="nav_support"></a><a href="guide.html" data-i18n="nav_guide"></a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="about.html" data-i18n="nav_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;
@@ -637,6 +637,14 @@ document.addEventListener('DOMContentLoaded', async ()=>{
         데이터가 도착하는 순간 전체가 다시 그려져 화면이 깜빡인다. */
   renderChrome();
   applyI18n();
+
+  /* 1-B) DB가 필요 없는 페이지는 여기서 바로 그린다.
+     예전엔 모든 페이지가 MkData.boot()(제품·회사·칼럼 전부 로드)를 기다린 뒤에야
+     pageInit()이 돌아서, 공지·FAQ만 쓰는 고객센터까지 몇 초씩 빈 화면이었다.
+     시드(data.js)만으로 완성되는 화면을 먼저 띄우고, 부팅 후 한 번 더 그려 확정한다. */
+  if(window.MK_EARLY_RENDER && typeof pageInit === 'function'){
+    try{ pageInit(); applyI18n(); }catch(e){ console.warn('early render 실패', e); }
+  }
 
   /* 2) 그다음 데이터 */
   if(typeof MkData !== 'undefined'){

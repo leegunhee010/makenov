@@ -1191,6 +1191,18 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .lp-hero-cta .ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.42)}
 .lp-hero-cta .ghost:hover{background:rgba(255,255,255,.2)}
 .lp-hero .note{margin-top:20px;font-size:13px;color:rgba(255,255,255,.5)}
+/* 히어로 하단 확정 조건 3개 — 근거 없는 숫자 대신 우리가 바로 보장하는 값만 */
+.lp-hero-facts{position:relative;z-index:2;display:flex;gap:0;margin-top:44px;
+  border-top:1px solid rgba(255,255,255,.16);padding-top:26px}
+.lp-hero-facts > div{padding-right:44px;margin-right:44px;border-right:1px solid rgba(255,255,255,.16)}
+.lp-hero-facts > div:last-child{border-right:0;margin-right:0;padding-right:0}
+.lp-hero-facts b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--mk-mint)}
+.lp-hero-facts span{display:block;font-size:13px;color:rgba(255,255,255,.62);margin-top:6px}
+@media(max-width:720px){
+  .lp-hero-facts{flex-direction:column;gap:18px;padding-top:20px;margin-top:30px}
+  .lp-hero-facts > div{padding-right:0;margin-right:0;border-right:0}
+  .lp-hero-facts b{font-size:20px}
+}
 
 /* --- 섹션 공통 --- */
 .lp-sec{padding:86px 0}

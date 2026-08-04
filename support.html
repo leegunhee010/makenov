@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805b">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805d">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Hỗ trợ khách hàng | MAKENOV</title>
@@ -33,17 +33,19 @@
 </main>
 
 <footer class="mk-footer" id="mk-footer"></footer>
-<script src="assets/js/config.js?v=20260805b"></script>
-<script src="assets/js/pixel.js?v=20260805b"></script>
+<script src="assets/js/config.js?v=20260805d"></script>
+<script src="assets/js/pixel.js?v=20260805d"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805b"></script>
-<script src="assets/js/data.js?v=20260805b"></script>
-<script src="assets/js/store.js?v=20260805b"></script>
-<script src="assets/js/verify.js?v=20260805b"></script>
-<script src="assets/js/upload.js?v=20260805b"></script>
-<script src="assets/js/store-supabase.js?v=20260805b"></script>
-<script src="assets/js/app.js?v=20260805b"></script>
+<script src="assets/js/i18n.js?v=20260805d"></script>
+<script src="assets/js/data.js?v=20260805d"></script>
+<script src="assets/js/store.js?v=20260805d"></script>
+<script src="assets/js/verify.js?v=20260805d"></script>
+<script src="assets/js/upload.js?v=20260805d"></script>
+<script src="assets/js/store-supabase.js?v=20260805d"></script>
+<script src="assets/js/app.js?v=20260805d"></script>
 <script>
+/* DB 없이 시드만으로 완성되는 화면 — boot 를 기다리지 않고 즉시 렌더 */
+window.MK_EARLY_RENDER = true;
 /* 상태: 탭(notice|faq|ask), 공지 상세 id, 검색어, 구분 필터, 페이지 */
 let spTab='notice', spId=null, spQ='', spCat='all', spPage=1;
 const PER = 20;
@@ -236,6 +238,10 @@ function pageInit(){
   else if(['notice','faq','ask'].includes(h)) spTab = h;
   spRender();
 }
+
+/* 헤더 드롭다운에서 support.html#faq 같은 링크로 같은 페이지 안을 이동할 때는
+   해시만 바뀌고 페이지가 다시 안 뜬다 — 해시 변화를 직접 받아 화면을 바꾼다. */
+window.addEventListener('hashchange', pageInit);
 </script>
 </body>
 </html>
