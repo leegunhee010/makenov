@@ -324,11 +324,32 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .partner .nm{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 13px;color:#fff;font-size:14px;font-weight:600;
   background:linear-gradient(to top,rgba(0,0,0,.72),transparent)}
 
-/* ---------- 중간 프로모 배너 ---------- */
-.promo{background:var(--mk-primary-soft);border-radius:var(--r-card);padding:44px 40px;
-  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.promo h2{font-size:23px;font-weight:700;margin-bottom:8px}
-.promo p{font-size:15px;color:var(--mk-body)}
+/* ---------- 중간 프로모 배너 (바이어 인증 유도) ----------
+   연민트 박스가 밋밋해서 브랜드 그라데이션 밴드로 다시 디자인.
+   우측 장식 = 인증 네트워크 느낌의 동심원+노드 SVG. */
+.promo{position:relative;overflow:hidden;border-radius:var(--r-card);padding:48px 52px;
+  display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;
+  background:linear-gradient(115deg,var(--mk-primary-dark) 0%,var(--mk-primary) 55%,#3AD8B4 100%)}
+.promo .pr-art{position:absolute;right:-20px;top:50%;transform:translateY(-50%);height:130%;pointer-events:none}
+.promo .pr-tx{position:relative;z-index:1;max-width:640px}
+.promo h2{font-size:27px;font-weight:800;line-height:1.35;color:#fff;margin-bottom:10px;letter-spacing:-.02em}
+.promo p{font-size:15px;line-height:1.65;color:rgba(255,255,255,.88)}
+.pr-feats{list-style:none;display:flex;gap:8px 26px;flex-wrap:wrap;margin-top:18px}
+.pr-feats li{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#fff}
+.pr-feats svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+  background:rgba(255,255,255,.18);border-radius:50%;padding:3px;box-sizing:content-box}
+.promo .pr-cta{position:relative;z-index:1;flex-shrink:0}
+.pr-btn{background:#fff;color:var(--mk-primary-dark);font-size:16px;font-weight:700;
+  height:54px;padding:0 34px;border-radius:var(--r-sm);box-shadow:0 6px 18px rgba(0,0,0,.12);
+  transition:transform .18s,box-shadow .18s}
+.pr-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.16)}
+@media(max-width:860px){
+  .promo{padding:34px 26px}
+  .promo h2{font-size:22px}
+  .promo .pr-art{display:none}
+  .pr-feats{flex-direction:column;gap:8px}
+}
 .banner{background:var(--mk-primary-soft);padding:0;margin:52px 0}
 .banner .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
   padding-top:38px;padding-bottom:38px}
@@ -348,9 +369,21 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
    ⚠️ style.css:55의 h1~h4 color 규칙이 상속을 이기므로 제목에 color를 명시해야 한다. */
 .maker-band{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;
   background:linear-gradient(110deg,var(--mk-navy-deep) 0%,var(--mk-navy) 62%,var(--mk-navy-lift) 100%);
-  border-radius:var(--r-card);padding:52px 48px;position:relative;overflow:hidden}
+  border-radius:var(--r-card);padding:52px 52px;position:relative;overflow:hidden}
 .maker-band::after{content:'';position:absolute;right:-90px;top:-90px;width:320px;height:320px;border-radius:50%;
   background:radial-gradient(circle,rgba(50,209,177,.28),transparent 68%);pointer-events:none}
+/* 좌하단 동심원 링 — 히어로 SVG 아트와 같은 계열의 장식 */
+.maker-band::before{content:'';position:absolute;left:-70px;bottom:-110px;width:280px;height:280px;
+  border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at center,transparent 54%,rgba(50,209,177,.14) 55%,transparent 57%,
+    transparent 70%,rgba(50,209,177,.1) 71%,transparent 73%,
+    transparent 86%,rgba(50,209,177,.08) 87%,transparent 89%)}
+.mb-feats{list-style:none;display:flex;gap:8px 26px;flex-wrap:wrap;margin-top:18px}
+.mb-feats li{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:rgba(255,255,255,.92)}
+.mb-feats svg{width:16px;height:16px;stroke:var(--mk-mint);fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+  background:rgba(50,209,177,.16);border-radius:50%;padding:3px;box-sizing:content-box}
+@media(max-width:860px){.mb-feats{flex-direction:column;gap:8px}}
 .maker-band .tx{position:relative;z-index:1;max-width:640px}
 .maker-band h2{color:#fff;font-size:28px;font-weight:700;line-height:1.35;margin-bottom:10px}
 .maker-band p{color:rgba(255,255,255,.78);font-size:15px;line-height:1.65}
