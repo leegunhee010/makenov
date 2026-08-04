@@ -118,6 +118,28 @@ const Admin = {
     return 'c'+n;
   },
 
+  /* ---- FAQ CRUD (메인페이지) ---- */
+  saveFaqs(list){ localStorage.setItem('mk_faqs_override', JSON.stringify(list)); },
+  upsertFaq(f){
+    const list = [...MK_FAQ];
+    const i = list.findIndex(x=>x.id===f.id);
+    if(i>=0) list[i]=f; else list.push(f);
+    this.saveFaqs(list); return list;
+  },
+  deleteFaq(id){ this.saveFaqs(MK_FAQ.filter(f=>f.id!==id)); },
+  newFaqId(){
+    let n = 1; const ids = new Set(MK_FAQ.map(f=>f.id));
+    while(ids.has('f'+n)) n++;
+    return 'f'+n;
+  },
+
+  /* ---- 사이트 설정 (상단 띠배너 등) ---- */
+  saveSettings(patch){
+    Object.assign(MK_SETTINGS, patch);
+    localStorage.setItem('mk_settings_override', JSON.stringify(MK_SETTINGS));
+    return MK_SETTINGS;
+  },
+
   /* ---- Spotlight (홈 실시간 피드) ---- */
   saveSpotlight(list){ localStorage.setItem('mk_spotlight_override', JSON.stringify(list)); },
   /* 시드 데이터와 동일한 '현지시각' 형식으로 기록 (toISOString은 UTC라 9시간 어긋남) */
@@ -165,6 +187,6 @@ const Admin = {
 
   /* ---- 초기화 ---- */
   resetContent(){
-    ['mk_products_override','mk_columns_override','mk_spotlight_override'].forEach(k=>localStorage.removeItem(k));
+    ['mk_products_override','mk_columns_override','mk_spotlight_override','mk_faqs_override','mk_settings_override'].forEach(k=>localStorage.removeItem(k));
   },
 };
