@@ -973,8 +973,8 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .nb-view .bd{font-size:15px;line-height:1.8;color:var(--mk-body);min-height:120px;max-width:860px}
 .nb-view .bd p{margin-bottom:12px}
 .nb-view .ft{margin-top:36px;padding-top:20px;border-top:1px solid var(--mk-line)}
-/* FAQ·1:1 패널 */
-.nb-pane{max-width:900px}
+/* FAQ·1:1 패널 — 페이지가 1400인데 왼쪽에 몰려 있으면 오른쪽이 휑하다. 가운데로 */
+.nb-pane{max-width:900px;margin:0 auto}
 .nb-lead{font-size:15px;color:var(--mk-body);line-height:1.7;margin-bottom:22px}
 @media(max-width:640px){
   .nb-tabs a{font-size:14px;height:48px}
