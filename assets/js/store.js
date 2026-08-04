@@ -22,6 +22,15 @@ const Store = {
     return {ok:true, session:s};
   },
   logout(){ localStorage.removeItem('mk_session'); },
+  updateProfile(patch){
+    const s = this.session(); if(!s) return {ok:false, err:'auth'};
+    const users = this._users();
+    const u = users.find(u=>u.email===s.email);
+    if(u) Object.assign(u, patch);
+    localStorage.setItem('mk_users', JSON.stringify(users));
+    localStorage.setItem('mk_session', JSON.stringify({...s, ...patch}));
+    return {ok:true};
+  },
 
   /* ---- wishlist cart ---- */
   cart(){ try{ return JSON.parse(localStorage.getItem('mk_cart')||'[]'); }catch(e){ return []; } },

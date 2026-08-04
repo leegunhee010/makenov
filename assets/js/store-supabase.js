@@ -122,12 +122,18 @@ Object.assign(Store, {
   session(){
     if(!MkData.session) return null;
     const p = MkData.profile || {};
+    /* ⚠️ 화면(마이페이지)이 읽는 필드는 여기서 전부 넘겨야 한다.
+       phone·regNo·countryName 이 빠져 있어 프로필 화면이 빈칸으로 보였다. */
     return {
       email: MkData.session.user.email,
-      company: p.company, address: p.address, mst: p.reg_no,
-      country: p.country, status: p.status, verifiedBy: p.verified_by,
-      contactName: p.contact_name, position: p.position, zalo: p.messenger,
-      tier: p.tier, isAdmin: MkData.admin,
+      company: p.company, address: p.address,
+      mst: p.reg_no, regNo: p.reg_no,
+      country: p.country,
+      countryName: p.country && typeof mkCountry === 'function' ? L(mkCountry(p.country).name) : '',
+      status: p.status, verifiedBy: p.verified_by,
+      contactName: p.contact_name, position: p.position,
+      phone: p.phone, zalo: p.messenger, messengerId: p.messenger,
+      tier: p.tier, createdAt: p.created_at, isAdmin: MkData.admin,
     };
   },
 
@@ -275,6 +281,20 @@ Object.assign(Store, {
   },
 
   /* ---- 문의 ---- */
+  /* 담당자 정보 수정 — 회사·사업자번호·인증 상태는 못 바꾼다(인증으로 확정된 값) */
+  async updateProfile(patch){
+    if(!MkData.session) return { ok:false, err:'auth' };
+    const row = {};
+    if(patch.contactName !== undefined) row.contact_name = patch.contactName;
+    if(patch.position    !== undefined) row.position     = patch.position;
+    if(patch.phone       !== undefined) row.phone        = patch.phone;
+    if(patch.messenger   !== undefined) row.messenger    = patch.messenger;
+    const { error } = await SB.from('profiles').update(row).eq('id', MkData.session.user.id);
+    if(error) return { ok:false, err:error.message };
+    Object.assign(MkData.profile, row);     // 화면이 바로 갱신되게 캐시도 맞춰둔다
+    return { ok:true };
+  },
+
   async addInquiry(pid, message){
     if(!MkData.session) return { ok:false, err:'auth' };
     const { error } = await SB.from('inquiries').insert({
