@@ -335,6 +335,10 @@ const I18N = {
 
     // 고객센터
     sp_kick: "Hỗ trợ khách hàng",
+    sp_m_notice: "Thông báo",
+    sp_m_ask: "Hỏi đáp 1:1",
+    sp_back: "Quay lại danh sách",
+    sp_no_notice: "Chưa có thông báo.",
     sp_title: "Có gì vướng, cứ hỏi chúng tôi.",
     sp_lead: "Chúng tôi trả lời trong vòng hai ngày làm việc. Nếu gấp, hãy ghi rõ trong nội dung.",
     sp_c1_t: "Email",
@@ -671,6 +675,10 @@ const I18N = {
 
     // 고객센터
     sp_kick: "고객센터",
+    sp_m_notice: "공지사항",
+    sp_m_ask: "1:1 문의",
+    sp_back: "목록으로",
+    sp_no_notice: "등록된 공지가 없습니다.",
     sp_title: "막히는 게 있으면 물어보세요.",
     sp_lead: "영업일 2일 이내에 답변드립니다. 급하시면 내용에 적어주세요.",
     sp_c1_t: "이메일",
@@ -1007,6 +1015,10 @@ const I18N = {
 
     // Support
     sp_kick: "Support",
+    sp_m_notice: "Notices",
+    sp_m_ask: "1:1 enquiry",
+    sp_back: "Back to list",
+    sp_no_notice: "No notices yet.",
     sp_title: "If something is in your way, ask us.",
     sp_lead: "We reply within two business days. If it's urgent, say so in your message.",
     sp_c1_t: "Email",

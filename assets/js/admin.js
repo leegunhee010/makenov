@@ -281,7 +281,7 @@ function imgSrc(v){
 }
 
 /* ---------- 사이드바 · 탭 ---------- */
-const TABS = ['dash','inq','leads','buyers','products','columns','faq','settings'];
+const TABS = ['dash','inq','leads','buyers','products','columns','faq','notices','settings'];
 const NAV = [
   { id:'dash',     label:'대시보드', title:'대시보드',      desc:'플랫폼 현황 한눈에 보기' },
   { id:'inq',      label:'문의함',   title:'문의함',        desc:'바이어가 보낸 견적 문의' },
@@ -290,6 +290,7 @@ const NAV = [
   { id:'products', label:'제품',     title:'제품 관리',      desc:'등록·수정 시 사이트에 즉시 반영' },
   { id:'columns',  label:'칼럼',     title:'칼럼 관리',      desc:'인사이트 글 작성 및 발행' },
   { id:'faq',      label:'FAQ',      title:'FAQ 관리',       desc:'메인페이지 자주 묻는 질문' },
+  { id:'notices',  label:'공지사항', title:'공지사항 관리',   desc:'고객센터 공지 게시판 (신제품·업데이트 소식)' },
   { id:'settings', label:'설정',     title:'설정 · 내보내기', desc:'배포용 데이터와 계정 관리' },
 ];
 let curTab = 'dash';
@@ -300,14 +301,15 @@ function renderNav(){
   const newLeads = ADM.leads.filter(l=>Admin.leadMeta(l.id).status==='new').length;
   const counts = { inq:newCnt||'', leads:newLeads||'', buyers:ADM.buyers.length||'',
                    products:MK_PRODUCTS.length, columns:MK_COLUMNS.length,
-                   faq:(typeof MK_FAQ!=='undefined'?MK_FAQ.length:''), dash:'', settings:'' };
+                   faq:(typeof MK_FAQ!=='undefined'?MK_FAQ.length:''),
+                   notices:(typeof MK_NOTICES!=='undefined'?MK_NOTICES.length:''), dash:'', settings:'' };
   document.getElementById('sb-nav').innerHTML =
     `<div class="grp">운영</div>` +
     NAV.slice(0,4).map(n=>navBtn(n,counts)).join('') +
     `<div class="grp">콘텐츠</div>` +
-    NAV.slice(4,7).map(n=>navBtn(n,counts)).join('') +
+    NAV.slice(4,8).map(n=>navBtn(n,counts)).join('') +
     `<div class="grp">시스템</div>` +
-    NAV.slice(7).map(n=>navBtn(n,counts)).join('');
+    NAV.slice(8).map(n=>navBtn(n,counts)).join('');
 }
 function navBtn(n, counts){
   const c = counts[n.id];
@@ -332,7 +334,7 @@ function toggleSb(open){
 
 function renderAll(){
   renderNav(); renderDash();
-  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderSettings();
+  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderNotices(); renderSettings();
   showTab(curTab);
 }
 
@@ -880,6 +882,44 @@ function saveFaq(id){
   admDo(Admin.upsertFaq({
     id: id || Admin.newFaqId(), page:'home',
     q, a, sort:+av('q-sort')||0, published:ac('q-pub'),
+  }));
+}
+
+/* ============================================================
+   4-C. 공지사항 (고객센터 게시판)
+   신제품 등록·업데이트 소식. 제품 등록 시 자동 발행은 아직 안 붙임(수동 작성).
+   ============================================================ */
+let nEditing = null;
+
+function renderNotices(){
+  const el = document.getElementById('tab-notices');
+  if(!el) return;
+  if(nEditing !== null){ el.innerHTML = noticeForm(nEditing); return; }
+  const list = (typeof MK_NOTICES !== 'undefined' ? [...MK_NOTICES] : [])
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  el.innerHTML = `
+    <div class="card"><p class="note">고객센터 <b>공지사항</b> 게시판입니다.
+      신제품 등록, 기능 업데이트 소식을 여기에 올리세요. 3개 국어로 노출됩니다.</p><div class="bar"><span class="grow"></span><button class="btn btn-primary btn-sm" onclick="nEditing='';renderNotices()">+ 새 공지</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:110px">날짜</th><th>제목</th><th style="width:80px">노출</th><th style="width:120px"></th></tr></thead><tbody>${list.length ? list.map(n=>`
+        <tr class="row-hover"><td>${esc(n.date)}</td><td><b>${esc((n.title&&(n.title.ko||n.title.vi))||'')}</b><div class="sub">${esc((n.title&&n.title.vi)||'')}</div></td><td>${n.published!==false?'노출':'<span style="color:#B02A37">숨김</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="nEditing='${n.id}';renderNotices()">수정</button><button class="btn btn-ghost btn-sm" onclick="if(confirm('삭제할까요?')){admDo(Admin.deleteNotice('${n.id}'));}">삭제</button></td></tr>`).join('') : `<tr class="empty-row"><td colspan="4">공지가 없습니다</td></tr>`}
+      </tbody></table></div></div>`;
+}
+
+function noticeForm(id){
+  const n = id ? (MK_NOTICES||[]).find(x=>x.id===id) : null;
+  const g = (o,k)=> (o && o[k]) ? o[k] : '';
+  const ti = n?n.title:{}, bo = n?n.body:{};
+  return `
+    <div class="card"><div class="bar"><h3 style="margin:0">${n?'공지 수정':'새 공지'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['n-t','n-b'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="nEditing=null;renderNotices()">취소</button><button class="btn btn-primary btn-sm" onclick="saveNotice('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>날짜</label><input id="n-date" value="${esc(n?n.date:today())}"></div><div class="fld"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="n-pub" ${!n||n.published!==false?'checked':''} style="width:auto"> 사이트에 노출</label></div></div><div class="sect"><h4>제목</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><input id="n-t-ko" value="${esc(g(ti,'ko'))}"></div><div class="fld"><label><span class="lang-tag">VI</span></label><input id="n-t-vi" value="${esc(g(ti,'vi'))}"></div><div class="fld"><label><span class="lang-tag">EN</span></label><input id="n-t-en" value="${esc(g(ti,'en'))}"></div></div></div><div class="sect"><h4>본문 (HTML 가능)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="n-b-ko" rows="6">${esc(g(bo,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="n-b-vi" rows="6">${esc(g(bo,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="n-b-en" rows="6">${esc(g(bo,'en'))}</textarea></div></div><p class="hint">&lt;p&gt;문단&lt;/p&gt; 태그로 감싸면 됩니다. 한국어만 쓰고 자동번역을 눌러도 됩니다.</p></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="nEditing=null;renderNotices()">취소</button><button class="btn btn-primary" onclick="saveNotice('${id}')">저장</button></div></div>`;
+}
+
+function saveNotice(id){
+  const title = tri('n-t');
+  if(!title.ko && !title.vi && !title.en){ toastA('제목을 입력하세요'); return; }
+  toastA('저장하는 중…');
+  admDo(Admin.upsertNotice({
+    id: id || Admin.newNoticeId(),
+    title, body: tri('n-b'),
+    date: av('n-date') || today(), published: ac('n-pub'),
   }));
 }
 

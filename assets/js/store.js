@@ -146,6 +146,22 @@ const Admin = {
     return 'f'+n;
   },
 
+  /* ---- 공지사항 CRUD ---- */
+  saveNotices(list){ localStorage.setItem('mk_notices_override', JSON.stringify(list)); },
+  upsertNotice(n){
+    const list = [...MK_NOTICES];
+    const i = list.findIndex(x=>x.id===n.id);
+    if(i>=0) list[i]=n; else list.unshift(n);
+    list.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    this.saveNotices(list); return list;
+  },
+  deleteNotice(id){ this.saveNotices(MK_NOTICES.filter(n=>n.id!==id)); },
+  newNoticeId(){
+    let i = 1; const ids = new Set(MK_NOTICES.map(n=>n.id));
+    while(ids.has('n'+i)) i++;
+    return 'n'+i;
+  },
+
   /* ---- 사이트 설정 (상단 띠배너 등) ---- */
   saveSettings(patch){
     Object.assign(MK_SETTINGS, patch);
@@ -200,6 +216,6 @@ const Admin = {
 
   /* ---- 초기화 ---- */
   resetContent(){
-    ['mk_products_override','mk_columns_override','mk_spotlight_override','mk_faqs_override','mk_settings_override'].forEach(k=>localStorage.removeItem(k));
+    ['mk_products_override','mk_columns_override','mk_spotlight_override','mk_faqs_override','mk_settings_override','mk_notices_override'].forEach(k=>localStorage.removeItem(k));
   },
 };

@@ -914,6 +914,18 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   .gdoc-cards{grid-template-columns:1fr}
 }
 
+/* 공지사항 게시판 */
+.np-list{max-width:720px;border-top:1px solid var(--mk-line-strong)}
+.np-list a{display:flex;align-items:center;gap:18px;padding:16px 4px;border-bottom:1px solid var(--mk-line);
+  font-weight:500 !important;color:var(--mk-ink) !important}
+.np-list a:hover{text-decoration:none !important}
+.np-list a:hover b{color:var(--mk-primary-dark)}
+.np-list .d{flex-shrink:0;font-size:13px;color:var(--mk-muted);font-variant-numeric:tabular-nums}
+.np-list b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np-date{font-size:13px;color:var(--mk-muted);margin:-4px 0 22px}
+.np-body{max-width:720px;font-size:15px;line-height:1.8;color:var(--mk-body)}
+.np-body p{margin-bottom:12px}
+
 /* ---------- 서비스 소개 / 고객센터 전용 ---------- */
 /* 바이어용 · 제조사용 2열 */
 .ab-two{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}

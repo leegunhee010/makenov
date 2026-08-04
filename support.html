@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260804p">
+<link rel="stylesheet" href="assets/css/style.css?v=20260804q">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Hỗ trợ khách hàng | MAKENOV</title>
@@ -25,96 +25,134 @@
 <header class="mk-header" id="mk-header"></header>
 
 <main>
-
-  <section class="lp-hero">
-    <div class="lp-wrap">
-      <div class="lp-kick" data-i18n="sp_kick"></div>
-      <h1 data-i18n="sp_title"></h1>
-      <p class="lead" data-i18n="sp_lead"></p>
-    </div>
-  </section>
-
-  <!-- 연락 수단 -->
-  <section class="lp-sec">
-    <div class="lp-wrap">
-      <div class="lp-cards">
-        <a class="lp-card" href="mailto:contact@makenov.com">
-          <h3 data-i18n="sp_c1_t"></h3>
-          <p data-i18n="sp_c1_d"></p>
-          <b class="sp-val">contact@makenov.com</b>
-        </a>
-        <a class="lp-card" href="maker.html">
-          <h3 data-i18n="sp_c2_t"></h3>
-          <p data-i18n="sp_c2_d"></p>
-          <b class="sp-val" data-i18n="kr_cta_btn"></b>
-        </a>
-        <a class="lp-card" href="index.html#faq">
-          <h3 data-i18n="sp_c3_t"></h3>
-          <p data-i18n="sp_c3_d"></p>
-          <b class="sp-val" data-i18n="sec_faq"></b>
-        </a>
-      </div>
-
-      <div class="sp-hours">
-        <h4 data-i18n="sp_hours_t"></h4>
-        <p data-i18n="sp_hours_d"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 문의 폼 -->
-  <section class="lp-sec soft">
-    <div class="lp-wrap">
-      <div class="lp-head">
-        <div class="tag" data-i18n="sp_form_tag"></div>
-        <h2 data-i18n="sp_form_title"></h2>
-        <p data-i18n="sp_form_desc"></p>
-      </div>
-      <div class="sp-form" id="sp-form">
-        <div class="lp-err" id="sp-err"></div>
-        <div class="f-2col">
-          <div class="f-row"><label data-i18n="auth_company"></label><input id="sp-company"></div>
-          <div class="f-row"><label data-i18n="auth_contact_name"></label><input id="sp-name"></div>
-        </div>
-        <div class="f-2col">
-          <div class="f-row"><label data-i18n="auth_email"></label><input id="sp-email" type="email"></div>
-          <div class="f-row"><label data-i18n="auth_phone"></label><input id="sp-tel" inputmode="tel"></div>
-        </div>
-        <div class="f-row"><label data-i18n="easy_need"></label>
-          <textarea id="sp-msg" rows="5" data-i18n-ph="easy_need_ph"></textarea></div>
-        <button class="btn btn-primary btn-block" onclick="sendSupport()" data-i18n="sp_send"></button>
-      </div>
-    </div>
-  </section>
-
+  <!-- 고객센터 — 공지사항 / FAQ / 1:1 문의 서브페이지 (가이드와 같은 문서형 셸) -->
+  <div class="wrap gdoc">
+    <aside class="gdoc-side" id="sp-side"></aside>
+    <article class="gdoc-main" id="sp-main"></article>
+  </div>
 </main>
+
 <footer class="mk-footer" id="mk-footer"></footer>
-<script src="assets/js/config.js?v=20260804p"></script>
-<script src="assets/js/pixel.js?v=20260804p"></script>
+<script src="assets/js/config.js?v=20260804q"></script>
+<script src="assets/js/pixel.js?v=20260804q"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260804p"></script>
-<script src="assets/js/data.js?v=20260804p"></script>
-<script src="assets/js/store.js?v=20260804p"></script>
-<script src="assets/js/verify.js?v=20260804p"></script>
-<script src="assets/js/upload.js?v=20260804p"></script>
-<script src="assets/js/store-supabase.js?v=20260804p"></script>
-<script src="assets/js/app.js?v=20260804p"></script>
+<script src="assets/js/i18n.js?v=20260804q"></script>
+<script src="assets/js/data.js?v=20260804q"></script>
+<script src="assets/js/store.js?v=20260804q"></script>
+<script src="assets/js/verify.js?v=20260804q"></script>
+<script src="assets/js/upload.js?v=20260804q"></script>
+<script src="assets/js/store-supabase.js?v=20260804q"></script>
+<script src="assets/js/app.js?v=20260804q"></script>
 <script>
-/* 고객센터 문의 — 가입 없이 접수. 관리자 '입점문의' 탭에 cat=support 로 들어간다. */
+/* 서브페이지: notice(공지 목록/상세) / faq / ask(1:1 문의) — 해시로 전환 */
+let spCur = 'notice';       // notice | faq | ask
+let spNoticeId = null;      // 공지 상세 보기 중이면 그 id
+
+const SP_MENU = [
+  { id:'notice', key:'sp_m_notice',
+    icon:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>' },
+  { id:'faq', key:'sec_faq',
+    icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.9.6c0 1.6-2.5 2-2.5 3.3"/><circle cx="12" cy="16.6" r=".4"/></svg>' },
+  { id:'ask', key:'sp_m_ask',
+    icon:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>' },
+];
+
+function spSide(){
+  document.getElementById('sp-side').innerHTML = `
+    <div class="gdoc-g"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.9-3.6 4-5.6 7.5-5.6s6.6 2 7.5 5.6"/></svg><i>${esc(t('sp_kick'))}</i></span>
+      ${SP_MENU.map(m=>`<a href="#${m.id}" data-sp="${m.id}" class="${m.id===spCur?'on':''}">${esc(t(m.key))}</a>`).join('')}
+    </div>
+    <div class="gdoc-g"><a href="guide.html">${esc(t('nav_guide'))} ↗</a><a href="maker.html">${esc(t('util_maker'))} ↗</a></div>`;
+}
+
+/* ---------- 공지사항 ---------- */
+function spNotices(){
+  const list = (typeof MK_NOTICES !== 'undefined' ? MK_NOTICES : [])
+    .filter(n=>n.published!==false)
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+
+  if(spNoticeId){
+    const n = list.find(x=>x.id===spNoticeId);
+    if(n) return `
+      <div class="gdoc-crumb"><a href="#notice" data-sp="notice" data-back="1">${esc(t('sp_m_notice'))}</a> › <b>${esc(L(n.title))}</b></div>
+      <h1>${esc(L(n.title))}</h1>
+      <div class="np-date">${esc(n.date)}</div>
+      <div class="np-body">${L(n.body)}</div>
+      <div class="gdoc-cta"><a class="btn btn-soft" href="#notice" data-sp="notice" data-back="1">${esc(t('sp_back'))}</a></div>`;
+  }
+  return `
+    <div class="gdoc-crumb">${esc(t('sp_kick'))} › <b>${esc(t('sp_m_notice'))}</b></div>
+    <h1>${esc(t('sp_m_notice'))}</h1>
+    ${list.length ? `<div class="np-list">${list.map(n=>`
+      <a href="#notice" data-sp="notice" data-notice="${n.id}"><span class="d">${esc(n.date)}</span><b>${esc(L(n.title))}</b></a>`).join('')}</div>`
+      : `<p class="gdoc-lead">${esc(t('sp_no_notice'))}</p>`}`;
+}
+
+/* ---------- FAQ (메인페이지 FAQ 재사용) ---------- */
+function spFaq(){
+  const list = (typeof MK_FAQ !== 'undefined' ? MK_FAQ : [])
+    .filter(f=>f.published!==false && (f.page||'home')==='home')
+    .sort((a,b)=>(a.sort||0)-(b.sort||0));
+  return `
+    <div class="gdoc-crumb">${esc(t('sp_kick'))} › <b>${esc(t('sec_faq'))}</b></div>
+    <h1>${esc(t('sec_faq'))}</h1>
+    <div class="faq-list">${list.map(f=>`
+      <details class="faq-item"><summary>${esc(L(f.q))}</summary><div class="a">${esc(L(f.a))}</div></details>`).join('')}</div>`;
+}
+
+/* ---------- 1:1 문의 ---------- */
+function spAsk(){
+  return `
+    <div class="gdoc-crumb">${esc(t('sp_kick'))} › <b>${esc(t('sp_m_ask'))}</b></div>
+    <h1>${esc(t('sp_form_title'))}</h1>
+    <p class="gdoc-lead">${esc(t('sp_form_desc'))} ${esc(t('sp_lead'))}</p>
+    <div class="sp-form" id="sp-form" style="margin:0;max-width:720px">
+      <div class="lp-err" id="sp-err"></div>
+      <div class="f-2col">
+        <div class="f-row"><label>${esc(t('auth_company'))}</label><input id="sp-company"></div>
+        <div class="f-row"><label>${esc(t('auth_contact_name'))}</label><input id="sp-name"></div>
+      </div>
+      <div class="f-2col">
+        <div class="f-row"><label>${esc(t('auth_email'))}</label><input id="sp-email" type="email"></div>
+        <div class="f-row"><label>${esc(t('auth_phone'))}</label><input id="sp-tel" inputmode="tel"></div>
+      </div>
+      <div class="f-row"><label>${esc(t('easy_need'))}</label>
+        <textarea id="sp-msg" rows="5" placeholder="${esc(t('easy_need_ph'))}"></textarea></div>
+      <button class="btn btn-primary btn-block" onclick="sendSupport()">${esc(t('sp_send'))}</button>
+    </div>
+    <div class="sp-hours" style="max-width:720px"><h4>${esc(t('sp_hours_t'))}</h4><p>${esc(t('sp_hours_d'))}</p></div>`;
+}
+
+function spRender(){
+  spSide();
+  const el = document.getElementById('sp-main');
+  el.innerHTML = spCur==='notice' ? spNotices() : spCur==='faq' ? spFaq() : spAsk();
+  window.scrollTo({top:0});
+}
+
+document.addEventListener('click', e=>{
+  const a = e.target.closest('a[data-sp]');
+  if(!a) return;
+  e.preventDefault();
+  spCur = a.dataset.sp;
+  spNoticeId = a.dataset.back ? null : (a.dataset.notice || null);
+  history.replaceState(null,'','#'+(spNoticeId ? 'notice-'+spNoticeId : spCur));
+  spRender();
+});
+
+/* 가입 없이 접수 — 관리자 '입점문의' 탭에 cat=support 로 들어간다 */
 async function sendSupport(){
   const v = id => document.getElementById(id).value.trim();
   const err = document.getElementById('sp-err');
   const show = m => { err.textContent = m; err.style.display = 'block'; err.scrollIntoView({block:'center'}); };
 
-  if(!v('sp-name'))                    return show(t('auth_need_basic'));
-  if(!v('sp-email') && !v('sp-tel'))   return show(t('easy_need_contact'));
-  if(!v('sp-msg'))                     return show(t('easy_need'));
+  if(!v('sp-name'))                  return show(t('auth_need_basic'));
+  if(!v('sp-email') && !v('sp-tel')) return show(t('easy_need_contact'));
+  if(!v('sp-msg'))                   return show(t('easy_need'));
   err.style.display = 'none';
 
   const btn = document.querySelector('#sp-form .btn-primary');
   btn.disabled = true;
-
-  /* ★ 저장 결과를 확인하고 나서 완료 화면으로 넘긴다 — 실패했는데 접수됐다고 하면 문의가 조용히 사라진다 */
   const res = await Store.addMakerLead({
     company: v('sp-company') || '-', name: v('sp-name'),
     tel: v('sp-tel') || '-', email: v('sp-email') || '-',
@@ -122,12 +160,18 @@ async function sendSupport(){
     message: '[고객센터 문의] ' + v('sp-msg'),
   });
   btn.disabled = false;
-
   if(!res || res.ok === false){ show(t('inq_err')); return; }
 
   mkTrack('Contact', { content_category:'support' });
-  document.getElementById('sp-form').innerHTML =
-    `<div class="lp-done"><h3>${esc(t('sp_ok'))}</h3></div>`;
+  document.getElementById('sp-form').innerHTML = `<div class="lp-done"><h3>${esc(t('sp_ok'))}</h3></div>`;
+}
+
+function pageInit(){
+  const h = location.hash.replace('#','');
+  const m = h.match(/^notice-(.+)$/);
+  if(m){ spCur='notice'; spNoticeId=m[1]; }
+  else if(['notice','faq','ask'].includes(h)) spCur = h;
+  spRender();
 }
 </script>
 </body>

@@ -97,6 +97,18 @@ const MkData = {
       }
     }catch(e){}
 
+    /* 공지사항 — 11_notices.sql 미적용이면 시드(data.js)를 그대로 둔다 */
+    try{
+      const nt = await SB.from('notices').select('*').eq('published', true).order('date',{ascending:false});
+      if(!nt.error && nt.data && typeof MK_NOTICES !== 'undefined'){
+        MK_NOTICES.length = 0;
+        nt.data.forEach(n => MK_NOTICES.push({
+          id:n.id, title:n.title, body:n.body,
+          date:String(n.date||'').slice(0,10), published:!!n.published,
+        }));
+      }
+    }catch(e){}
+
     /* 사이트 설정 — 07_settings.sql 미적용이면 시드(data.js) 값을 그대로 쓴다 */
     try{
       const st = await SB.from('settings').select('*').eq('key', 'site').maybeSingle();
@@ -268,9 +280,20 @@ Object.assign(Store, {
     if(!MkData.session) return false;
     const uid = MkData.session.user.id;
     const had = this.cartHas(pid);
+    /* 화면은 즉시 바꾸되(낙관적), DB가 거부하면 되돌리고 알린다.
+       ⚠️ 예전엔 결과를 버려서 RLS가 막아도 담긴 것처럼 보였다가 새로고침하면 사라졌다. */
     _cartMem.list = had ? _cartMem.list.filter(x=>x!==pid) : [..._cartMem.list, pid];
-    if(had) SB.from('wishlist').delete().eq('buyer_id',uid).eq('product_id',pid);
-    else    SB.from('wishlist').insert({ buyer_id:uid, product_id:pid });
+    const q = had
+      ? SB.from('wishlist').delete().eq('buyer_id',uid).eq('product_id',pid)
+      : SB.from('wishlist').insert({ buyer_id:uid, product_id:pid });
+    q.then(({error})=>{
+      if(!error) return;
+      _cartMem.list = had ? [..._cartMem.list, pid] : _cartMem.list.filter(x=>x!==pid);
+      console.error('관심제품 저장 실패:', error.message);
+      if(typeof toast==='function') toast(/security|permission/i.test(error.message) ? t('inq_err_verify') : t('inq_err'));
+      if(typeof updateCartBadge==='function') updateCartBadge();
+      document.dispatchEvent(new CustomEvent('mk:cart'));
+    });
     return !had;
   },
   cartRemove(pid){ if(this.cartHas(pid)) this.cartToggle(pid); },
@@ -413,6 +436,24 @@ Object.assign(Admin, {
     }
     if(error) throw error;
     await MkData.loadContent();
+  },
+
+  /* ---- 공지사항 CRUD ---- */
+  async upsertNotice(n){
+    const { error } = await SB.from('notices').upsert({
+      id:n.id, title:n.title, body:n.body, date:n.date, published:n.published!==false,
+    });
+    if(error) throw error;
+    await MkData.loadContent();
+  },
+  async deleteNotice(id){
+    await SB.from('notices').delete().eq('id', id);
+    await MkData.loadContent();
+  },
+  newNoticeId(){
+    let i = 1; const ids = new Set((typeof MK_NOTICES!=='undefined'?MK_NOTICES:[]).map(n=>n.id));
+    while(ids.has('n'+i)) i++;
+    return 'n'+i;
   },
 
   /* ---- 사이트 설정 ---- */
