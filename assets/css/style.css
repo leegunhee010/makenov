@@ -88,7 +88,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
    아이콘은 전부 인라인 SVG — 이모지는 쓰지 않는다. */
 .mk-header{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--mk-line)}
 .mk-head-top{display:flex;align-items:center;gap:32px;height:80px}
-.mk-head-nav{display:flex;align-items:center;gap:26px;height:52px;border-top:1px solid var(--mk-line)}
+.mk-head-nav{display:flex;align-items:center;height:56px;border-top:1px solid var(--mk-line)}
 /* 로고 — assets/img/logo.png 가 있으면 이미지, 없으면 텍스트로 자동 대체 */
 .mk-logo{display:flex;align-items:center;font-family:var(--font-head);font-weight:800;font-size:23px;
   color:var(--mk-navy);letter-spacing:-.03em;flex-shrink:0}
@@ -97,9 +97,15 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .mk-logo.txt span{display:inline}
 .mk-logo b{color:var(--mk-primary)}
 @media(max-width:640px){.mk-logo img{height:24px}.mk-logo{font-size:19px}}
-.mk-nav{display:flex;gap:24px;font-weight:600;font-size:16px;color:var(--mk-ink)}
-.mk-nav a{padding:4px 0;border-bottom:2px solid transparent}
+/* addwel 실측 — 좌측 주메뉴 18px/700, 우측 링크 15px/600. 둘 다 검정(회색이면 죽어 보인다). */
+.mk-nav{display:flex;align-items:center;gap:30px;font-weight:700;font-size:18px;color:var(--mk-ink)}
+.mk-nav a{padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}
 .mk-nav a:hover{color:var(--mk-primary);border-bottom-color:var(--mk-primary)}
+/* 메뉴행 우측 — 서비스 소개 / 이용 가이드 / 고객센터 (addwel gnb 위치) */
+.mk-nav .gnb{margin-left:auto;display:flex;gap:26px}
+.mk-nav .gnb a{font-size:15px;font-weight:600;color:var(--mk-ink)}
+.mk-nav .gnb a:hover{color:var(--mk-primary);border-bottom-color:var(--mk-primary)}
+@media(max-width:1180px){.mk-nav{gap:22px;font-size:17px}.mk-nav .gnb{gap:18px}}
 .mk-head-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .mk-lang{display:flex;border:1px solid var(--mk-line-strong);border-radius:var(--r-sm);overflow:hidden;margin-right:8px}
 .mk-lang button{padding:5px 9px;font-size:12px;font-weight:600;color:var(--mk-muted)}
@@ -174,16 +180,9 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .omc-hero .veil{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(to top,rgba(4,12,18,.82) 0%,rgba(4,12,18,.42) 38%,rgba(4,12,18,0) 74%)}
 .omc-hero .copy{position:absolute;left:40px;right:40px;bottom:40px;z-index:2;pointer-events:none}
-.omc-hero .copy .count{display:inline-block;vertical-align:middle;background:rgba(0,0,0,.4);color:#fff;
-  font-size:12px;font-weight:500;padding:0 12px;height:26px;line-height:26px;
-  border-radius:100px;margin-bottom:14px}
-.omc-hero .copy .count b{color:#fff;font-weight:600}
 .omc-hero .copy h1{font-size:32px;font-weight:700;line-height:1.34;letter-spacing:-.02em;
   color:#fff;margin-bottom:10px;max-width:660px}
 .omc-hero .copy p{font-size:15px;line-height:1.6;color:rgba(255,255,255,.86);max-width:600px}
-/* 슬라이드 상단 문구 (카운터 옆) */
-.omc-hero .copy .kick{display:inline-block;vertical-align:middle;margin:0 0 14px 10px;
-  color:rgba(255,255,255,.9);font-size:13px;font-weight:600;letter-spacing:.01em}
 /* 히어로 CTA — copy 블록 안, pointer-events 복구 */
 .omc-hero .hero-cta{display:flex;gap:10px;margin-top:20px;pointer-events:auto}
 .omc-hero .hero-cta .btn{height:46px;padding:0 26px;font-size:15px;font-weight:600;
@@ -369,7 +368,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .dir-top{padding:38px 0 6px}
 .dir-top h1{font-size:26px;font-weight:700;margin-bottom:6px}
 .dir-top p{color:var(--mk-body);font-size:15px}
-.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:20px 0;position:sticky;top:133px;background:#fff;z-index:50;border-bottom:1px solid var(--mk-line)}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:20px 0;position:sticky;top:137px;background:#fff;z-index:50;border-bottom:1px solid var(--mk-line)}
 @media(max-width:860px){.filterbar{top:60px}}
 .chip{padding:9px 2px;background:transparent;border:0;border-bottom:2px solid transparent;
   font-size:15px;font-weight:500;color:var(--mk-muted);margin-right:22px;transition:color .15s}
@@ -385,7 +384,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .pd-row{display:flex;gap:48px;align-items:flex-start;padding:32px 0 72px}
 .pd-main{min-width:0;flex:1}
 /* 헤더가 2행(80+52)이 되면서 sticky 오프셋도 같이 내렸다 */
-.pd-side{width:478px;flex-shrink:0;position:sticky;top:150px}
+.pd-side{width:478px;flex-shrink:0;position:sticky;top:154px}
 @media(max-width:1240px){.pd-row{gap:32px}.pd-side{width:380px}}
 @media(max-width:960px){.pd-row{flex-direction:column;gap:28px;padding:20px 0 48px}
   .pd-main,.pd-side{width:100%;position:static}}
@@ -784,6 +783,29 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
    제조사 유치 랜딩 (maker.html)
    ============================================================ */
 .lp-wrap{max-width:var(--maxw);margin:0 auto;padding:0 15px}
+
+/* ---------- 서비스 소개 / 고객센터 전용 ---------- */
+/* 바이어용 · 제조사용 2열 */
+.ab-two{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}
+@media(max-width:860px){.ab-two{grid-template-columns:1fr}}
+.ab-col{background:#fff;border-radius:var(--r-card);padding:34px 32px}
+.ab-col-tag{display:inline-block;background:var(--mk-primary-soft);color:var(--mk-primary-dark);
+  font-size:12px;font-weight:700;padding:0 10px;height:25px;line-height:25px;border-radius:4px;margin-bottom:14px}
+.ab-col h3{font-size:20px;font-weight:700;color:var(--mk-ink);margin-bottom:18px;line-height:1.4}
+.ab-col ul{list-style:none;margin-bottom:24px}
+.ab-col li{position:relative;padding:9px 0 9px 22px;font-size:15px;line-height:1.6;color:var(--mk-body);
+  border-bottom:1px solid var(--mk-line)}
+.ab-col li:last-child{border-bottom:0}
+.ab-col li::before{content:"";position:absolute;left:2px;top:17px;width:7px;height:7px;
+  border-radius:50%;background:var(--mk-primary)}
+
+/* 고객센터 */
+.sp-val{display:block;margin-top:14px;font-size:15px;font-weight:700;color:var(--mk-primary-dark)}
+.sp-hours{margin-top:30px;background:var(--mk-bg-soft);border-radius:var(--r-card);padding:26px 30px}
+.sp-hours h4{font-size:15px;font-weight:700;color:var(--mk-ink);margin-bottom:8px}
+.sp-hours p{font-size:15px;color:var(--mk-body);line-height:1.7}
+.sp-form{max-width:760px;margin:0 auto;background:#fff;border-radius:var(--r-card);padding:34px 32px}
+@media(max-width:640px){.sp-form,.ab-col{padding:24px 20px}}
 
 /* --- 히어로 (다크) --- */
 .lp-hero{background:linear-gradient(135deg,var(--mk-navy-deep) 0%,var(--mk-navy) 55%,var(--mk-navy-lift) 100%);
