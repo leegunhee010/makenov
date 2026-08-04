@@ -42,6 +42,16 @@ function toast(msg){
   clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2600);
 }
 
+/* 헤더 아이콘 — 전부 인라인 SVG.
+   이모지를 쓰면 기기마다 모양이 달라지고 사이트가 가벼워 보인다(사용자 지시로 이모지 금지). */
+const MK_ICO = {
+  search:  `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>`,
+  heart:   `<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-9.5A3.9 3.9 0 0 1 12 7a3.9 3.9 0 0 1 7 3.5c0 5-7 9.5-7 9.5z"/></svg>`,
+  user:    `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.9-3.6 4-5.6 7.5-5.6s6.6 2 7.5 5.6"/></svg>`,
+  logout:  `<svg viewBox="0 0 24 24"><path d="M14 4H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20h8"/><path d="M17 15l3-3-3-3"/><path d="M20 12H10"/></svg>`,
+  factory: `<svg viewBox="0 0 24 24"><path d="M3 20V11l5 3V11l5 3V6l8 5v9z"/><path d="M3 20h18"/></svg>`,
+};
+
 /* ---------- header / footer ---------- */
 function renderChrome(active){
   const s = Store.session();
@@ -69,14 +79,18 @@ function renderChrome(active){
     if(slot) slot.textContent = tbMsg;                 // 언어 전환 시 문구만 교체
   }
 
+  /* 헤더 = 상단행(로고 · 알약 검색 · 유틸 아이콘) + 메뉴행. addwel.co.kr 구조를 따랐다. */
+  const doSearch = `if(this.value===undefined){var el=document.getElementById('mk-search-input')}else{var el=this}
+      if(el.value.trim()){mkTrack('Search',{search_string:el.value.trim()});location.href='directory.html?q='+encodeURIComponent(el.value.trim())}`;
+
   hdr.innerHTML = `
-  <div class="wrap"><a class="mk-logo" href="index.html"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
+  <div class="wrap"><div class="mk-head-top"><a class="mk-logo" href="index.html"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
         onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></a><div class="mk-search"><input id="mk-search-input" type="search" data-i18n-ph="search_ph"
-        onkeydown="if(event.key==='Enter'&&this.value.trim()){mkTrack('Search',{search_string:this.value.trim()});location.href='directory.html?q='+encodeURIComponent(this.value.trim())}"></div><nav class="mk-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></nav><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')">EN</button></div><a class="mk-cart" href="mypage.html" title="Wishlist">♡<span class="badge" id="cart-badge">0</span></a>
+        onkeydown="if(event.key==='Enter'){${doSearch}}"><span class="ico" role="button" tabindex="0" onclick="${doSearch}">${MK_ICO.search}</span></div><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')">EN</button></div><a class="mk-util opt" href="maker.html">${MK_ICO.factory}<span class="lb" data-i18n="util_maker"></span></a><a class="mk-util" href="mypage.html">${MK_ICO.heart}<span class="badge" id="cart-badge">0</span><span class="lb" data-i18n="util_wish"></span></a>
       ${s
-        ? `<a class="mk-auth" href="mypage.html">${esc(s.contactName||s.email.split('@')[0])}</a><button class="mk-auth" onclick="Store.logout();location.reload()" data-i18n="logout"></button>`
-        : `<button class="mk-auth" onclick="openAuth('login')" data-i18n="login"></button><button class="btn btn-primary btn-sm" onclick="openAuth('signup')" data-i18n="signup"></button>`}
-    </div></div>`;
+        ? `<a class="mk-util" href="mypage.html">${MK_ICO.user}<span class="lb">${esc(s.contactName||s.email.split('@')[0])}</span></a><a class="mk-util" onclick="Store.logout();location.reload()" style="cursor:pointer">${MK_ICO.logout}<span class="lb" data-i18n="logout"></span></a>`
+        : `<a class="mk-util" onclick="openAuth('login')" style="cursor:pointer">${MK_ICO.user}<span class="lb" data-i18n="login"></span></a><button class="btn btn-primary btn-sm" style="margin-left:6px;height:40px;padding:0 18px" onclick="openAuth('signup')" data-i18n="signup"></button>`}
+    </div></div><nav class="mk-nav mk-head-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></nav></div>`;
   document.getElementById('mk-footer').innerHTML = `
   <div class="wrap"><div><div class="logo"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
       onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></div><div><h4 data-i18n="ft_support"></h4><a href="#" data-i18n="ft_faq"></a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="#" data-i18n="ft_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;

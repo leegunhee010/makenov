@@ -4,6 +4,8 @@ const I18N = {
   vi: {
     // header / nav
     nav_directory: "Sản phẩm",
+    util_maker: "Đăng sản phẩm",
+    util_wish: "Quan tâm",
     nav_columns: "Bài viết",
     nav_webinar: "Webinar",
     nav_about: "Giới thiệu",
@@ -237,6 +239,8 @@ const I18N = {
   },
   ko: {
     nav_directory: "제품",
+    util_maker: "제조사 등록",
+    util_wish: "관심제품",
     nav_columns: "칼럼",
     nav_webinar: "웨비나",
     nav_about: "소개",
@@ -457,6 +461,8 @@ const I18N = {
   },
   en: {
     nav_directory: "Products",
+    util_maker: "List a product",
+    util_wish: "Wishlist",
     nav_columns: "Insights",
     nav_webinar: "Webinar",
     nav_about: "About",

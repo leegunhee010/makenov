@@ -82,9 +82,13 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .topbar .x{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:17px;color:rgba(255,255,255,.85)}
 @media(max-width:640px){.topbar{font-size:13px}.topbar .wrap{height:42px;padding-right:38px}}
 
-/* ---------- header ---------- */
+/* ---------- header ----------
+   addwel.co.kr 실측 구조: 상단행 1400x80 (로고 · 알약 검색 420x48 r50 1px테두리 · 우측 아이콘묶음)
+   + 그 아래 메뉴행. 우측 아이콘은 아이콘 위 / 라벨 아래 세로 배치.
+   아이콘은 전부 인라인 SVG — 이모지는 쓰지 않는다. */
 .mk-header{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--mk-line)}
-.mk-header .wrap{display:flex;align-items:center;gap:26px;height:87px}
+.mk-head-top{display:flex;align-items:center;gap:32px;height:80px}
+.mk-head-nav{display:flex;align-items:center;gap:26px;height:52px;border-top:1px solid var(--mk-line)}
 /* 로고 — assets/img/logo.png 가 있으면 이미지, 없으면 텍스트로 자동 대체 */
 .mk-logo{display:flex;align-items:center;font-family:var(--font-head);font-weight:800;font-size:23px;
   color:var(--mk-navy);letter-spacing:-.03em;flex-shrink:0}
@@ -96,23 +100,49 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .mk-nav{display:flex;gap:24px;font-weight:600;font-size:16px;color:var(--mk-ink)}
 .mk-nav a{padding:4px 0;border-bottom:2px solid transparent}
 .mk-nav a:hover{color:var(--mk-primary);border-bottom-color:var(--mk-primary)}
-.mk-head-right{margin-left:auto;display:flex;align-items:center;gap:14px}
-.mk-lang{display:flex;border:1px solid var(--mk-line-strong);border-radius:var(--r-sm);overflow:hidden}
+.mk-head-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.mk-lang{display:flex;border:1px solid var(--mk-line-strong);border-radius:var(--r-sm);overflow:hidden;margin-right:8px}
 .mk-lang button{padding:5px 9px;font-size:12px;font-weight:600;color:var(--mk-muted)}
 .mk-lang button.on{background:var(--mk-ink);color:#fff}
-.mk-cart{position:relative;font-size:20px;line-height:1;color:var(--mk-ink)}
-.mk-cart .badge{position:absolute;top:-6px;right:-9px;background:var(--mk-primary);color:#fff;
+
+/* 우측 유틸 — 아이콘 위, 라벨 아래 (addwel 구조) */
+.mk-util{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-width:58px;padding:4px 6px;position:relative;color:var(--mk-body);border-radius:8px;transition:color .15s,background .15s}
+.mk-util:hover{color:var(--mk-primary);background:var(--mk-primary-soft)}
+.mk-util svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;display:block}
+.mk-util .lb{font-size:12px;font-weight:600;line-height:1;white-space:nowrap}
+.mk-util .badge{position:absolute;top:0;right:6px;background:var(--mk-primary);color:#fff;
   font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:var(--r-pill);
   display:flex;align-items:center;justify-content:center;padding:0 4px}
-.mk-auth{font-weight:600;color:var(--mk-body);font-size:15px}
-.mk-auth:hover{color:var(--mk-ink)}
-.mk-search{flex:1;max-width:300px;position:relative}
-.mk-search input{width:100%;height:40px;border:1px solid var(--mk-line-strong);border-radius:4px;
-  padding:0 16px 0 38px;font-size:14px;font-family:var(--font-body);background:var(--mk-bg-soft);color:var(--mk-ink)}
-.mk-search input:focus{outline:none;border-color:var(--mk-primary);background:#fff}
-.mk-search .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mk-muted);font-size:14px;pointer-events:none}
+@media(max-width:860px){.mk-util .lb{display:none}.mk-util{min-width:38px;gap:0}}
+
+/* 검색 — addwel 실측 420x48 / radius 50 / 1px 브랜드색 테두리 */
+.mk-search{flex:1;max-width:460px;position:relative}
+.mk-search input{width:100%;height:48px;border:1px solid var(--mk-primary);border-radius:var(--r-pill);
+  padding:0 52px 0 24px;font-size:16px;font-family:var(--font-body);background:#fff;color:var(--mk-ink)}
+.mk-search input::placeholder{color:var(--mk-muted)}
+.mk-search input:focus{outline:none;border-color:var(--mk-primary-dark);box-shadow:0 0 0 3px var(--mk-primary-soft)}
+.mk-search .ico{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  color:var(--mk-ink);background:none;border-radius:50%;cursor:pointer}
+.mk-search .ico:hover{background:var(--mk-primary-soft);color:var(--mk-primary-dark)}
+.mk-search .ico svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round}
+
+/* 반응형 — .mk-nav 정의보다 뒤에 둬야 한다(같은 특정도라 순서로 이긴다) */
 @media(max-width:1024px){.mk-search{display:none}}
-@media(max-width:860px){.mk-nav{display:none}.mk-header .wrap{height:62px}}
+@media(max-width:860px){
+  .mk-head-top{height:62px;gap:14px}
+  .mk-nav.mk-head-nav{display:none}
+  .mk-lang{margin-right:2px}
+  .mk-lang button{padding:4px 6px;font-size:11px}
+}
+/* 좁은 화면에선 좌우가 넘친다 — 푸터에도 있는 항목(언어·제조사 등록)을 접는다 */
+@media(max-width:640px){
+  .mk-head-right .mk-lang,
+  .mk-head-right .mk-util.opt{display:none}
+  .mk-head-right{gap:2px}
+}
 
 /* ---------- 히어로 배너 (omc 실측: 1110x400 풀블리드 + 오버레이) ---------- */
 .omc-hero{padding:24px 15px 0;margin-bottom:68px}
@@ -314,7 +344,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .dir-top{padding:38px 0 6px}
 .dir-top h1{font-size:26px;font-weight:700;margin-bottom:6px}
 .dir-top p{color:var(--mk-body);font-size:15px}
-.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:20px 0;position:sticky;top:72px;background:#fff;z-index:50;border-bottom:1px solid var(--mk-line)}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:20px 0;position:sticky;top:133px;background:#fff;z-index:50;border-bottom:1px solid var(--mk-line)}
 @media(max-width:860px){.filterbar{top:60px}}
 .chip{padding:9px 2px;background:transparent;border:0;border-bottom:2px solid transparent;
   font-size:15px;font-weight:500;color:var(--mk-muted);margin-right:22px;transition:color .15s}
@@ -329,7 +359,8 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .pd-wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
 .pd-row{display:flex;gap:48px;align-items:flex-start;padding:32px 0 72px}
 .pd-main{min-width:0;flex:1}
-.pd-side{width:478px;flex-shrink:0;position:sticky;top:107px}
+/* 헤더가 2행(80+52)이 되면서 sticky 오프셋도 같이 내렸다 */
+.pd-side{width:478px;flex-shrink:0;position:sticky;top:150px}
 @media(max-width:1240px){.pd-row{gap:32px}.pd-side{width:380px}}
 @media(max-width:960px){.pd-row{flex-direction:column;gap:28px;padding:20px 0 48px}
   .pd-main,.pd-side{width:100%;position:static}}
