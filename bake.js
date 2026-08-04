@@ -374,7 +374,7 @@ ${SCRIPTS()}
     { file: 'column.html', lang: 'vi',
       title: 'Bài viết | MAKENOV',
       desc: 'Bài viết trên MAKENOV.', canonical: SITE + '/columns.html' },
-    /* 한국 제조사 대상 랜딩 — 한국어 + FAQ 스키마 */
+    /* 한국 공급사 대상 랜딩 — 한국어 + FAQ 스키마 */
     { file: 'maker.html', lang: 'ko',
       title: '제품 등록 문의 | MAKENOV · 전시회 없이 해외 바이어를 만나는 방법',
       desc: '부스비도, 항공권도, 통역도 없이. 사업자 인증을 마친 해외 바이어에게 제품을 상시 노출하고 견적 문의를 받으세요. 등록비 없음, 3개 국어 상세페이지 제작.',

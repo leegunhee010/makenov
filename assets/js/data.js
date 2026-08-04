@@ -36,7 +36,7 @@ const MK_COUNTRIES = [
 function mkCountry(code){ return MK_COUNTRIES.find(c=>c.code===code) || MK_COUNTRIES[0]; }
 
 /* ============================================================
-   기업(제조사) — 제품과 1:N 연결. product.companyId → company.id
+   기업(공급사) — 제품과 1:N 연결. product.companyId → company.id
    ============================================================ */
 const MK_COMPANIES = [
   /*  실제 기업 — lgind.com / firessak.com 공개정보 기준, 사업자번호 국세청 조회 완료 */
@@ -51,7 +51,7 @@ const MK_COMPANIES = [
       ko:'자동차 복합소재 기술로 만든 전기차 화재 진압 솔루션',
       en:'EV fire-suppression solutions built on automotive composite materials'},
     intro:{vi:'LARGE Co., Ltd. (thành lập 12/2009, Daegu) là nhà sản xuất linh kiện ô tô chuyên về vải sợi thủy tinh, vật liệu composite nhiệt dẻo và vật liệu cách nhiệt hệ thống xả. Công ty đạt chứng nhận IATF 16949:2016 và có viện nghiên cứu riêng từ năm 2010, từng ký thỏa thuận phát triển chung với Fraunhofer ICT (Đức) năm 2016. Thương hiệu FIRESSAK ứng dụng nền tảng vật liệu chịu nhiệt này vào chăn chữa cháy cho xe điện, đã cung cấp cho các cơ quan công như Sở PCCC Gyeongnam và Tổng công ty Phát triển Đô thị Seongnam.',
-      ko:'(주)라지는 2009년 12월 설립된 대구 소재 자동차부품 제조사로, 유리섬유 직물·열가소성 복합재료·배기계 단열재를 주력으로 합니다. IATF 16949:2016 인증을 보유하고 2010년 기업부설연구소를 설립했으며, 2016년 독일 Fraunhofer ICT와 복합재 공동 기술개발 협약을 체결했습니다. 이 내열소재 기술을 응용한 브랜드가 파이어싹으로, 경남소방본부·성남도시개발공사 등 공공기관에 납품 실적이 있습니다.',
+      ko:'(주)라지는 2009년 12월 설립된 대구 소재 자동차부품 공급사로, 유리섬유 직물·열가소성 복합재료·배기계 단열재를 주력으로 합니다. IATF 16949:2016 인증을 보유하고 2010년 기업부설연구소를 설립했으며, 2016년 독일 Fraunhofer ICT와 복합재 공동 기술개발 협약을 체결했습니다. 이 내열소재 기술을 응용한 브랜드가 파이어싹으로, 경남소방본부·성남도시개발공사 등 공공기관에 납품 실적이 있습니다.',
       en:'LARGE Co., Ltd. (founded Dec 2009, Daegu) manufactures automotive components centred on glass-fibre textiles, thermoplastic composites and exhaust-system insulation. It holds IATF 16949:2016, established an in-house research institute in 2010, and signed a joint composite development agreement with Germany\'s Fraunhofer ICT in 2016. Its FIRESSAK brand applies that heat-resistant material base to EV fire blankets, with supply records to public bodies including the Gyeongnam Fire Department and Seongnam Urban Development Corp.'} },
 
   { id:'daon', brand:'DAON COSMETIC', logo:'https://picsum.photos/seed/mkc-daon/200/200',
@@ -62,7 +62,7 @@ const MK_COMPANIES = [
     certs:['CGMP','CPNP','FDA','ISO 22716'],
     tagline:{vi:'12 năm OEM/ODM cho các thương hiệu K-Beauty', ko:'K-뷰티 브랜드 OEM/ODM 12년', en:'12 years of K-Beauty OEM/ODM'},
     intro:{vi:'DAON COSMETIC là nhà sản xuất mỹ phẩm tại Daegu với 12 năm kinh nghiệm OEM/ODM cho các thương hiệu K-Beauty. Nhà máy đạt chuẩn CGMP, xuất khẩu sang 14 quốc gia. Hỗ trợ đầy đủ hồ sơ công bố mỹ phẩm và phát triển công thức riêng.',
-      ko:'다온코스메틱은 대구 소재 화장품 제조사로, K-뷰티 브랜드 OEM/ODM 12년 경력을 보유하고 있습니다. CGMP 인증 공장에서 14개국에 수출하고 있으며, 화장품 공고 서류 지원과 자체 처방 개발이 가능합니다.',
+      ko:'다온코스메틱은 대구 소재 화장품 공급사로, K-뷰티 브랜드 OEM/ODM 12년 경력을 보유하고 있습니다. CGMP 인증 공장에서 14개국에 수출하고 있으며, 화장품 공고 서류 지원과 자체 처방 개발이 가능합니다.',
       en:'DAON COSMETIC is a Daegu-based manufacturer with 12 years of K-Beauty OEM/ODM experience. Its CGMP-certified factory exports to 14 countries, with full notification-dossier support and in-house formulation.'} },
 
   { id:'hanil', brand:'HANIL FOOD', logo:'https://picsum.photos/seed/mkc-hanil/200/200',
@@ -95,7 +95,7 @@ const MK_COMPANIES = [
     certs:['HACCP','건강기능식품 GMP'],
     tagline:{vi:'Hồng sâm 6 năm tuổi, xuất khẩu 20 năm', ko:'6년근 홍삼 전문, 수출 20년', en:'6-year red ginseng, 20 years exporting'},
     intro:{vi:'JINSENG HOUSE chuyên chế biến hồng sâm từ vùng trồng sâm nổi tiếng của Hàn Quốc với 20 năm kinh nghiệm xuất khẩu. Cung cấp đa dạng quy cách quà tặng, phù hợp mùa cao điểm Tết.',
-      ko:'진생하우스는 한국 대표 인삼 산지의 홍삼 전문 제조사로 수출 경력 20년입니다. 다양한 선물 패키지 규격을 보유해 뗏(설) 성수기 대응이 가능합니다.',
+      ko:'진생하우스는 한국 대표 인삼 산지의 홍삼 전문 공급사로 수출 경력 20년입니다. 다양한 선물 패키지 규격을 보유해 뗏(설) 성수기 대응이 가능합니다.',
       en:'JINSENG HOUSE processes red ginseng from Korea\'s famous ginseng regions with 20 years of export experience, offering a range of gift formats for peak seasons.'} },
 
   { id:'toto', brand:'TOTO KIDS', logo:'https://picsum.photos/seed/mkc-toto/200/200',
@@ -106,7 +106,7 @@ const MK_COMPANIES = [
     certs:['KC','CE','EN71'],
     tagline:{vi:'Đồ chơi giáo dục cho trường mầm non Hàn Quốc', ko:'한국 유치원 납품 교육완구', en:'Educational toys for Korean kindergartens'},
     intro:{vi:'TOTO KIDS sản xuất đồ chơi giáo dục trong 15 năm, cung cấp cho các trường mầm non Hàn Quốc. Vật liệu ABS không BPA, hỗ trợ in hộp theo yêu cầu.',
-      ko:'토토키즈는 15년 경력의 교육완구 제조사로 한국 유치원·어린이집에 납품하고 있습니다. BPA-free ABS 소재를 사용하며 주문 패키지 인쇄를 지원합니다.',
+      ko:'토토키즈는 15년 경력의 교육완구 공급사로 한국 유치원·어린이집에 납품하고 있습니다. BPA-free ABS 소재를 사용하며 주문 패키지 인쇄를 지원합니다.',
       en:'TOTO KIDS has made educational toys for 15 years, supplying Korean kindergartens. BPA-free ABS materials with custom box printing available.'} },
 
   { id:'airio', brand:'AIRIO', logo:'https://picsum.photos/seed/mkc-airio/200/200',
@@ -128,7 +128,7 @@ const MK_COMPANIES = [
     certs:['CGMP','CPNP'],
     tagline:{vi:'Công suất 500.000 miếng mặt nạ mỗi ngày', ko:'일 50만 장 마스크팩 생산능력', en:'500,000 sheet masks per day'},
     intro:{vi:'MODAM chuyên sản xuất mặt nạ giấy với công suất 500.000 miếng mỗi ngày tại nhà máy Daegu. Nhận private label với giá vốn cạnh tranh cho các đơn hàng lớn.',
-      ko:'모담은 대구 공장에서 일 50만 장 생산능력을 갖춘 마스크팩 전문 제조사입니다. 대량 주문에 경쟁력 있는 원가로 프라이빗 라벨을 제공합니다.',
+      ko:'모담은 대구 공장에서 일 50만 장 생산능력을 갖춘 마스크팩 전문 공급사입니다. 대량 주문에 경쟁력 있는 원가로 프라이빗 라벨을 제공합니다.',
       en:'MODAM specializes in sheet masks with 500,000 sheets/day capacity at its Daegu factory, offering private label at competitive cost for large orders.'} },
 
   { id:'dalsung', brand:'DALSUNG TEA', logo:'https://picsum.photos/seed/mkc-dal/200/200',
@@ -168,7 +168,7 @@ const MK_COMPANIES = [
     brn:'503-86-14502', ceo:'김동탁', tel:'010-6219-3514', site:'incoremedi.com',
     certs:['의료기기 제조', 'FDA Class III (Hemoblock S)', '기능성화장품(미백)'],
     tagline:{vi:'Nhà sản xuất thiết bị y tế làm mỹ phẩm — thương hiệu MIRALET',
-      ko:'의료기기 제조사가 만드는 화장품 — 더마코스메틱 브랜드 미라렛',
+      ko:'의료기기 공급사가 만드는 화장품 — 더마코스메틱 브랜드 미라렛',
       en:'A medical device maker turned dermacosmetic brand — MIRALET'},
     intro:{vi:'INCORE (thành lập 2014, Daegu) nghiên cứu và sản xuất thiết bị y tế từ chitosan — nổi bật là băng cầm máu HEMOBLOCK và băng vết thương hydrogel HYLACELL được bác sĩ da liễu kê đơn. MIRALET là dòng dermacosmetic ra đời từ chính công thức đó: sản phẩm chăm sóc da chứa PDRN thực vật và exosome thực vật, dùng hằng ngày.',
       ko:'(주)인코아는 2014년 설립된 대구 소재 의료기기 연구·제조기업으로, 키토산 지혈재 헤모블럭(HEMOBLOCK)과 피부과에서 처방되는 하이드로겔 창상피복재 하이라셀(HYLACELL)을 만듭니다. 미라렛(MIRALET)은 그 포뮬러를 바탕으로 만든 더마코스메틱 라인으로, 식물성 PDRN과 식물 엑소좀을 담아 매일 쓰는 스킨케어로 풀어냈습니다.',
@@ -229,7 +229,7 @@ const MK_PRODUCTS = [
       {type:'img', src:'https://picsum.photos/seed/mkv-firessak-d1/900/600'},
       {type:'p', text:{
         vi:'Phù hợp cho bãi đỗ xe ngầm, trạm sạc, kho logistics, bến xe và đội xe doanh nghiệp. Nhà sản xuất có chứng nhận IATF 16949:2016 và giấy chứng nhận kết quả thử nghiệm cho model này.',
-        ko:'지하주차장·충전소·물류창고·차고지·법인 차량 운영처에 적합합니다. 제조사는 IATF 16949:2016 인증을 보유하고 있으며, 해당 모델의 시험성적서를 제공합니다.',
+        ko:'지하주차장·충전소·물류창고·차고지·법인 차량 운영처에 적합합니다. 공급사는 IATF 16949:2016 인증을 보유하고 있으며, 해당 모델의 시험성적서를 제공합니다.',
         en:'Suited to underground car parks, charging stations, logistics warehouses, depots and corporate fleets. The maker holds IATF 16949:2016 and provides a test report for this model.'}},
     ]
   },
@@ -243,7 +243,7 @@ const MK_PRODUCTS = [
     video:'', inquiries:23, views:1840,
     price:'US$ 4.20 / unit (FOB Busan)', moq:'3,000 units', lead:'30 days', terms:'OEM/ODM available · Private label OK',
     brandStory:{vi:'DAON COSMETIC là nhà sản xuất mỹ phẩm tại Daegu với 12 năm kinh nghiệm OEM/ODM cho các thương hiệu K-Beauty. Nhà máy đạt chuẩn CGMP, xuất khẩu sang 14 quốc gia.',
-      ko:'다온코스메틱은 대구 소재 화장품 제조사로, K-뷰티 브랜드 OEM/ODM 12년 경력을 보유하고 있습니다. CGMP 인증 공장, 14개국 수출 실적.',
+      ko:'다온코스메틱은 대구 소재 화장품 공급사로, K-뷰티 브랜드 OEM/ODM 12년 경력을 보유하고 있습니다. CGMP 인증 공장, 14개국 수출 실적.',
       en:'DAON COSMETIC is a Daegu-based manufacturer with 12 years of K-Beauty OEM/ODM experience. CGMP-certified factory exporting to 14 countries.'},
     detail:[
       {type:'p', text:{vi:'Chứng nhận CPNP & FDA. Không paraben, không hương liệu nhân tạo — phù hợp làn da nhạy cảm của khí hậu nhiệt đới.', ko:'CPNP·FDA 인증. 파라벤·인공향료 무첨가로 열대기후 민감성 피부에 적합합니다.', en:'CPNP & FDA certified. Paraben-free, no artificial fragrance — ideal for sensitive skin in tropical climates.'}},
@@ -293,7 +293,7 @@ const MK_PRODUCTS = [
     gallery:['https://picsum.photos/seed/mkv-ginseng/800/600'],
     video:'', inquiries:35, views:2540,
     price:'US$ 12.00 / box (30 sticks)', moq:'1,000 boxes', lead:'20 days', terms:'Gift packaging · OEM available',
-    brandStory:{vi:'JINSENG HOUSE chuyên chế biến hồng sâm từ vùng trồng sâm nổi tiếng của Hàn Quốc, xuất khẩu 20 năm.', ko:'진생하우스는 한국 대표 인삼 산지의 홍삼 전문 제조사로 수출 경력 20년입니다.', en:'JINSENG HOUSE processes red ginseng from Korea\'s famous ginseng regions, exporting for 20 years.'},
+    brandStory:{vi:'JINSENG HOUSE chuyên chế biến hồng sâm từ vùng trồng sâm nổi tiếng của Hàn Quốc, xuất khẩu 20 năm.', ko:'진생하우스는 한국 대표 인삼 산지의 홍삼 전문 공급사로 수출 경력 20년입니다.', en:'JINSENG HOUSE processes red ginseng from Korea\'s famous ginseng regions, exporting for 20 years.'},
     detail:[
       {type:'p', text:{vi:'Hồng sâm Hàn Quốc là mặt hàng quà biếu số 1 tại Việt Nam dịp Tết. Bao bì quà tặng sang trọng, sẵn sàng cho mùa cao điểm.', ko:'홍삼은 베트남 뗏(설) 시즌 1위 선물 품목입니다. 고급 선물 패키지로 성수기 대응이 가능합니다.', en:'Korean red ginseng is the #1 gift item in Vietnam during Tet. Luxury gift packaging ready for peak season.'}},
     ]
@@ -307,7 +307,7 @@ const MK_PRODUCTS = [
     gallery:['https://picsum.photos/seed/mkv-block/800/600'],
     video:'', inquiries:12, views:760,
     price:'US$ 9.80 / set (64pcs)', moq:'2,000 sets', lead:'40 days', terms:'CE/KC certified · Custom box printing',
-    brandStory:{vi:'TOTO KIDS sản xuất đồ chơi giáo dục 15 năm, cung cấp cho các trường mầm non Hàn Quốc.', ko:'토토키즈는 15년 경력의 교육완구 제조사로 한국 유치원·어린이집에 납품하고 있습니다.', en:'TOTO KIDS has made educational toys for 15 years, supplying Korean kindergartens.'},
+    brandStory:{vi:'TOTO KIDS sản xuất đồ chơi giáo dục 15 năm, cung cấp cho các trường mầm non Hàn Quốc.', ko:'토토키즈는 15년 경력의 교육완구 공급사로 한국 유치원·어린이집에 납품하고 있습니다.', en:'TOTO KIDS has made educational toys for 15 years, supplying Korean kindergartens.'},
     detail:[
       {type:'p', text:{vi:'Tầng lớp trung lưu Việt Nam đầu tư mạnh cho giáo dục sớm — đồ chơi STEAM Hàn Quốc có vị thế thương hiệu cao.', ko:'베트남 중산층의 조기교육 투자가 급증 — 한국 STEAM 완구의 브랜드 위상이 높습니다.', en:'Vietnam\'s middle class invests heavily in early education — Korean STEAM toys carry strong brand equity.'}},
     ]
@@ -335,7 +335,7 @@ const MK_PRODUCTS = [
     gallery:['https://picsum.photos/seed/mkv-mask/800/600'],
     video:'', inquiries:19, views:1430,
     price:'US$ 0.45 / sheet (FOB Busan)', moq:'30,000 sheets', lead:'20 days', terms:'Private label OK · CPNP',
-    brandStory:{vi:'MODAM chuyên sản xuất mặt nạ giấy với công suất 500,000 miếng/ngày tại nhà máy Daegu.', ko:'모담은 대구 공장에서 일 50만 장 생산능력을 갖춘 마스크팩 전문 제조사입니다.', en:'MODAM specializes in sheet masks with 500,000 sheets/day capacity at its Daegu factory.'},
+    brandStory:{vi:'MODAM chuyên sản xuất mặt nạ giấy với công suất 500,000 miếng/ngày tại nhà máy Daegu.', ko:'모담은 대구 공장에서 일 50만 장 생산능력을 갖춘 마스크팩 전문 공급사입니다.', en:'MODAM specializes in sheet masks with 500,000 sheets/day capacity at its Daegu factory.'},
     detail:[
       {type:'p', text:{vi:'Mặt nạ giấy Hàn Quốc là sản phẩm K-Beauty phổ biến nhất tại Việt Nam với giá vốn thấp, biên lợi nhuận cao.', ko:'마스크팩은 베트남에서 가장 대중적인 K-뷰티 품목 — 낮은 원가와 높은 마진이 강점입니다.', en:'Korean sheet masks are Vietnam\'s most popular K-Beauty item — low cost, high margin.'}},
     ]
@@ -370,7 +370,7 @@ const MK_PRODUCTS = [
     brandStory:{vi:'Goeunbal là thương hiệu chăm sóc bàn chân của WELLBEING HEALTHFARM (Incheon, Hàn Quốc), bán trực tiếp qua kênh chính hãng với nhiều đánh giá của người dùng Hàn Quốc.',
                 ko:'명품 고운발은 (주)웰빙헬스팜(인천)의 풋케어 브랜드로, 자사몰 직판 및 다수의 국내 사용후기를 보유한 제품입니다.',
                 en:'Goeunbal is the foot-care brand of WELLBEING HEALTHFARM (Incheon, Korea), sold directly through its own mall with many Korean user reviews.'},
-    /* 본문 = 제조사 상세페이지(3wbmall) 내용을 3개 국어로 옮긴 것.
+    /* 본문 = 공급사 상세페이지(3wbmall) 내용을 3개 국어로 옮긴 것.
        원본 상세 이미지는 전부 한국어라 아래 seq 이미지로 붙이되,
        바이어가 실제로 읽는 정보는 텍스트 블록에 담는다. 수치는 이미지의 시험성적서 기재값. */
     detail:[
@@ -386,12 +386,12 @@ const MK_PRODUCTS = [
 
       {type:'p', text:{
         vi:'Kết quả thử nghiệm (theo phiếu kiểm nghiệm của nhà sản xuất): thử nghiệm trên người trong 2 tuần cho thấy vùng da sừng ở gót chân giảm 56,95%; 95,54% người tham gia hài lòng (20 người, tuổi trung bình 34,1 — Human Skin Clinical Trial Center, HD-P24-0036 / IRB HD-IRB-P24-0036, 26/12/2024–09/01/2025). Thử nghiệm patch test kích ứng sơ cấp cho chỉ số 0,00 — xếp loại “không kích ứng (Excellent)”. Kiểm nghiệm 6 kim loại nặng, 6 chất độc hại và giới hạn vi sinh vật: tất cả “không phát hiện” (Korea Institute of Dermatological Sciences).',
-        ko:'시험 결과(제조사 시험성적서 기재값): 2주 인체적용시험에서 뒤꿈치 각질 면적 56.95% 개선, 시험대상자 만족도 95.54%(20명, 평균 34.1세 · 휴먼피부임상시험센터 HD-P24-0036 / IRB HD-IRB-P24-0036, 2024.12.26~2025.01.09). 피부첩포 일차자극 시험 자극지수 0.00 — "비자극(Excellent)" 판정. 중금속 6종·유해물질 6종·미생물 한도 시험은 전 항목 불검출(한국피부과학연구원).',
+        ko:'시험 결과(공급사 시험성적서 기재값): 2주 인체적용시험에서 뒤꿈치 각질 면적 56.95% 개선, 시험대상자 만족도 95.54%(20명, 평균 34.1세 · 휴먼피부임상시험센터 HD-P24-0036 / IRB HD-IRB-P24-0036, 2024.12.26~2025.01.09). 피부첩포 일차자극 시험 자극지수 0.00 — "비자극(Excellent)" 판정. 중금속 6종·유해물질 6종·미생물 한도 시험은 전 항목 불검출(한국피부과학연구원).',
         en:'Test results as stated on the manufacturer\'s reports: a 2-week human application study showed 56.95% reduction in heel callus area and 95.54% subject satisfaction (20 subjects, mean age 34.1 — Human Skin Clinical Trial Center, HD-P24-0036 / IRB HD-IRB-P24-0036, 26 Dec 2024–09 Jan 2025). A primary skin irritation patch test returned an index of 0.00, rated "non-irritating (Excellent)". Six heavy metals, six hazardous substances and microbial limits were all reported as not detected (Korea Institute of Dermatological Sciences).'}},
 
       {type:'p', text:{
         vi:'Thành tích tại thị trường Hàn Quốc (theo tư liệu của nhà sản xuất): hạng 1 doanh số kem dưỡng gót chân trên 11st (12/07/2020) và hạng 1 hạng mục foot cream trong Naver BEST 100 (22/10/2020). Trích dẫn tháng 5/2025: 31.454 đánh giá trên Coupang và 9.630 đánh giá đạt 4,83/5 trên Naver Shopping. Đây là số liệu bán lẻ nội địa Hàn Quốc, dùng để tham khảo mức độ chấp nhận của người tiêu dùng.',
-        ko:'한국 시장 실적(제조사 자료 기준): 11번가 풋크림 판매 BEST 1위(2020.07.12), 네이버 BEST 100 풋크림 부문 1위(2020.10.22). 2025년 5월 발췌 기준 쿠팡 상품평 31,454건, 네이버쇼핑 리뷰 9,630건 평점 4.83/5. 한국 내수 리테일 지표이며 소비자 수용도 참고용입니다.',
+        ko:'한국 시장 실적(공급사 자료 기준): 11번가 풋크림 판매 BEST 1위(2020.07.12), 네이버 BEST 100 풋크림 부문 1위(2020.10.22). 2025년 5월 발췌 기준 쿠팡 상품평 31,454건, 네이버쇼핑 리뷰 9,630건 평점 4.83/5. 한국 내수 리테일 지표이며 소비자 수용도 참고용입니다.',
         en:'Korean market track record per the manufacturer\'s materials: #1 foot-cream seller on 11st (12 Jul 2020) and #1 in the foot-cream category of Naver BEST 100 (22 Oct 2020). As captured in May 2025: 31,454 reviews on Coupang and 9,630 reviews averaging 4.83/5 on Naver Shopping. These are Korean domestic retail figures, offered as a proxy for consumer acceptance.'}},
 
       {type:'p', text:{
@@ -409,7 +409,7 @@ const MK_PRODUCTS = [
         ko:'덥고 습한 기후와 샌들 착용 문화로 베트남의 발 관리 수요가 높아, 한국산 풋크림은 약국·화장품 매장·온라인 리테일 채널에서 성장 여지가 큽니다.',
         en:'Vietnam\'s hot, humid climate and open-sandal culture drive strong foot-care demand — Korean foot creams have room to grow across pharmacies, cosmetics stores and online retail.'}},
 
-      /* 제조사 원본 상세페이지 (한국어) — seq:true 라 틈 없이 이어 붙는다 */
+      /* 공급사 원본 상세페이지 (한국어) — seq:true 라 틈 없이 이어 붙는다 */
       {type:'img', seq:true, src:'assets/img/products/goeunbal/01.jpg', w:861, h:3002},
       {type:'img', seq:true, src:'assets/img/products/goeunbal/03.jpg', w:861, h:2006},
       {type:'img', seq:true, src:'assets/img/products/goeunbal/04.jpg', w:861, h:3561},
@@ -421,8 +421,8 @@ const MK_PRODUCTS = [
   },
 
   /* ---------- 미라렛 (인코아) 3종 ----------
-     수치는 전부 제조사 상세페이지·상품정보제공고시 기재값.
-     ⚠️ 가격·MOQ·납기는 아직 제조사에서 못 받음 → '문의' 유지, 받는 대로 교체할 것. */
+     수치는 전부 공급사 상세페이지·상품정보제공고시 기재값.
+     ⚠️ 가격·MOQ·납기는 아직 공급사에서 못 받음 → '문의' 유지, 받는 대로 교체할 것. */
   {
     id:'p10', cat:'beauty', featured:true, isNew:true, createdAt:'2026-08-04',
     companyId:'incore', brand:'MIRALET', origin:'Daegu, Korea',
@@ -436,7 +436,7 @@ const MK_PRODUCTS = [
     price:'문의', negotiable:true, moq:'문의', lead:'문의',
     terms:'K-뷰티 더마코스메틱 · 미백 기능성 · OEM/ODM 문의',
     brandStory:{vi:'MIRALET là dòng dermacosmetic của INCORE — nhà sản xuất thiết bị y tế tại Daegu, Hàn Quốc, đứng sau băng cầm máu chitosan HEMOBLOCK và băng vết thương hydrogel HYLACELL được bác sĩ da liễu kê đơn.',
-                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 제조사 (주)인코아의 더마코스메틱 브랜드입니다.',
+                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 공급사 (주)인코아의 더마코스메틱 브랜드입니다.',
                 en:'MIRALET is the dermacosmetic brand of INCORE, the Daegu medical-device maker behind the HEMOBLOCK chitosan hemostatic dressing and HYLACELL, a dermatologist-prescribed hydrogel wound dressing.'},
     detail:[
       {type:'p', text:{
@@ -446,7 +446,7 @@ const MK_PRODUCTS = [
 
       {type:'p', text:{
         vi:'Điểm khác biệt: sản phẩm do một công ty thiết bị y tế trực tiếp phát triển. INCORE là nhà sản xuất HYLACELL — băng vết thương hydrogel được bác sĩ da liễu và bác sĩ phẫu thuật thẩm mỹ kê dùng. MIRALET đưa hướng nghiên cứu đó vào sản phẩm chăm sóc da hằng ngày.',
-        ko:'차별점은 의료기기 회사가 직접 만들었다는 점입니다. 인코아는 피부과·성형외과에서 시술에 쓰이는 하이드로겔 창상피복재 하이라셀(HYLACELL)의 제조사이며, 미라렛은 그 연구를 매일 쓰는 스킨케어로 옮긴 라인입니다.',
+        ko:'차별점은 의료기기 회사가 직접 만들었다는 점입니다. 인코아는 피부과·성형외과에서 시술에 쓰이는 하이드로겔 창상피복재 하이라셀(HYLACELL)의 공급사이며, 미라렛은 그 연구를 매일 쓰는 스킨케어로 옮긴 라인입니다.',
         en:'The differentiator is that a medical device company developed it directly. INCORE manufactures HYLACELL, a hydrogel wound dressing used in dermatology and plastic surgery clinics, and MIRALET carries that research into daily skincare.'}},
 
       {type:'p', text:{
@@ -456,7 +456,7 @@ const MK_PRODUCTS = [
 
       {type:'p', text:{
         vi:'Kết quả thử nghiệm do nhà sản xuất công bố (sử dụng 4 tuần): độ ẩm da tăng từ 62,394 lên 70,033 — cải thiện trên 13%; tông da cải thiện 1,166% (58,000 → 58,667). Số liệu trích từ trang chi tiết sản phẩm của nhà sản xuất.',
-        ko:'제조사가 공개한 4주 사용 시험 결과: 피부 수분 함유량 62.394 → 70.033으로 13% 이상 개선, 피부 톤 58.000 → 58.667로 1.166% 개선. 제조사 상세페이지 기재값입니다.',
+        ko:'공급사가 공개한 4주 사용 시험 결과: 피부 수분 함유량 62.394 → 70.033으로 13% 이상 개선, 피부 톤 58.000 → 58.667로 1.166% 개선. 공급사 상세페이지 기재값입니다.',
         en:'Manufacturer-published four-week results: skin moisture rose from 62.394 to 70.033, an improvement of over 13%; skin tone improved 1.166% (58.000 → 58.667). Figures as stated on the manufacturer\'s product page.'}},
 
       {type:'p', text:{
@@ -469,7 +469,7 @@ const MK_PRODUCTS = [
         ko:'제품 정보: 용량 30ml · 제조국 대한민국 · 모든 피부용 · 미백 기능성 화장품 심사필.',
         en:'Product information: 30ml · made in Korea · for all skin types · reviewed as a functional whitening cosmetic.'}},
 
-      /* 제조사 원본 상세페이지 3장 (848px 폭) → 2400px 단위 17조각. seq라 화면에서 이어 붙는다 */
+      /* 공급사 원본 상세페이지 3장 (848px 폭) → 2400px 단위 17조각. seq라 화면에서 이어 붙는다 */
       {type:'img', seq:true, src:'assets/img/products/miralet/d01.jpg', w:848, h:2400},
       {type:'img', seq:true, src:'assets/img/products/miralet/d02.jpg', w:848, h:2400},
       {type:'img', seq:true, src:'assets/img/products/miralet/d03.jpg', w:848, h:2400},
@@ -502,7 +502,7 @@ const MK_PRODUCTS = [
     price:'문의', negotiable:true, moq:'문의', lead:'문의',
     terms:'K-뷰티 더마코스메틱 · 시린지 4개입 · OEM/ODM 문의',
     brandStory:{vi:'MIRALET là dòng dermacosmetic của INCORE — nhà sản xuất thiết bị y tế tại Daegu, Hàn Quốc, đứng sau băng cầm máu chitosan HEMOBLOCK và băng vết thương hydrogel HYLACELL được bác sĩ da liễu kê đơn.',
-                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 제조사 (주)인코아의 더마코스메틱 브랜드입니다.',
+                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 공급사 (주)인코아의 더마코스메틱 브랜드입니다.',
                 en:'MIRALET is the dermacosmetic brand of INCORE, the Daegu medical-device maker behind the HEMOBLOCK chitosan hemostatic dressing and HYLACELL, a dermatologist-prescribed hydrogel wound dressing.'},
     detail:[
       {type:'p', text:{
@@ -512,7 +512,7 @@ const MK_PRODUCTS = [
 
       {type:'p', text:{
         vi:'Định vị: chăm sóc cô đặc vào ban đêm, thiên về da khô và da cần độ đàn hồi. Có bổ sung dexpanthenol cùng 3 loại exosome thực vật. Dùng xen kẽ với ampoule dùng hằng ngày là cách nhà sản xuất khuyến nghị.',
-        ko:'포지션은 나이트케어 고농축 집중 케어로, 건성·탄력 피부를 중심에 둡니다. 덱스판테놀과 식물 엑소좀 3종이 함께 들어가며, 데일리 앰플과 번갈아 쓰는 것이 제조사 권장 사용법입니다.',
+        ko:'포지션은 나이트케어 고농축 집중 케어로, 건성·탄력 피부를 중심에 둡니다. 덱스판테놀과 식물 엑소좀 3종이 함께 들어가며, 데일리 앰플과 번갈아 쓰는 것이 공급사 권장 사용법입니다.',
         en:'Positioned as concentrated night care aimed at dry skin and elasticity, with dexpanthenol and three plant exosomes added. The manufacturer recommends alternating it with the daily ampoule.'}},
 
       {type:'p', text:{
@@ -534,7 +534,7 @@ const MK_PRODUCTS = [
     price:'문의', negotiable:true, moq:'문의', lead:'문의',
     terms:'K-뷰티 더마코스메틱 · 50g / 1.69oz · OEM/ODM 문의',
     brandStory:{vi:'MIRALET là dòng dermacosmetic của INCORE — nhà sản xuất thiết bị y tế tại Daegu, Hàn Quốc, đứng sau băng cầm máu chitosan HEMOBLOCK và băng vết thương hydrogel HYLACELL được bác sĩ da liễu kê đơn.',
-                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 제조사 (주)인코아의 더마코스메틱 브랜드입니다.',
+                ko:'미라렛은 키토산 지혈재 헤모블럭과 피부과 처방 하이드로겔 창상피복재 하이라셀을 만드는 대구 의료기기 공급사 (주)인코아의 더마코스메틱 브랜드입니다.',
                 en:'MIRALET is the dermacosmetic brand of INCORE, the Daegu medical-device maker behind the HEMOBLOCK chitosan hemostatic dressing and HYLACELL, a dermatologist-prescribed hydrogel wound dressing.'},
     detail:[
       {type:'p', text:{
@@ -571,7 +571,7 @@ const MK_COLUMNS = [
     title:{vi:'Nhà mua hàng Việt Nam cần chuẩn bị gì khi nhập hàng Hàn Quốc lần đầu?', ko:'베트남 바이어가 한국 제품 첫 수입 시 준비해야 할 것들', en:'What Vietnamese buyers should prepare for their first Korean import'},
     excerpt:{vi:'Thủ tục công bố sản phẩm, MOQ, điều kiện thanh toán — hướng dẫn từng bước cho nhà mua hàng lần đầu nhập hàng Hàn.', ko:'제품 공고 절차, MOQ, 결제 조건 — 첫 수입 바이어를 위한 단계별 가이드.', en:'Product notification, MOQ, payment terms — a step-by-step guide for first-time importers.'},
     body:{vi:'<p>Nhập khẩu hàng Hàn Quốc lần đầu không khó nếu bạn chuẩn bị đúng: (1) xác định mã HS và thuế nhập khẩu theo VKFTA, (2) yêu cầu nhà cung cấp hỗ trợ hồ sơ công bố, (3) đàm phán MOQ linh hoạt cho đơn hàng thử nghiệm.</p><p>MAKENOV kết nối bạn trực tiếp với nhà sản xuất — không qua trung gian.</p>',
-      ko:'<p>첫 수입도 준비만 잘하면 어렵지 않습니다: (1) VKFTA 기준 HS코드·관세 확인, (2) 공급사에 공고 서류 지원 요청, (3) 테스트 오더용 유연한 MOQ 협상.</p><p>MAKENOV는 중간상 없이 제조사와 직접 연결합니다.</p>',
+      ko:'<p>첫 수입도 준비만 잘하면 어렵지 않습니다: (1) VKFTA 기준 HS코드·관세 확인, (2) 공급사에 공고 서류 지원 요청, (3) 테스트 오더용 유연한 MOQ 협상.</p><p>MAKENOV는 중간상 없이 공급사와 직접 연결합니다.</p>',
       en:'<p>First imports are manageable with the right prep: (1) check HS codes and VKFTA tariffs, (2) ask suppliers for notification dossier support, (3) negotiate flexible MOQs for trial orders.</p><p>MAKENOV connects you directly with manufacturers — no middlemen.</p>'}
   },
   {
@@ -580,7 +580,7 @@ const MK_COLUMNS = [
     title:{vi:'Vì sao Daegu là thủ phủ sản xuất mới của K-Beauty và K-Food?', ko:'대구가 K-뷰티·K-푸드의 새로운 제조 허브인 이유', en:'Why Daegu is the new manufacturing hub of K-Beauty and K-Food'},
     excerpt:{vi:'Thành phố lớn thứ 4 Hàn Quốc sở hữu hệ sinh thái sản xuất mạnh — và những thương hiệu ẩn mình đang chờ được khám phá.', ko:'한국 4대 도시 대구의 제조 생태계, 그리고 아직 알려지지 않은 강소 브랜드들.', en:'Korea\'s 4th-largest city has a powerful manufacturing ecosystem — with hidden brands waiting to be discovered.'},
     body:{vi:'<p>Daegu từ lâu là trung tâm dệt may và cơ khí của Hàn Quốc, nay chuyển mình thành cứ điểm của mỹ phẩm, thực phẩm và thiết bị thông minh. Chi phí sản xuất cạnh tranh hơn Seoul 20-30% trong khi chất lượng tương đương.</p><p>MAKENOV khởi đầu từ Daegu — giới thiệu những nhà sản xuất thực lực chưa từng xuất hiện trên các nền tảng toàn cầu.</p>',
-      ko:'<p>섬유·기계의 도시 대구가 화장품·식품·스마트기기 제조 거점으로 변신 중입니다. 서울 대비 20~30% 낮은 생산비용에 동등한 품질이 강점입니다.</p><p>MAKENOV는 대구에서 시작합니다 — 글로벌 플랫폼에 소개된 적 없는 실력 있는 제조사들을 발굴합니다.</p>',
+      ko:'<p>섬유·기계의 도시 대구가 화장품·식품·스마트기기 제조 거점으로 변신 중입니다. 서울 대비 20~30% 낮은 생산비용에 동등한 품질이 강점입니다.</p><p>MAKENOV는 대구에서 시작합니다 — 글로벌 플랫폼에 소개된 적 없는 실력 있는 공급사들을 발굴합니다.</p>',
       en:'<p>Long Korea\'s textile and machinery hub, Daegu is transforming into a base for cosmetics, food, and smart devices. Production costs run 20-30% below Seoul at equal quality.</p><p>MAKENOV starts from Daegu — surfacing capable manufacturers never before seen on global platforms.</p>'}
   },
 ];
@@ -620,12 +620,12 @@ const MK_HERO = [
           en:'Skip the airfare, hotels and interpreters — browse a directory that never closes.' } },
 
   { art:'assets/img/hero/hero-spec.svg', link:'companies.html',
-    kicker:{ vi:'Chỉ nhà sản xuất đã xác thực', ko:'검증된 제조사만', en:'Verified manufacturers only' },
+    kicker:{ vi:'Chỉ nhà sản xuất đã xác thực', ko:'검증된 공급사만', en:'Verified manufacturers only' },
     title:{ vi:'Giá, MOQ, thời gian giao hàng\ntrên cùng một màn hình.',
             ko:'가격, MOQ, 납기까지\n한 화면에서 확인하세요.',
             en:'Price, MOQ and lead time\non a single screen.' },
     sub:{ vi:'Mọi nhà sản xuất đều qua xác thực doanh nghiệp. Không còn phải dò hỏi từng nơi.',
-          ko:'모든 제조사가 사업자 인증을 거칩니다. 하나하나 수소문할 필요 없습니다.',
+          ko:'모든 공급사가 사업자 인증을 거칩니다. 하나하나 수소문할 필요 없습니다.',
           en:'Every manufacturer passes business verification. No more chasing down each supplier.' } },
 
   { art:'assets/img/hero/hero-inquiry.svg', link:'mypage.html',
@@ -634,15 +634,15 @@ const MK_HERO = [
             ko:'관심 제품을 담고,\n한 번에 견적을 받으세요.',
             en:'Save what interests you,\nrequest every quote at once.' },
     sub:{ vi:'Không cần liên hệ từng nhà sản xuất. Thêm vào danh sách rồi gửi yêu cầu cùng lúc.',
-          ko:'제조사마다 따로 연락할 필요 없습니다. 담아두고 한 번에 문의하세요.',
+          ko:'공급사마다 따로 연락할 필요 없습니다. 담아두고 한 번에 문의하세요.',
           en:'Stop emailing suppliers one by one. Add to your list and send a single request.' } },
 ];
 
-/* ---------- 제조사 유치 랜딩(maker.html) 설정 ----------
-   ⚠️ stats 수치는 랜딩에 그대로 노출됩니다. 제조사는 반드시 근거를 묻습니다.
+/* ---------- 공급사 유치 랜딩(maker.html) 설정 ----------
+   ⚠️ stats 수치는 랜딩에 그대로 노출됩니다. 공급사는 반드시 근거를 묻습니다.
       공개 전에 실제 값으로 바꾸거나, 근거를 댈 수 있는 지표(광고 도달수 등)로 교체하세요.
       숫자를 바꿀 곳은 여기 한 곳뿐입니다. */
-/* ⚠️ 여기 숫자는 제조사가 반드시 근거를 묻는 자리다.
+/* ⚠️ 여기 숫자는 공급사가 반드시 근거를 묻는 자리다.
    확인되지 않은 수치(예: 등록 바이어 10,000명)는 절대 넣지 말 것.
    지금은 우리가 실제로 보장하는 것만 적어둔다. 실적이 쌓이면 교체. */
 const MK_MAKER = {
@@ -681,14 +681,14 @@ const MK_FAQ = [
        ko:'베트남은 세금코드(MST), 한국은 사업자등록번호, 그 외 국가는 회사 이메일 도메인으로 인증합니다. 보통 1분이면 끝납니다.',
        en:'Vietnam verifies by tax code (MST), Korea by business registration number, and other countries by company email domain. It usually takes about a minute.'} },
   { id:'f4', page:'home', sort:4, published:true,
-    q:{vi:'Có làm việc trực tiếp với nhà sản xuất không?', ko:'제조사와 직접 거래하나요?', en:'Do I deal directly with manufacturers?'},
+    q:{vi:'Có làm việc trực tiếp với nhà sản xuất không?', ko:'공급사와 직접 거래하나요?', en:'Do I deal directly with manufacturers?'},
     a:{vi:'Có. Yêu cầu của bạn được chuyển thẳng đến nhà sản xuất, không qua trung gian. MAKENOV đảm nhận việc kết nối và xác thực.',
-       ko:'네. 문의는 제조사에 직접 전달되며 중간 유통 마진이 없습니다. MAKENOV는 연결과 검증을 담당합니다.',
+       ko:'네. 문의는 공급사에 직접 전달되며 중간 유통 마진이 없습니다. MAKENOV는 연결과 검증을 담당합니다.',
        en:'Yes. Your inquiry goes straight to the manufacturer with no middleman margins. MAKENOV handles matching and verification.'} },
   { id:'f5', page:'home', sort:5, published:true,
     q:{vi:'Có thể thương lượng MOQ không?', ko:'최소주문수량은 협의할 수 있나요?', en:'Can MOQs be negotiated?'},
     a:{vi:'Tùy sản phẩm, nhưng nhiều nhà sản xuất sẵn sàng thương lượng đơn hàng nhỏ để thử nghiệm thị trường. Hãy ghi số lượng mong muốn khi gửi yêu cầu báo giá.',
-       ko:'제품마다 다르지만, 많은 제조사가 테스트 오더용 소량 주문 협의에 열려 있습니다. 견적 문의 시 희망 수량을 적어주세요.',
+       ko:'제품마다 다르지만, 많은 공급사가 테스트 오더용 소량 주문 협의에 열려 있습니다. 견적 문의 시 희망 수량을 적어주세요.',
        en:'It varies by product, but many manufacturers are open to smaller trial orders. State your desired quantity in the quotation request.'} },
   { id:'f6', page:'home', sort:6, published:true,
     q:{vi:'Tôi có thể gửi yêu cầu bằng ngôn ngữ nào?', ko:'어떤 언어로 문의할 수 있나요?', en:'Which languages can I use?'},
@@ -704,7 +704,7 @@ const MK_NOTICES = [
   { id:'n3', date:'2026-08-04', published:true, cat:'new', pinned:false,
     title:{vi:'Ra mắt 3 sản phẩm MIRALET của INCORE (Daegu)', ko:'인코아 더마코스메틱 미라렛 3종 등록', en:'Three MIRALET dermacosmetics by INCORE now listed'},
     body:{vi:'<p>Nhà sản xuất thiết bị y tế INCORE (Daegu) đã đăng dòng dermacosmetic MIRALET: tinh chất Phyto Intensive Ampoule 30ml (PDRN thực vật 20.000ppm), Skinbooster 2,0ml×4 (100.000ppm) và Phyto Double Mist 50g. Xác thực doanh nghiệp để xem điều kiện giao dịch.</p>',
-          ko:'<p>대구 의료기기 제조사 (주)인코아의 더마코스메틱 브랜드 미라렛이 등록됐습니다. 피토 인텐시브 앰플 30ml(식물성 PDRN 20,000ppm), 스킨부스터 2.0ml×4, 피토 더블 미스트 50g 3종입니다. 사업자 인증 후 거래 조건을 확인하세요.</p>',
+          ko:'<p>대구 의료기기 공급사 (주)인코아의 더마코스메틱 브랜드 미라렛이 등록됐습니다. 피토 인텐시브 앰플 30ml(식물성 PDRN 20,000ppm), 스킨부스터 2.0ml×4, 피토 더블 미스트 50g 3종입니다. 사업자 인증 후 거래 조건을 확인하세요.</p>',
           en:'<p>MIRALET, the dermacosmetic brand of Daegu medical-device maker INCORE, is now listed: Phyto Intensive Ampoule 30ml (plant PDRN 20,000ppm), Skinbooster 2.0ml×4 and Phyto Double Mist 50g. Verify your business to see trade terms.</p>'} },
   { id:'n2', date:'2026-08-04', published:true, cat:'new', pinned:false,
     title:{vi:'Kem dưỡng gót chân Goeunbal — trang chi tiết đầy đủ', ko:'명품 고운발 풋크림 상세페이지 공개', en:'Goeunbal foot cream — full detail page published'},

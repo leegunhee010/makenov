@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805h">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805i">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>제품 등록 문의 | MAKENOV · 전시회 없이 해외 바이어를 만나는 방법</title>
@@ -30,7 +30,7 @@
   <!-- 1. 히어로 -->
   <section class="lp-hero">
     <div class="lp-wrap">
-      <div class="lp-kick">제조사 · 브랜드 전용</div>
+      <div class="lp-kick">공급사 · 브랜드 전용</div>
       <h1>해외 전시회, 올해<br>몇 번이나 다녀오셨습니까?</h1>
       <p class="lead">부스비에 항공료에 통역비까지 쓰고, 사흘 동안 명함은 쌓였습니다.
         그중 실제 발주로 이어진 건 몇 건이었나요?</p>
@@ -84,7 +84,7 @@
       <div class="lp-head">
         <div class="tag">무엇이 다른가</div>
         <h2>같은 제품을, 사흘이 아니라 1년 내내</h2>
-        <p>메이크노브는 제조사의 제품을 해외 바이어에게 상시 노출하고,
+        <p>메이크노브는 공급사의 제품을 해외 바이어에게 상시 노출하고,
            사업자 인증을 통과한 바이어의 견적 문의만 전달합니다.</p>
       </div>
       <table class="lp-vs">
@@ -127,7 +127,7 @@
     <div class="lp-wrap">
       <div class="lp-head">
         <div class="tag">등록 절차</div>
-        <h2>제조사가 할 일은 자료를 주는 것까지입니다</h2>
+        <h2>공급사가 할 일은 자료를 주는 것까지입니다</h2>
         <p>번역, 상세페이지 제작, 기업 프로필 구성, 광고 노출은 메이크노브가 진행합니다.</p>
       </div>
       <div class="lp-steps">
@@ -168,7 +168,7 @@
           <p>제품명·설명·상세 이미지·영상까지 베트남어, 영어, 한국어로 동시 게시됩니다.</p></div></div>
         <div class="lp-ben"><div class="k">02</div><div>
           <h3>기업 프로필</h3>
-          <p>설립연도, 보유 인증, 납품 실적, 생산능력을 담은 제조사 페이지가 함께 만들어집니다.</p></div></div>
+          <p>설립연도, 보유 인증, 납품 실적, 생산능력을 담은 공급사 페이지가 함께 만들어집니다.</p></div></div>
         <div class="lp-ben"><div class="k">03</div><div>
           <h3>연락처가 담긴 문의</h3>
           <p>명함이 아니라 회사명·담당자·연락처·요청 내용이 정리되어 도착합니다.</p></div></div>
@@ -227,7 +227,7 @@
           <h3>이런 기업에 잘 맞습니다</h3>
           <ul>
             <li>제품은 확실한데 해외에서 만날 바이어가 없는 기업</li>
-            <li>인증이나 시험성적서를 갖춘 제조사</li>
+            <li>인증이나 시험성적서를 갖춘 공급사</li>
             <li>OEM·ODM 또는 자체 브랜드 수출을 검토 중인 곳</li>
             <li>전시회 비용 대비 성과에 회의가 생긴 곳</li>
             <li>수출 경험이 없어도 무방합니다</li>
@@ -329,18 +329,18 @@
 
 <footer class="mk-footer" id="mk-footer"></footer>
 
-<script src="assets/js/config.js?v=20260805h"></script>
-<script src="assets/js/pixel.js?v=20260805h"></script>
+<script src="assets/js/config.js?v=20260805i"></script>
+<script src="assets/js/pixel.js?v=20260805i"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805h"></script>
-<script src="assets/js/data.js?v=20260805h"></script>
-<script src="assets/js/store.js?v=20260805h"></script>
-<script src="assets/js/verify.js?v=20260805h"></script>
-<script src="assets/js/upload.js?v=20260805h"></script>
-<script src="assets/js/store-supabase.js?v=20260805h"></script>
-<script src="assets/js/app.js?v=20260805h"></script>
+<script src="assets/js/i18n.js?v=20260805i"></script>
+<script src="assets/js/data.js?v=20260805i"></script>
+<script src="assets/js/store.js?v=20260805i"></script>
+<script src="assets/js/verify.js?v=20260805i"></script>
+<script src="assets/js/upload.js?v=20260805i"></script>
+<script src="assets/js/store-supabase.js?v=20260805i"></script>
+<script src="assets/js/app.js?v=20260805i"></script>
 <script>
-/* 이 페이지는 한국 제조사 대상이라 3개 국어 전환 없이 한국어로만 운영한다. */
+/* 이 페이지는 한국 공급사 대상이라 3개 국어 전환 없이 한국어로만 운영한다. */
 function pageInit(){
   document.getElementById('lp-stats').innerHTML = MK_MAKER.stats.map(s=>`
     <div class="lp-stat"><div class="num">${esc(s.n)}</div><div class="lbl">${esc(s.label)}</div><div class="sub">${esc(s.note)}</div></div>`).join('');
@@ -375,7 +375,7 @@ function submitMaker(){
 
   err.style.display = 'none';
   Store.addMakerLead(lead);
-  /* 제조사 입점 문의 — 바이어 Lead와 섞이면 광고 최적화가 망가지므로 다른 이벤트로 분리 */
+  /* 공급사 입점 문의 — 바이어 Lead와 섞이면 광고 최적화가 망가지므로 다른 이벤트로 분리 */
   mkTrack('SubmitApplication', { content_category:'maker', content_name:lead.cat });
   document.getElementById('lp-form').innerHTML = `
     <div class="lp-done">

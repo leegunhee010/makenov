@@ -66,7 +66,7 @@ const Store = {
   allInquiries(){ return this._inqs(); },   // admin
   allBuyers(){ return this._users().map(u=>{const c={...u}; delete c.password; return c;}); }, // admin
 
-  /* ---- 제조사 입점 문의 (maker.html) — 로그인 없이 접수 ---- */
+  /* ---- 공급사 입점 문의 (maker.html) — 로그인 없이 접수 ---- */
   _leads(){ try{ return JSON.parse(localStorage.getItem('mk_maker_leads')||'[]'); }catch(e){ return []; } },
   addMakerLead(lead){
     const list = this._leads();
@@ -194,7 +194,7 @@ const Admin = {
     localStorage.setItem('mk_inquiries', JSON.stringify(list));
   },
 
-  /* ---- 제조사 입점 문의 처리상태 ---- */
+  /* ---- 공급사 입점 문의 처리상태 ---- */
   _leadMeta(){ try{ return JSON.parse(localStorage.getItem('mk_lead_meta')||'{}'); }catch(e){ return {}; } },
   leadMeta(id){ return this._leadMeta()[id] || { status:'new', memo:'' }; },
   setLeadMeta(id, patch){

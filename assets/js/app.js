@@ -462,7 +462,7 @@ function openInquiry(pids){    // pids: array of product ids
     /* 문의는 두 갈래다.
        ① 간단히 물어보기 — 아직 수량이 없는 사람. 질문 한 칸이면 충분하고,
           여기서 구조화된 폼을 들이대면 그냥 나가버린다.
-       ② 견적 요청 — 살 마음이 선 사람. 제조사가 단가를 내려면
+       ② 견적 요청 — 살 마음이 선 사람. 공급사가 단가를 내려면
           수량·시기·채널이 반드시 있어야 한다.
        (DB는 message 한 칸이라, 아래 값들을 라벨 붙여 조립해 넣는다) */
     const opt = (v,k)=>`<option value="${v}">${esc(t(k))}</option>`;
@@ -542,8 +542,8 @@ function setInqMode(m){
   });
 }
 
-/* 폼 값을 제조사가 그대로 읽을 수 있는 형태로 조립한다.
-   맨 앞의 [간단 문의] / [견적 요청] 표시로 제조사가 답변 무게를 바로 안다. */
+/* 폼 값을 공급사가 그대로 읽을 수 있는 형태로 조립한다.
+   맨 앞의 [간단 문의] / [견적 요청] 표시로 공급사가 답변 무게를 바로 안다. */
 function buildInquiryMessage(){
   const v  = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
   const ck = id => { const el=document.getElementById(id); return el && el.checked; };

@@ -13,7 +13,7 @@
      InitiateCheckout     견적 문의 모달 열기
      Lead                 견적 문의 발송 / 바이어 간편문의
      CompleteRegistration 가입 + 사업자 인증 완료
-     SubmitApplication    제조사 입점 문의 (maker.html — 공급자 퍼널)
+     SubmitApplication    공급사 입점 문의 (maker.html — 공급자 퍼널)
 
    ★ 초기에는 Lead 전환이 주 50건에 못 미쳐 학습을 못 빠져나온다.
      ViewContent / AddToWishlist 로 시작해서 위로 올려야 한다.

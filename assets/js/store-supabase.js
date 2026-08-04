@@ -398,7 +398,7 @@ Object.assign(Store, {
     }));
   },
 
-  /* ---- 제조사 입점 문의 ---- */
+  /* ---- 공급사 입점 문의 ---- */
   async addMakerLead(lead){
     const { error } = await SB.from('maker_leads').insert(lead);
     return error ? { ok:false, err:error.message } : { ok:true };
