@@ -1,0 +1,14 @@
+{
+  "name": "makenov",
+  "private": true,
+  "description": "MAKENOV — B2B 혁신제품 플랫폼 (정적 사이트 + Supabase)",
+  "scripts": {
+    "db": "node db.js",
+    "db:check": "node db.js --check",
+    "db:all": "node db.js --all",
+    "bake": "node bake.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
