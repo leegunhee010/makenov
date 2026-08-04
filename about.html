@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805e">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805g">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Giới thiệu MAKENOV — Nhà mua và nhà sản xuất đều đã xác thực</title>
@@ -23,152 +23,353 @@
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>
+<main id="ab-root"></main>
+<footer class="mk-footer" id="mk-footer"></footer>
 
-<main>
+<script src="assets/js/config.js?v=20260805g"></script>
+<script src="assets/js/pixel.js?v=20260805g"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/i18n.js?v=20260805g"></script>
+<script src="assets/js/data.js?v=20260805g"></script>
+<script src="assets/js/store.js?v=20260805g"></script>
+<script src="assets/js/verify.js?v=20260805g"></script>
+<script src="assets/js/upload.js?v=20260805g"></script>
+<script src="assets/js/store-supabase.js?v=20260805g"></script>
+<script src="assets/js/app.js?v=20260805g"></script>
+<script>
+/* DB 없이 아래 AB 데이터만으로 완성되는 화면 — boot 를 기다리지 않고 즉시 렌더 */
+window.MK_EARLY_RENDER = true;
 
-  <!-- 1. 히어로 — 이 서비스의 장치 한 문장 + 지표 스트립 -->
-  <section class="ab-hero">
-    <div class="wrap">
-      <div class="ab-kick" data-i18n="ab_kick"></div>
-      <h1 id="ab-title"></h1>
-      <p class="ab-lead" data-i18n="ab_lead"></p>
-      <div class="ab-hero-cta">
-        <button class="btn btn-primary btn-lg" onclick="openAuth('signup')" data-i18n="hero_cta_join"></button>
-        <a class="btn btn-ghost btn-lg" href="directory.html" data-i18n="hero_cta_browse"></a>
+/* ============================================================
+   바이어 랜딩 콘텐츠 (3개 국어)
+   ------------------------------------------------------------
+   각도: 제조사 페이지가 "전시회에 부스를 차리지 않아도 된다" 라면
+        이쪽은 "전시회에 가지 않아도 된다".
+        플랫폼 하나로 전 세계 혁신 제품을 상시로 보고, 가격을 확인하고,
+        제조사에 바로 미팅을 요청한다.
+   ⚠️ 특정 국가를 내세우지 않는다. 우리는 글로벌 혁신 제품 플랫폼이다.
+   ============================================================ */
+const AB = {
+hero:{
+  kick:{vi:'Dành cho nhà mua', ko:'바이어 전용', en:'For buyers'},
+  h1:{vi:'Không cần đợi hội chợ.\nKhông cần bay đi đâu cả.',
+      ko:'전시회를 기다릴 필요도,\n비행기를 탈 필요도 없습니다.',
+      en:'No waiting for trade fairs.\nNo flights either.'},
+  lead:{vi:'Ngồi tại văn phòng, duyệt sản phẩm đổi mới từ các nhà sản xuất khắp thế giới, xem giá và đặt lịch trao đổi trực tiếp với nhà máy. Cả năm, không chỉ ba ngày.',
+        ko:'사무실에 앉아 전 세계 제조사의 혁신 제품을 훑고, 가격을 확인하고, 제조사에 바로 미팅을 요청하세요. 사흘이 아니라 1년 내내.',
+        en:'From your desk: browse innovative products from manufacturers worldwide, check pricing, and request a meeting with the factory directly. All year, not three days.'},
+  facts:[
+    {n:{vi:'365 ngày',ko:'365일',en:'365 days'}, l:{vi:'Luôn mở, hội chợ chỉ 3 ngày',ko:'상시 열람, 전시회는 3일',en:'Always open; fairs run three days'}},
+    {n:{vi:'0đ',ko:'0원',en:'Zero'}, l:{vi:'Đăng ký và xác thực',ko:'가입과 사업자 인증',en:'Sign-up and verification'}},
+    {n:{vi:'1 phút',ko:'1분',en:'1 minute'}, l:{vi:'Xác thực xong là mở giá',ko:'인증 즉시 가격 열람',en:'Verify and prices unlock'}},
+  ],
+},
+problem:{
+  tag:{vi:'Cách sourcing hiện nay',ko:'지금의 소싱',en:'Sourcing as it stands'},
+  h2:{vi:'Sản phẩm mới thì luôn có.\nChỉ là bạn phải đợi tới hội chợ mới thấy.',
+      ko:'신제품은 늘 나옵니다.\n전시회를 기다려야 볼 수 있을 뿐입니다.',
+      en:'New products keep coming.\nYou just have to wait for a fair to see them.'},
+  lead:{vi:'Nhà sản xuất tốt không hiếm. Hiếm là cơ hội gặp họ đúng lúc bạn cần.',
+        ko:'좋은 제조사가 드문 게 아닙니다. 필요할 때 만날 방법이 없을 뿐입니다.',
+        en:'Good manufacturers are not rare. A way to meet them when you need to, is.'},
+  items:[
+    {t:{vi:'Lịch của bạn phụ thuộc lịch hội chợ',ko:'일정이 전시회에 묶입니다',en:'Your timing is the fair’s timing'},
+     d:{vi:'Muốn tìm hàng mới thì đợi kỳ hội chợ tiếp theo. Nhu cầu phát sinh tháng này, hội chợ lại vào cuối năm.',
+        ko:'새 제품을 찾으려면 다음 회차를 기다려야 합니다. 이번 달에 필요한데 전시회는 연말입니다.',
+        en:'Need something new? Wait for the next edition. The need is this month; the fair is in December.'}},
+    {t:{vi:'Đi một chuyến tốn cả tuần',ko:'한 번 가는 데 일주일이 듭니다',en:'One trip costs a week'},
+     d:{vi:'Vé máy bay, khách sạn, phiên dịch, và mấy ngày rời khỏi công việc. Chi phí ấy tiêu hết trong ba ngày.',
+        ko:'항공권, 숙박, 통역, 그리고 자리를 비우는 며칠. 그 비용이 사흘로 소진됩니다.',
+        en:'Flights, hotels, an interpreter, and days away from the desk. All spent in three days.'}},
+    {t:{vi:'Đi rồi cũng không xem hết',ko:'가서도 다 못 봅니다',en:'And you still miss most of it'},
+     d:{vi:'Hàng trăm gian hàng, bạn đi được vài chục. Thứ hợp với bạn nhất có thể nằm ở dãy chưa kịp ghé.',
+        ko:'수백 개 부스 중 실제로 도는 건 수십 개입니다. 가장 맞는 제품이 못 간 줄에 있을 수 있습니다.',
+        en:'Hundreds of booths, a few dozen walked. The best fit may be in an aisle you never reached.'}},
+  ],
+},
+vs:{
+  tag:{vi:'Khác ở đâu',ko:'무엇이 다른가',en:'What changes'},
+  h2:{vi:'Cùng một việc tìm hàng,\nkhác nhau ở chỗ khi nào và ở đâu',
+      ko:'같은 소싱인데,\n언제 어디서 하느냐가 다릅니다',
+      en:'The same sourcing job,\ndone at a different time and place'},
+  head:{vi:['Đi hội chợ','MAKENOV'], ko:['전시회에 가는 방식','메이크노브'], en:['Going to a fair','MAKENOV']},
+  rows:[
+    {k:{vi:'Thời điểm',ko:'탐색 시점',en:'When you can look'},
+     a:{vi:'Chờ tới kỳ hội chợ',ko:'전시회 회차를 기다림',en:'Wait for the next edition'},
+     b:{vi:'Bất cứ lúc nào, cả năm',ko:'언제든, 1년 내내',en:'Any time, all year'}},
+    {k:{vi:'Chi phí đi lại',ko:'이동 비용',en:'Cost to attend'},
+     a:{vi:'Vé bay, khách sạn, phiên dịch',ko:'항공 · 숙박 · 통역',en:'Flights, hotels, interpreter'},
+     b:{vi:'Không có',ko:'없음',en:'None'}},
+    {k:{vi:'Phạm vi xem được',ko:'볼 수 있는 범위',en:'How much you see'},
+     a:{vi:'Số gian hàng kịp đi trong 3 ngày',ko:'사흘 동안 도는 부스만큼',en:'As many booths as three days allow'},
+     b:{vi:'Toàn bộ danh mục, lọc theo ngành hàng',ko:'전체 목록을 카테고리로 훑기',en:'The whole catalogue, filtered by category'}},
+    {k:{vi:'Xem giá',ko:'가격 확인',en:'Getting a price'},
+     a:{vi:'Đưa danh thiếp rồi chờ email',ko:'명함 주고 메일 기다리기',en:'Hand a card, wait for email'},
+     b:{vi:'Xác thực xong là thấy ngay giá và MOQ',ko:'인증 즉시 가격 · MOQ 열람',en:'Verify and see price and MOQ at once'}},
+    {k:{vi:'So sánh',ko:'비교',en:'Comparing'},
+     a:{vi:'Dựa vào tờ rơi và trí nhớ',ko:'받아온 카탈로그와 기억',en:'Brochures and memory'},
+     b:{vi:'Lưu nhiều sản phẩm, hỏi báo giá một lần',ko:'여러 제품 담아 일괄 견적',en:'Save several, request quotes in one go'}},
+    {k:{vi:'Liên hệ tiếp',ko:'후속 연락',en:'Following up'},
+     a:{vi:'Email đi rồi im lặng',ko:'메일 보내고 무응답',en:'Emails into silence'},
+     b:{vi:'Yêu cầu tới thẳng nhà sản xuất, có trạng thái xử lý',ko:'제조사 직행 + 처리 상태 확인',en:'Straight to the maker, with status tracking'}},
+    {k:{vi:'Ngôn ngữ',ko:'언어',en:'Language'},
+     a:{vi:'Tự lo phiên dịch',ko:'통역 직접 섭외',en:'Arrange your own interpreter'},
+     b:{vi:'Tiếng Việt · Anh · Hàn, đội ngũ hỗ trợ khi cần',ko:'3개 국어, 필요하면 팀이 소통 지원',en:'Three languages, team assists when needed'}},
+  ],
+},
+lock:{
+  tag:{vi:'Cơ chế cốt lõi',ko:'핵심 장치',en:'The core mechanism'},
+  h2:{vi:'Không phải che trên màn hình.\nMáy chủ không gửi ra.',
+      ko:'화면에서 가리는 게 아닙니다.\n서버가 아예 안 보냅니다.',
+      en:'Not hidden on screen.\nThe server never sends it.'},
+  desc:{vi:'Giá, MOQ, thời gian giao hàng và điều kiện cung ứng nằm ở bảng riêng, chỉ gửi tới tài khoản đã xác thực doanh nghiệp. Người xem dạo và đối thủ không nhận được dữ liệu đó, kể cả khi mở mã nguồn trang.',
+        ko:'가격 · MOQ · 납기 · 공급 조건은 별도 테이블에 있고, 사업자 인증을 통과한 계정에만 전송됩니다. 구경꾼과 경쟁사에게는 데이터 자체가 가지 않습니다. 소스 보기를 열어도 없습니다.',
+        en:'Price, MOQ, lead time and supply terms sit in a separate table, transmitted only to verified accounts. Browsers and competitors never receive the data. It is not in the page source either.'},
+  before:{vi:'Trước khi xác thực',ko:'인증 전',en:'Before verification'},
+  after:{vi:'Sau khi xác thực',ko:'인증 후',en:'After verification'},
+  note:{vi:'Chính vì vậy nhà sản xuất mới dám niêm yết giá xuất khẩu thật ở đây.',
+        ko:'그래서 제조사가 여기에 실제 수출 단가를 겁니다.',
+        en:'That is exactly why manufacturers post genuine export pricing here.'},
+},
+steps:{
+  tag:{vi:'Cách dùng',ko:'이용 방법',en:'How it works'},
+  h2:{vi:'Từ đăng ký đến đặt lịch trao đổi, dưới mười phút',
+      ko:'가입부터 미팅 요청까지, 10분이면 됩니다',
+      en:'Sign-up to a meeting request in under ten minutes'},
+  items:[
+    {t:{vi:'Đăng ký',ko:'가입',en:'Sign up'},
+     d:{vi:'Chọn quốc gia, nhập thông tin công ty và người phụ trách. Miễn phí.',
+        ko:'국가를 고르고 회사와 담당자 정보를 입력합니다. 무료입니다.',
+        en:'Pick your country, enter company and contact details. Free.'}},
+    {t:{vi:'Xác thực doanh nghiệp',ko:'사업자 인증',en:'Verify your business'},
+     d:{vi:'Đối chiếu theo hệ thống đăng ký doanh nghiệp của nước bạn. Thường khoảng một phút.',
+        ko:'각 나라의 사업자 등록 체계로 대조합니다. 보통 1분입니다.',
+        en:'Checked against your country’s business registry. Usually a minute.'}},
+    {t:{vi:'Xem giá và so sánh',ko:'가격 열람과 비교',en:'Unlock and compare'},
+     d:{vi:'Giá, MOQ, thời gian giao hàng mở ra. Lưu nhiều sản phẩm để đặt cạnh nhau.',
+        ko:'가격 · MOQ · 납기가 열립니다. 여러 제품을 담아 나란히 놓고 봅니다.',
+        en:'Price, MOQ and lead time open up. Save several products to line them up.'}},
+    {t:{vi:'Hỏi hoặc đặt lịch trao đổi',ko:'문의 또는 미팅 요청',en:'Ask, or request a meeting'},
+     d:{vi:'Hỏi nhanh một câu, yêu cầu báo giá chi tiết, hoặc đề nghị một buổi trao đổi trực tuyến với nhà sản xuất.',
+        ko:'간단히 물어보거나, 견적을 요청하거나, 제조사와 온라인 미팅을 요청할 수 있습니다.',
+        en:'Ask a quick question, request a full quote, or propose an online meeting with the maker.'}},
+  ],
+},
+bens:{
+  tag:{vi:'Bạn nhận được gì',ko:'받는 것',en:'What you get'},
+  h2:{vi:'Một nền tảng thay cho\nlịch hội chợ cả năm',
+      ko:'1년치 전시회 일정을\n플랫폼 하나로',
+      en:'One platform in place of\na year of trade-fair dates'},
+  items:[
+    {t:{vi:'Danh mục sản phẩm đổi mới toàn cầu',ko:'전 세계 혁신 제품 목록',en:'A global catalogue of innovative products'},
+     d:{vi:'Lọc theo ngành hàng, sắp xếp theo hàng mới, hoặc duyệt theo từng nhà sản xuất.',
+        ko:'카테고리로 좁히고, 신규순으로 정렬하고, 제조사 단위로도 볼 수 있습니다.',
+        en:'Filter by category, sort by newest, or browse by manufacturer.'}},
+    {t:{vi:'Giá thật, không phải giá bán lẻ',ko:'소매가가 아닌 실제 거래가',en:'Real trade pricing, not retail'},
+     d:{vi:'Đơn giá xuất khẩu, MOQ, thời gian giao hàng và điều kiện cung ứng.',
+        ko:'수출 단가 · 최소주문수량 · 납기 · 공급 조건.',
+        en:'Export unit price, MOQ, lead time and supply terms.'}},
+    {t:{vi:'Hồ sơ nhà sản xuất',ko:'제조사 프로필',en:'Manufacturer profiles'},
+     d:{vi:'Năm thành lập, chứng nhận, năng lực sản xuất và toàn bộ sản phẩm của họ.',
+        ko:'설립연도 · 보유 인증 · 생산능력, 그리고 그 회사의 전 제품.',
+        en:'Founding year, certifications, capacity, and their full lineup.'}},
+    {t:{vi:'Yêu cầu hàng loạt',ko:'일괄 견적 요청',en:'Bulk quote requests'},
+     d:{vi:'Lưu nhiều sản phẩm rồi hỏi một lần, mỗi yêu cầu tới đúng nhà sản xuất của nó.',
+        ko:'여러 제품을 담아 한 번에 문의하면 각 제조사에 따로 전달됩니다.',
+        en:'Save several and ask once; each request routes to its own maker.'}},
+    {t:{vi:'Đặt lịch trao đổi trực tuyến',ko:'온라인 미팅 요청',en:'Online meeting requests'},
+     d:{vi:'Muốn nói chuyện trực tiếp thì đề nghị một buổi họp, không cần bay.',
+        ko:'직접 이야기하고 싶으면 미팅을 요청하세요. 비행기는 필요 없습니다.',
+        en:'Want to talk it through? Propose a meeting. No flight required.'}},
+    {t:{vi:'Ba ngôn ngữ',ko:'3개 국어',en:'Three languages'},
+     d:{vi:'Tiếng Việt, Hàn và Anh. Khi cần, đội ngũ MAKENOV hỗ trợ trao đổi.',
+        ko:'베트남어 · 한국어 · 영어. 필요하면 메이크노브 팀이 소통을 돕습니다.',
+        en:'Vietnamese, Korean and English, with team support when needed.'}},
+  ],
+},
+verify:{
+  tag:{vi:'Xác thực doanh nghiệp',ko:'사업자 인증',en:'Business verification'},
+  h2:{vi:'Miễn phí, và thường xong trong một phút',ko:'무료이고, 보통 1분이면 끝납니다',en:'Free, and usually done in a minute'},
+  desc:{vi:'Mỗi quốc gia được đối chiếu theo hệ thống đăng ký doanh nghiệp của chính nước đó.',
+        ko:'국가마다 그 나라의 사업자 등록 체계로 직접 대조합니다.',
+        en:'Each country is checked against its own business registry.'},
+  items:[
+    {t:{vi:'Việt Nam',ko:'베트남',en:'Vietnam'},
+     d:{vi:'Nhập mã số thuế (MST). Tên và địa chỉ công ty tự động điền.',
+        ko:'세금코드(MST)를 넣으면 회사명과 주소가 자동으로 채워집니다.',
+        en:'Enter your tax code (MST); company name and address fill in automatically.'}},
+    {t:{vi:'Hàn Quốc',ko:'한국',en:'Korea'},
+     d:{vi:'Số đăng ký kinh doanh được đối chiếu trạng thái với cơ quan thuế.',
+        ko:'사업자등록번호로 국세청 사업자 상태를 조회합니다.',
+        en:'Your registration number is checked against the tax office.'}},
+    {t:{vi:'Các quốc gia khác',ko:'그 외 국가',en:'Elsewhere'},
+     d:{vi:'Xác thực bằng email tên miền công ty. Không dùng được email miễn phí.',
+        ko:'회사 이메일 도메인으로 인증합니다. 무료 메일은 쓸 수 없습니다.',
+        en:'Verify by company email domain. Free mail providers are not accepted.'}},
+  ],
+},
+faq:{
+  tag:{vi:'Hay được hỏi',ko:'궁금하실 것들',en:'Common questions'},
+  h2:{vi:'Trước khi đăng ký',ko:'가입 전에',en:'Before you sign up'},
+  items:[
+    {q:{vi:'Có mất phí không?',ko:'비용이 드나요?',en:'Does it cost anything?'},
+     a:{vi:'Đăng ký, xác thực, xem sản phẩm, gửi yêu cầu báo giá đều miễn phí. Không có phí thành viên.',
+        ko:'가입 · 인증 · 제품 열람 · 견적 문의 모두 무료입니다. 회원비가 없습니다.',
+        en:'Signing up, verifying, browsing and requesting quotes are all free. No membership fee.'}},
+    {q:{vi:'Vì sao phải xác thực mới xem được giá?',ko:'왜 인증해야 가격이 보이나요?',en:'Why does seeing prices need verification?'},
+     a:{vi:'Vì đó là điều kiện để nhà sản xuất đồng ý công khai đơn giá thật. Nếu ai cũng xem được thì họ sẽ không đăng giá, và bạn lại quay về cảnh phải hỏi vòng vo.',
+        ko:'그게 제조사가 실제 단가를 여는 조건이기 때문입니다. 누구나 볼 수 있으면 제조사는 가격을 안 겁니다. 그러면 다시 물어물어 알아내야 하는 상태로 돌아갑니다.',
+        en:'It is the condition on which manufacturers agree to publish real pricing. If anyone could see it, they would not post it, and you would be back to asking around.'}},
+    {q:{vi:'Đặt số lượng nhỏ để thử được không?',ko:'소량으로 먼저 테스트할 수 있나요?',en:'Can I start with a small trial order?'},
+     a:{vi:'Tùy sản phẩm, nhưng nhiều nhà sản xuất có gắn nhãn “có thể thương lượng”. Hãy ghi rõ số lượng mong muốn khi gửi yêu cầu.',
+        ko:'제품마다 다르지만 협의 가능 배지가 붙은 제품이 많습니다. 문의할 때 희망 수량을 함께 적어주세요.',
+        en:'It varies, but many products carry a “negotiable” badge. State your target quantity when you enquire.'}},
+    {q:{vi:'Có phải mua qua MAKENOV không?',ko:'메이크노브를 통해 결제하나요?',en:'Do I buy through MAKENOV?'},
+     a:{vi:'Không. Yêu cầu đi thẳng tới nhà sản xuất và bạn giao dịch trực tiếp với họ. Chúng tôi không cộng thêm chênh lệch.',
+        ko:'아닙니다. 문의는 제조사에 직접 전달되고 거래도 제조사와 직접 합니다. 중간 마진을 붙이지 않습니다.',
+        en:'No. Requests go straight to the manufacturer and you deal with them directly. We add no margin.'}},
+    {q:{vi:'Tôi cần giấy tờ để công bố sản phẩm',ko:'수입 공고용 서류가 필요합니다',en:'I need documents for import registration'},
+     a:{vi:'Khi gửi yêu cầu báo giá, hãy tích chọn các giấy tờ cần: bảng thành phần, C/O, phiếu kiểm nghiệm, catalogue.',
+        ko:'견적 요청 폼에서 필요한 서류를 체크하시면 됩니다. 전성분표 · 원산지증명서 · 시험성적서 · 카탈로그.',
+        en:'Tick the documents you need on the quote form: ingredient list, C/O, test report, catalogue.'}},
+    {q:{vi:'Sản phẩm đến từ những nước nào?',ko:'어느 나라 제품이 올라오나요?',en:'Where are the products from?'},
+     a:{vi:'MAKENOV mở cho nhà sản xuất trên toàn cầu. Danh mục được bổ sung liên tục, bạn có thể lọc theo xuất xứ ngay trên trang sản phẩm.',
+        ko:'전 세계 제조사에게 열려 있습니다. 목록은 계속 늘어나며, 제품 페이지에서 원산지로 확인할 수 있습니다.',
+        en:'MAKENOV is open to manufacturers worldwide. The catalogue keeps growing, and origin is shown on every product.'}},
+  ],
+},
+last:{
+  h2:{vi:'Hội chợ tiếp theo còn bao lâu nữa?',ko:'다음 전시회까지 몇 달 남았습니까?',en:'How many months to the next fair?'},
+  p:{vi:'Xác thực miễn phí trong một phút và bắt đầu xem ngay hôm nay.',
+     ko:'1분이면 끝나는 무료 인증으로 오늘부터 보실 수 있습니다.',
+     en:'A free one-minute verification and you can start today.'},
+  btn:{vi:'Xác thực miễn phí',ko:'무료로 인증하기',en:'Verify for free'},
+},
+};
+
+/* ---------- 렌더 ---------- */
+function br(s){ return esc(s).replace(/\n/g,'<br>'); }
+
+function renderAbout(){
+  const A = AB;
+  document.getElementById('ab-root').innerHTML = `
+
+  <section class="lp-hero buyer">
+    <div class="lp-wrap">
+      <div class="lp-kick">${esc(L(A.hero.kick))}</div>
+      <h1>${br(L(A.hero.h1))}</h1>
+      <p class="lead">${esc(L(A.hero.lead))}</p>
+      <div class="lp-hero-cta">
+        <button class="btn btn-primary" onclick="openAuth('signup')">${esc(t('hero_cta_join'))}</button>
+        <a class="btn ghost" href="directory.html">${esc(t('hero_cta_browse'))}</a>
       </div>
-      <div class="ab-stats">
-        <div><b data-i18n="ab_s1_n"></b><span data-i18n="ab_s1_l"></span></div>
-        <div><b data-i18n="ab_s2_n"></b><span data-i18n="ab_s2_l"></span></div>
-        <div><b data-i18n="ab_s3_n"></b><span data-i18n="ab_s3_l"></span></div>
+      <div class="lp-hero-facts">
+        ${A.hero.facts.map(f=>`<div><b>${esc(L(f.n))}</b><span>${esc(L(f.l))}</span></div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- 2. 핵심 장치 — 잠금을 말로 설명하지 않고 화면으로 보여준다 -->
-  <section class="ab-sec ab-lock">
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.problem.tag))}</div>
+        <h2>${br(L(A.problem.h2))}</h2><p>${esc(L(A.problem.lead))}</p></div>
+      <div class="lp-cards">
+        ${A.problem.items.map((x,i)=>`<div class="lp-card"><div class="n">0${i+1}</div>
+          <h3>${esc(L(x.t))}</h3><p>${esc(L(x.d))}</p></div>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.vs.tag))}</div><h2>${br(L(A.vs.h2))}</h2></div>
+      <table class="lp-vs">
+        <thead><tr><th></th><th>${esc(L(A.vs.head)[0])}</th><th>${esc(L(A.vs.head)[1])}</th></tr></thead>
+        <tbody>${A.vs.rows.map(r=>`<tr><th>${esc(L(r.k))}</th>
+          <td class="old">${esc(L(r.a))}</td><td class="new">${esc(L(r.b))}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="ab-lock">
     <div class="wrap">
       <div class="ab-lock-row">
         <div class="ab-lock-tx">
-          <div class="ab-tag light" data-i18n="ab_lock_tag"></div>
-          <h2 id="ab-lock-title"></h2>
-          <p data-i18n="ab_lock_desc"></p>
-          <p class="ab-lock-note" data-i18n="ab_lock_note"></p>
+          <div class="ab-tag light">${esc(L(A.lock.tag))}</div>
+          <h2>${br(L(A.lock.h2))}</h2>
+          <p>${esc(L(A.lock.desc))}</p>
+          <p class="ab-lock-note">${esc(L(A.lock.note))}</p>
         </div>
         <div class="ab-lock-demo">
-          <div class="pane">
-            <div class="cap" data-i18n="ab_lock_before"></div>
+          <div class="pane"><div class="cap">${esc(L(A.lock.before))}</div>
             <div class="rows">
-              <div><span data-i18n="price"></span><i class="bar"></i></div>
-              <div><span data-i18n="moq"></span><i class="bar"></i></div>
-              <div><span data-i18n="lead_time"></span><i class="bar"></i></div>
-              <div><span data-i18n="supply_terms"></span><i class="bar"></i></div>
-            </div>
-          </div>
-          <div class="pane on">
-            <div class="cap" data-i18n="ab_lock_after"></div>
+              <div><span>${esc(t('price'))}</span><i class="bar"></i></div>
+              <div><span>${esc(t('moq'))}</span><i class="bar"></i></div>
+              <div><span>${esc(t('lead_time'))}</span><i class="bar"></i></div>
+              <div><span>${esc(t('supply_terms'))}</span><i class="bar"></i></div>
+            </div></div>
+          <div class="pane on"><div class="cap">${esc(L(A.lock.after))}</div>
             <div class="rows">
-              <div><span data-i18n="price"></span><b>US$ 4.20</b></div>
-              <div><span data-i18n="moq"></span><b>500</b></div>
-              <div><span data-i18n="lead_time"></span><b>30 days</b></div>
-              <div><span data-i18n="supply_terms"></span><b>FOB · OEM</b></div>
-            </div>
-          </div>
+              <div><span>${esc(t('price'))}</span><b>US$ 4.20</b></div>
+              <div><span>${esc(t('moq'))}</span><b>500</b></div>
+              <div><span>${esc(t('lead_time'))}</span><b>30 days</b></div>
+              <div><span>${esc(t('supply_terms'))}</span><b>FOB · OEM</b></div>
+            </div></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3. 왜 만들었나 — 카드 대신 큰 번호 + 본문 -->
-  <section class="ab-sec">
-    <div class="wrap">
-      <div class="ab-head">
-        <div class="ab-tag" data-i18n="ab_p_tag"></div>
-        <h2 id="ab-p-title"></h2>
-      </div>
-      <div class="ab-probs">
-        <div><i>01</i><div><h3 data-i18n="ab_p1_t"></h3><p data-i18n="ab_p1_d"></p></div></div>
-        <div><i>02</i><div><h3 data-i18n="ab_p2_t"></h3><p data-i18n="ab_p2_d"></p></div></div>
-        <div><i>03</i><div><h3 data-i18n="ab_p3_t"></h3><p data-i18n="ab_p3_d"></p></div></div>
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.steps.tag))}</div><h2>${esc(L(A.steps.h2))}</h2></div>
+      <div class="lp-steps">
+        ${A.steps.items.map((x,i)=>`<div class="lp-step on"><div class="st">STEP 0${i+1}</div>
+          <h3>${esc(L(x.t))}</h3><p>${esc(L(x.d))}</p></div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- 4. 양쪽이 얻는 것 -->
-  <section class="ab-sec soft">
-    <div class="wrap">
-      <div class="ab-head">
-        <div class="ab-tag" data-i18n="ab_h_tag"></div>
-        <h2 data-i18n="ab_h_title"></h2>
-      </div>
-      <div class="ab-two">
-        <div class="ab-col">
-          <div class="ab-col-tag" data-i18n="ab_b_tag"></div>
-          <h3 data-i18n="ab_b_title"></h3>
-          <ul>
-            <li data-i18n="ab_b1"></li><li data-i18n="ab_b2"></li>
-            <li data-i18n="ab_b3"></li><li data-i18n="ab_b4"></li>
-          </ul>
-          <a class="btn btn-primary btn-sm" href="directory.html" data-i18n="hero_cta_browse"></a>
-        </div>
-        <div class="ab-col dark">
-          <div class="ab-col-tag" data-i18n="ab_m_tag"></div>
-          <h3 data-i18n="ab_m_title"></h3>
-          <ul>
-            <li data-i18n="ab_m1"></li><li data-i18n="ab_m2"></li>
-            <li data-i18n="ab_m3"></li><li data-i18n="ab_m4"></li>
-          </ul>
-          <a class="btn btn-sm ab-mbtn" href="maker.html" data-i18n="util_maker"></a>
-        </div>
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.bens.tag))}</div><h2>${br(L(A.bens.h2))}</h2></div>
+      <div class="lp-bens">
+        ${A.bens.items.map((x,i)=>`<div class="lp-ben"><div class="k">0${i+1}</div><div>
+          <h3>${esc(L(x.t))}</h3><p>${esc(L(x.d))}</p></div></div>`).join('')}
       </div>
     </div>
   </section>
 
-  <!-- 5. 국가별 인증 -->
-  <section class="ab-sec">
-    <div class="wrap">
-      <div class="ab-head">
-        <div class="ab-tag" data-i18n="ab_v_tag"></div>
-        <h2 data-i18n="ab_v_title"></h2>
-        <p data-i18n="ab_v_desc"></p>
-      </div>
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.verify.tag))}</div>
+        <h2>${esc(L(A.verify.h2))}</h2><p>${esc(L(A.verify.desc))}</p></div>
       <div class="ab-vers">
-        <div><h3 data-i18n="ab_v1_t"></h3><p data-i18n="ab_v1_d"></p></div>
-        <div><h3 data-i18n="ab_v2_t"></h3><p data-i18n="ab_v2_d"></p></div>
-        <div><h3 data-i18n="ab_v3_t"></h3><p data-i18n="ab_v3_d"></p></div>
+        ${A.verify.items.map(x=>`<div><h3>${esc(L(x.t))}</h3><p>${esc(L(x.d))}</p></div>`).join('')}
       </div>
     </div>
   </section>
 
-  <section class="sec">
-    <div class="wrap">
-      <a class="maker-band" href="#" onclick="event.preventDefault();openAuth('signup')">
-        <div class="tx"><h2 data-i18n="ab_cta_title"></h2><p data-i18n="ab_cta_desc"></p></div>
-        <span class="go" data-i18n="hero_cta_join"></span>
-      </a>
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">${esc(L(A.faq.tag))}</div><h2>${esc(L(A.faq.h2))}</h2></div>
+      <div class="lp-faq">
+        ${A.faq.items.map(x=>`<details><summary>${esc(L(x.q))}</summary>
+          <div class="a">${esc(L(x.a))}</div></details>`).join('')}
+      </div>
     </div>
   </section>
 
-</main>
-<footer class="mk-footer" id="mk-footer"></footer>
-<script src="assets/js/config.js?v=20260805e"></script>
-<script src="assets/js/pixel.js?v=20260805e"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805e"></script>
-<script src="assets/js/data.js?v=20260805e"></script>
-<script src="assets/js/store.js?v=20260805e"></script>
-<script src="assets/js/verify.js?v=20260805e"></script>
-<script src="assets/js/upload.js?v=20260805e"></script>
-<script src="assets/js/store-supabase.js?v=20260805e"></script>
-<script src="assets/js/app.js?v=20260805e"></script>
-<script>
-/* 줄바꿈(\n)이 든 제목은 data-i18n 으로 <br> 처리가 안 된다 */
-function pageInit(){
-  const br = (id,key)=>{ const el=document.getElementById(id);
-    if(el) el.innerHTML = esc(t(key)).replace(/\n/g,'<br>'); };
-  br('ab-title','ab_title');
-  br('ab-lock-title','ab_lock_title');
-  br('ab-p-title','ab_p_title');
+  <section class="lp-last">
+    <div class="lp-wrap">
+      <h2>${esc(L(A.last.h2))}</h2>
+      <p>${esc(L(A.last.p))}</p>
+      <button class="btn btn-primary" onclick="openAuth('signup')">${esc(L(A.last.btn))}</button>
+    </div>
+  </section>`;
 }
+
+function pageInit(){ renderAbout(); }
 </script>
 </body>
 </html>

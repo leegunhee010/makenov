@@ -1066,8 +1066,18 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .np-body{max-width:720px;font-size:15px;line-height:1.8;color:var(--mk-body)}
 .np-body p{margin-bottom:12px}
 
-/* ---------- 서비스 소개 ----------
-   핵심 장치(가격 잠금)를 화면 한가운데로 끌어낸 구성. */
+/* ---------- 서비스 소개 (바이어) ----------
+   제조사 랜딩(.lp-*)과 같은 뼈대를 쓰되 히어로만 민트로 갈라
+   제조사=네이비 / 바이어=민트 로 두 페이지가 짝처럼 보이게 한다. */
+.lp-hero.buyer{background:linear-gradient(120deg,var(--mk-primary-dark) 0%,var(--mk-primary) 58%,#3AD8B4 100%)}
+.lp-hero.buyer .lp-kick{color:#fff;background:rgba(255,255,255,.16);
+  display:inline-block;border-radius:var(--r-pill);padding:6px 14px}
+.lp-hero.buyer .lead{color:rgba(255,255,255,.9)}
+.lp-hero.buyer .lp-hero-facts b{color:#fff}
+.lp-hero.buyer .lp-hero-facts span{color:rgba(255,255,255,.78)}
+.lp-hero.buyer .btn-primary{background:#fff;color:var(--mk-primary-dark)}
+.lp-hero.buyer .btn-primary:hover{background:#fff;transform:translateY(-2px)}
+
 .ab-hero{padding:74px 0 66px;text-align:center;
   background:linear-gradient(180deg,var(--mk-primary-soft) 0%,#fff 100%)}
 .ab-kick{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;
@@ -1367,6 +1377,11 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
   background:var(--mk-bg-soft);border-radius:8px;padding:11px 14px;margin-bottom:16px}
 /* 간단히 물어보기 ↔ 견적 요청 — 카드형 2지선다 */
 .inq-modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.inq-modes.three{grid-template-columns:repeat(3,1fr);gap:8px}
+.inq-modes.three button{padding:12px 12px}
+.inq-modes.three button.on{padding:11px 11px}
+.inq-modes.three button b{font-size:13.5px}
+.inq-modes.three button span{font-size:11.5px}
 .inq-modes button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;
   border:1px solid var(--mk-line-strong);border-radius:10px;padding:13px 15px;
   background:#fff;transition:border-color .15s,background .15s}

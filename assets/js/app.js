@@ -470,17 +470,28 @@ function openInquiry(pids){    // pids: array of product ids
       <h2 data-i18n="inq_title"></h2>
       <p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p>
 
-      <div class="inq-modes">
+      <div class="inq-modes three">
         <button type="button" class="on" data-mode="quick" onclick="setInqMode('quick')">
           <b data-i18n="inq_mode_quick"></b><span data-i18n="inq_mode_quick_d"></span></button>
         <button type="button" data-mode="quote" onclick="setInqMode('quote')">
           <b data-i18n="inq_mode_quote"></b><span data-i18n="inq_mode_quote_d"></span></button>
+        <button type="button" data-mode="meet" onclick="setInqMode('meet')">
+          <b data-i18n="inq_mode_meet"></b><span data-i18n="inq_mode_meet_d"></span></button>
       </div>
 
       <!-- ① 간단히 물어보기 -->
       <div id="inq-quick">
         <div class="f-row"><label data-i18n="inq_q_msg"></label>
           <textarea id="inq-qmsg" rows="5" data-i18n-ph="inq_q_ph"></textarea></div>
+      </div>
+
+      <!-- ③ 미팅 요청 -->
+      <div id="inq-meet" hidden>
+        <div class="f-row"><label data-i18n="inq_meet_when"></label>
+          <select id="inq-mwhen">${opt('morning','inq_w_morning')}${opt('afternoon','inq_w_afternoon')}${opt('any','inq_w_any')}</select></div>
+        <div class="f-row"><label data-i18n="inq_meet_msg"></label>
+          <textarea id="inq-mmsg" rows="4" data-i18n-ph="inq_meet_ph"></textarea></div>
+        <p class="inq-auto" data-i18n="inq_meet_note"></p>
       </div>
 
       <!-- ② 견적 요청 -->
@@ -525,8 +536,10 @@ let inqMode = 'quick';
 function setInqMode(m){
   inqMode = m;
   document.querySelectorAll('.inq-modes button').forEach(b=>b.classList.toggle('on', b.dataset.mode===m));
-  document.getElementById('inq-quick').hidden = m !== 'quick';
-  document.getElementById('inq-quote').hidden = m !== 'quote';
+  ['quick','quote','meet'].forEach(k=>{
+    const el = document.getElementById('inq-'+k);
+    if(el) el.hidden = m !== k;
+  });
 }
 
 /* 폼 값을 제조사가 그대로 읽을 수 있는 형태로 조립한다.
@@ -537,6 +550,7 @@ function buildInquiryMessage(){
   const sel = id => { const el=document.getElementById(id); return el ? el.options[el.selectedIndex].text : ''; };
 
   if(inqMode === 'quick') return `[${t('inq_mode_quick')}]\n${v('inq-qmsg')}`;
+  if(inqMode === 'meet')  return `[${t('inq_mode_meet')}]\n${t('inq_meet_when')}: ${sel('inq-mwhen')}\n${v('inq-mmsg')}`;
 
   const docs = [ck('inq-d1')&&t('inq_d_ingr'), ck('inq-d2')&&t('inq_d_co'),
                  ck('inq-d3')&&t('inq_d_test'), ck('inq-d4')&&t('inq_d_cat')].filter(Boolean);
@@ -561,6 +575,9 @@ async function sendInquiry(pidCsv){
   if(inqMode === 'quick'){
     const q = document.getElementById('inq-qmsg');
     if(q && !q.value.trim()){ toast(t('inq_need_msg')); q.focus(); return; }
+  }else if(inqMode === 'meet'){
+    const m = document.getElementById('inq-mmsg');
+    if(m && !m.value.trim()){ toast(t('inq_need_msg')); m.focus(); return; }
   }else{
     const qty = document.getElementById('inq-qty');
     if(qty && !qty.value.trim()){ toast(t('inq_need_qty')); qty.focus(); return; }
@@ -594,7 +611,7 @@ async function sendInquiry(pidCsv){
     content_ids: items.map(p=>p.id), content_type:'product',
     contents: items.map(p=>({ id:p.id, quantity:1 })),
     num_items: items.length,
-    content_category: inqMode === 'quick' ? 'inquiry_quick' : 'inquiry_quote',
+    content_category: 'inquiry_' + inqMode,   // quick | quote | meet
   });
 
   closeModal(); toast(t('inq_ok'));
