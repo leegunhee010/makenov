@@ -46,19 +46,33 @@ function toast(msg){
 function renderChrome(active){
   const s = Store.session();
 
-  /* 상단 띠배너 (헤더 바깥 · 스티키 아님) */
+  /* 상단 띠배너 (헤더 바깥 · 스티키 아님)
+     문구·노출여부·링크는 관리자 설정(MK_SETTINGS)에서 온다.
+     설정이 비어 있으면 i18n 기본 문구로 되돌아간다. */
   const hdr = document.getElementById('mk-header');
-  if(!document.getElementById('mk-topbar') && !sessionStorage.getItem('mk_topbar_off')){
+  const cfg = (typeof MK_SETTINGS !== 'undefined') ? MK_SETTINGS : {};
+  const tbMsg = L(cfg.topbar) || t('topbar_msg');
+  const tbOn  = cfg.topbarOn !== false && !!tbMsg;
+
+  const old = document.getElementById('mk-topbar');
+  if(old && !tbOn) old.remove();                       // 관리자에서 껐다가 언어 전환 시 반영
+  if(tbOn && !old && !sessionStorage.getItem('mk_topbar_off')){
     const tb = document.createElement('div');
     tb.id = 'mk-topbar'; tb.className = 'topbar';
-    tb.innerHTML = `<div class="wrap"><span data-i18n="topbar_msg"></span><button class="x" onclick="sessionStorage.setItem('mk_topbar_off','1');this.closest('.topbar').remove()">✕</button></div>`;
+    const body = cfg.topbarLink
+      ? `<a href="${esc(cfg.topbarLink)}">${esc(tbMsg)}</a>`
+      : `<span>${esc(tbMsg)}</span>`;
+    tb.innerHTML = `<div class="wrap">${body}<button class="x" onclick="sessionStorage.setItem('mk_topbar_off','1');this.closest('.topbar').remove()">✕</button></div>`;
     hdr.parentNode.insertBefore(tb, hdr);
+  }else if(tbOn && old){
+    const slot = old.querySelector('.wrap > a, .wrap > span');
+    if(slot) slot.textContent = tbMsg;                 // 언어 전환 시 문구만 교체
   }
 
   hdr.innerHTML = `
   <div class="wrap"><a class="mk-logo" href="index.html"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
         onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></a><div class="mk-search"><input id="mk-search-input" type="search" data-i18n-ph="search_ph"
-        onkeydown="if(event.key==='Enter'&&this.value.trim())location.href='directory.html?q='+encodeURIComponent(this.value.trim())"></div><nav class="mk-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></nav><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')">EN</button></div><a class="mk-cart" href="mypage.html" title="Wishlist">♡<span class="badge" id="cart-badge">0</span></a>
+        onkeydown="if(event.key==='Enter'&&this.value.trim()){mkTrack('Search',{search_string:this.value.trim()});location.href='directory.html?q='+encodeURIComponent(this.value.trim())}"></div><nav class="mk-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><a href="webinar.html" data-i18n="nav_webinar"></a></nav><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')">EN</button></div><a class="mk-cart" href="mypage.html" title="Wishlist">♡<span class="badge" id="cart-badge">0</span></a>
       ${s
         ? `<a class="mk-auth" href="mypage.html">${esc(s.contactName||s.email.split('@')[0])}</a><button class="mk-auth" onclick="Store.logout();location.reload()" data-i18n="logout"></button>`
         : `<button class="mk-auth" onclick="openAuth('login')" data-i18n="login"></button><button class="btn btn-primary btn-sm" onclick="openAuth('signup')" data-i18n="signup"></button>`}
@@ -88,6 +102,7 @@ function unlockIfAuthed(){
 function toggleCart(pid, btn){
   requireAuth(()=>{
     const added = Store.cartToggle(pid);
+    if(added) mkTrack('AddToWishlist', mkProductParams(mkProduct(pid)));
     toast(added ? t('added_cart') : t('removed_cart'));
     updateCartBadge();
     if(btn){ btn.classList.toggle('on', added); }
@@ -334,6 +349,14 @@ async function suDone(){
                      email:(_verified.accountEmail || v('su-email')) },
   });
   if(!res.ok){ toast(res.err==='exists' ? t('err_exists') : t('auth_mst_fail')); return; }
+
+  /* ★ 가입 = 사업자 인증 통과까지 끝난 상태. 광고 최적화의 핵심 전환. */
+  mkTrack('CompleteRegistration', {
+    status: true,                       // 인증까지 완료됨
+    content_name: _verified.checked,    // gov | nts | checksum | domain
+    content_category: _suCountry,
+  });
+
   closeModal(); toast(t('auth_welcome'));
   setTimeout(()=>location.reload(), 700);
 }
@@ -375,6 +398,7 @@ async function sendEasyLead(){
     site: '', cat: 'buyer',                    // cat=buyer → 관리자에서 바이어 문의로 구분
     message: '[바이어 간편문의 · ' + _suCountry + '] ' + v('ez-msg'),
   });
+  mkTrack('Lead', { content_category:'easy_lead', country:_suCountry });
   closeModal();
   toast(t('easy_ok'));
 }
@@ -392,6 +416,8 @@ async function doLogin(){
     box.innerHTML = `${t('err_unconfirmed')}
       <div class="retry"><a onclick="resendConfirm('${esc(email)}')" data-i18n="auth_resend"></a></div>`;
     applyI18n(box);
+  }else if(err === 'provider_off'){
+    box.textContent = t('err_provider_off');
   }else{
     box.textContent = err === 'rate' ? t('err_rate') : t('err_login');
   }
@@ -409,6 +435,12 @@ async function resendConfirm(email){
 function openInquiry(pids){    // pids: array of product ids
   requireAuth(()=>{
     const items = pids.map(id=>mkProduct(id)).filter(Boolean);
+    /* 문의 모달을 연 시점 = 퍼널 중간. 발송(Lead)보다 볼륨이 많아
+       초기 광고 최적화 이벤트로 쓸 수 있다. */
+    mkTrack('InitiateCheckout', {
+      content_ids: items.map(p=>p.id), content_type:'product',
+      contents: items.map(p=>({ id:p.id, quantity:1 })), num_items: items.length,
+    });
     mkModal(`
       <h2 data-i18n="inq_title"></h2><p class="sub">${items.map(p=>esc(L(p.name))).join(' · ')}</p><div class="f-row"><label data-i18n="inq_message"></label><textarea id="inq-msg" rows="4" data-i18n-ph="inq_message_ph"></textarea></div><button class="btn btn-primary btn-block" onclick="sendInquiry('${pids.join(',')}')" data-i18n="inq_send"></button>`);
   });
@@ -437,6 +469,14 @@ async function sendInquiry(pidCsv){
     return;
   }
 
+  /* ★ 주 전환 — 저장 성공을 확인한 뒤에만 쏜다 */
+  const items = pids.map(id=>mkProduct(id)).filter(Boolean);
+  mkTrack('Lead', {
+    content_ids: items.map(p=>p.id), content_type:'product',
+    contents: items.map(p=>({ id:p.id, quantity:1 })),
+    num_items: items.length, content_category:'inquiry',
+  });
+
   closeModal(); toast(t('inq_ok'));
   document.dispatchEvent(new CustomEvent('mk:inquiry'));
 }
@@ -450,12 +490,22 @@ function companyCard(c){
   return `
   <a class="co-card" href="company.html?id=${c.id}"><div class="cv"><img src="${c.cover}" alt="" loading="lazy"></div><div class="bd"><img class="lg" src="${c.logo}" alt="" loading="lazy"><h3>${esc(L(c.name))}</h3><p class="tag">${esc(L(c.tagline))}</p><div class="meta"><span>${esc(L(c.location))}</span><i></i><span><b>${n}</b> <span data-i18n="co_prod_unit"></span></span><i></i><span>since ${esc(c.since)}</span></div></div></a>`;
 }
+/* 카드 지표 — 문의수는 0이어도 항상 표시한다(사용자 지시).
+   관심(wish)은 0이면 생략. */
+function cardMeta(p){
+  const inq  = Number(p.inquiries) || 0;
+  const wish = Number(p.wish) || 0;
+  let html = `<span class="rate">${inq}<span data-i18n="inquiries_count"></span></span>`;
+  if(wish) html += `<span class="amt">${t('wish_count').replace('{n}', wish)}</span>`;
+  return html;
+}
+
 function productCard(p){
   const inCart = Store.cartHas(p.id);
   const flag = p.isNew ? `<span class="flag" data-i18n="spot_new"></span>` : (p.featured?`<span class="flag">FEATURED</span>`:'');
   return `
   <a class="p-card" href="product.html?id=${p.id}"><div class="thumb"><img src="${p.img}" alt="" loading="lazy">${flag}
-      <button class="heart ${inCart?'on':''}" onclick="event.preventDefault();event.stopPropagation();toggleCart('${p.id}',this)">${inCart?'♥':'♡'}</button></div><div class="body"><span class="brand">${esc(p.brand)}</span><h3>${esc(L(p.name))}</h3><div class="meta"><span class="rate">${p.inquiries}<span data-i18n="inquiries_count"></span></span><span class="amt">${p.views.toLocaleString()}</span><span class="left">${esc(p.origin)}</span></div></div></a>`;
+      <button class="heart ${inCart?'on':''}" onclick="event.preventDefault();event.stopPropagation();toggleCart('${p.id}',this)">${inCart?'♥':'♡'}</button></div><div class="body"><span class="brand">${esc(p.brand)}</span><h3>${esc(L(p.name))}</h3><div class="meta">${cardMeta(p)}<span class="left">${esc(p.origin)}</span></div></div></a>`;
 }
 
 /* ---------- boot ---------- */
