@@ -53,7 +53,8 @@ const MkData = {
     (tm.data || []).forEach(t => terms[t.product_id] = t);
     this.termsLoaded = (tm.data || []).length > 0;
 
-    const LOCKED = '인증 후 열람';
+    /* 표식만 넣는다 — 화면 문구는 lockVal()이 언어에 맞춰 만든다 (i18n.js) */
+    const LOCKED = MK_LOCKED;
 
     MK_COMPANIES.length = 0;
     (co.data||[]).forEach(c => MK_COMPANIES.push({
@@ -70,8 +71,9 @@ const MkData = {
         id:p.id, companyId:p.company_id, cat:p.cat, brand:p.brand, origin:p.origin,
         name:p.name, tagline:p.tagline, brandStory:p.brand_story,
         img:p.img, gallery:p.gallery||[], video:p.video||'', detail:p.detail||[],
-        inquiries:p.inquiries||0, views:p.views||0,
+        inquiries:p.inquiries||0, views:p.views||0, wish:p.wish_count||0,
         featured:!!p.featured, isNew:!!p.is_new, createdAt:String(p.created_at||'').slice(0,10),
+        negotiable:!!p.negotiable,
         price:t.price ?? LOCKED, moq:t.moq ?? LOCKED, lead:t.lead ?? LOCKED, terms:t.terms ?? LOCKED,
       });
     });
@@ -80,7 +82,28 @@ const MkData = {
     (cl.data||[]).forEach(c => MK_COLUMNS.push({
       id:c.id, cat:c.cat, title:c.title, excerpt:c.excerpt, body:c.body,
       img:c.img, date:String(c.date||'').slice(0,10),
+      slug:c.slug||'', seoTitle:c.seo_title||'', seoDesc:c.seo_desc||'',
     }));
+
+    /* FAQ — 06_faq_seo.sql 미적용이면 테이블이 없으므로 시드(data.js)를 그대로 둔다 */
+    try{
+      const fq = await SB.from('faqs').select('*').order('sort');
+      if(!fq.error && fq.data && typeof MK_FAQ !== 'undefined'){
+        MK_FAQ.length = 0;
+        fq.data.forEach(f => MK_FAQ.push({
+          id:f.id, page:f.page||'home', q:f.q, a:f.a,
+          sort:f.sort||0, published:!!f.published,
+        }));
+      }
+    }catch(e){}
+
+    /* 사이트 설정 — 07_settings.sql 미적용이면 시드(data.js) 값을 그대로 쓴다 */
+    try{
+      const st = await SB.from('settings').select('*').eq('key', 'site').maybeSingle();
+      if(!st.error && st.data && st.data.value && typeof MK_SETTINGS !== 'undefined'){
+        Object.assign(MK_SETTINGS, st.data.value);
+      }
+    }catch(e){}
 
     if(he.data && he.data.length){
       MK_HERO.length = 0;
@@ -205,9 +228,11 @@ Object.assign(Store, {
       /* ★ 예전엔 전부 'invalid' 로 뭉뚱그려 "비밀번호가 틀렸다"고만 떴다.
          실제로는 '이메일 미확인'이 가장 흔한 원인이라 사용자가 원인을 못 찾는다. */
       const m = String(error.message || '');
+      const ec = String(error.code || '');
       let code = 'invalid';
       if(/email not confirmed|not confirmed/i.test(m)) code = 'unconfirmed';
       else if(/rate limit|too many/i.test(m))          code = 'rate';
+      else if(ec === 'email_provider_disabled' || /logins are disabled|provider.*disabled/i.test(m)) code = 'provider_off';
       console.warn('로그인 실패:', m);
       return { ok:false, err:code, raw:m };
     }
@@ -309,14 +334,21 @@ Object.assign(Admin, {
       name:p.name, tagline:p.tagline, brand_story:p.brandStory,
       img:p.img, gallery:p.gallery, video:p.video, detail:p.detail,
       featured:p.featured, is_new:p.isNew, created_at:p.createdAt,
-      inquiries:p.inquiries, views:p.views,
+      inquiries:p.inquiries, views:p.views, negotiable:!!p.negotiable,
     };
     const { error } = await SB.from('products').upsert(row);
     if(error) throw error;
-    const { error:e2 } = await SB.from('product_terms').upsert({
-      product_id:p.id, price:p.price, moq:p.moq, lead:p.lead, terms:p.terms, updated_at:new Date().toISOString(),
-    });
-    if(e2) throw e2;
+
+    /* 거래조건이 '잠김' 표식이면 이 계정이 product_terms를 못 읽은 상태다.
+       그대로 올리면 실제 가격이 표식으로 덮여 사라진다 — 저장하지 않고 넘어간다. */
+    if(isLocked(p.price) && isLocked(p.moq) && isLocked(p.lead) && isLocked(p.terms)){
+      console.warn('MAKENOV: 거래조건을 읽지 못해 product_terms 저장을 건너뜁니다', p.id);
+    }else{
+      const { error:e2 } = await SB.from('product_terms').upsert({
+        product_id:p.id, price:p.price, moq:p.moq, lead:p.lead, terms:p.terms, updated_at:new Date().toISOString(),
+      });
+      if(e2) throw e2;
+    }
     await MkData.loadContent();
   },
   async deleteProduct(id){
@@ -331,11 +363,50 @@ Object.assign(Admin, {
   },
 
   async upsertColumn(c){
-    const { error } = await SB.from('columns_post').upsert({
+    const row = {
       id:c.id, cat:c.cat, title:c.title, excerpt:c.excerpt, body:c.body, img:c.img, date:c.date,
+      slug:c.slug||null, seo_title:c.seoTitle||null, seo_desc:c.seoDesc||null,
+    };
+    let { error } = await SB.from('columns_post').upsert(row);
+    if(error && /slug|seo_title|seo_desc/.test(String(error.message||''))){
+      /* 06_faq_seo.sql 미적용 DB — SEO 필드를 빼고 본문만이라도 저장한다 */
+      delete row.slug; delete row.seo_title; delete row.seo_desc;
+      ({ error } = await SB.from('columns_post').upsert(row));
+    }
+    if(error) throw error;
+    await MkData.loadContent();
+  },
+
+  /* ---- 사이트 설정 ---- */
+  async saveSettings(patch){
+    Object.assign(MK_SETTINGS, patch);
+    const { error } = await SB.from('settings').upsert({
+      key:'site', value:MK_SETTINGS, updated_at:new Date().toISOString(),
+    });
+    /* 테이블이 아직 없으면(07_settings.sql 미적용) 브라우저에만 저장해 두고 알린다 */
+    if(error){
+      localStorage.setItem('mk_settings_override', JSON.stringify(MK_SETTINGS));
+      throw new Error('settings 테이블이 없습니다 — supabase/07_settings.sql 을 실행하세요 (' + error.message + ')');
+    }
+    await MkData.loadContent();
+  },
+
+  /* ---- FAQ CRUD ---- */
+  async upsertFaq(f){
+    const { error } = await SB.from('faqs').upsert({
+      id:f.id, page:f.page||'home', q:f.q, a:f.a, sort:f.sort||0, published:f.published!==false,
     });
     if(error) throw error;
     await MkData.loadContent();
+  },
+  async deleteFaq(id){
+    await SB.from('faqs').delete().eq('id', id);
+    await MkData.loadContent();
+  },
+  newFaqId(){
+    let n = 1; const ids = new Set((typeof MK_FAQ!=='undefined'?MK_FAQ:[]).map(f=>f.id));
+    while(ids.has('f'+n)) n++;
+    return 'f'+n;
   },
   async deleteColumn(id){
     await SB.from('columns_post').delete().eq('id', id);

@@ -38,6 +38,7 @@ const I18N = {
     sec_categories: "Danh mục",
     sec_spotlight: "Cập nhật mới nhất",
     sec_featured: "Sản phẩm nổi bật",
+    sec_faq: "Câu hỏi thường gặp",
     sec_new: "Mới ra mắt",
     sec_columns: "Bài viết & Xu hướng",
     sec_related: "Sản phẩm tương tự",
@@ -47,11 +48,14 @@ const I18N = {
     spot_inquiry: "Yêu cầu mới",
     spot_webinar: "Webinar",
     // product card / detail
+    wish_count: "{n} quan tâm",
     inquiries_count: "yêu cầu",
     price: "Giá",
+    negotiable_badge: "Có thể thương lượng",
     moq: "Số lượng tối thiểu (MOQ)",
     lead_time: "Thời gian giao hàng",
     supply_terms: "Điều kiện cung ứng",
+    locked_val: "Xem sau khi xác thực",
     locked_note: "Chỉ nhà mua đã xác thực mới xem được — đăng ký miễn phí",
     cta_wishlist: "Thêm vào danh sách quan tâm",
     cta_wishlist_on: "Đã thêm vào danh sách",
@@ -103,7 +107,7 @@ const I18N = {
     promo_title: "Yêu cầu báo giá của bạn đến thẳng nhà sản xuất",
     promo_desc: "Không qua trung gian. Xác thực doanh nghiệp một lần, xem giá và gửi yêu cầu không giới hạn.",
     promo_btn: "Xác thực ngay",
-    views_label: "lượt xem",
+    views_label: "quan tâm",
     read_min: " phút đọc",
     col_home: "Trang chủ",
     col_prev: "Bài trước",
@@ -163,6 +167,7 @@ const I18N = {
     auth_resend: "Gửi lại email xác nhận",
     auth_resend_ok: "Đã gửi lại email xác nhận.",
     err_login: "Email hoặc mật khẩu không đúng",
+    err_provider_off: "Đăng nhập bằng email đang tắt. Quản trị viên cần bật Email provider trong Supabase.",
     easy_title: "Yêu cầu nhanh",
     easy_sub: "Chưa cần đăng ký. Để lại liên hệ, chúng tôi sẽ hỗ trợ xác minh và gửi báo giá trong 2 ngày làm việc.",
     easy_need: "Bạn đang tìm sản phẩm gì?",
@@ -264,6 +269,7 @@ const I18N = {
     sec_categories: "카테고리",
     sec_spotlight: "실시간 소식",
     sec_featured: "주목할 제품",
+    sec_faq: "자주 묻는 질문",
     sec_new: "신규 등록",
     sec_columns: "칼럼 & 트렌드",
     sec_related: "비슷한 제품",
@@ -271,11 +277,14 @@ const I18N = {
     spot_new: "신제품 등록",
     spot_inquiry: "신규 문의",
     spot_webinar: "웨비나",
+    wish_count: "관심 {n}",
     inquiries_count: "건 문의",
     price: "가격",
+    negotiable_badge: "협의 가능",
     moq: "최소주문수량 (MOQ)",
     lead_time: "납기",
     supply_terms: "공급 조건",
+    locked_val: "인증 후 열람",
     locked_note: "인증 바이어만 열람 가능 — 무료 가입",
     cta_wishlist: "관심제품 담기",
     cta_wishlist_on: "관심제품에 담김",
@@ -324,7 +333,7 @@ const I18N = {
     promo_title: "당신의 문의가 제조사에게 바로 전달됩니다",
     promo_desc: "중간상 없이 직접 연결. 사업자 인증 한 번이면 가격 열람과 견적 문의가 무제한입니다.",
     promo_btn: "지금 인증하기",
-    views_label: "조회",
+    views_label: "관심",
     read_min: "분 분량",
     col_home: "홈",
     col_prev: "이전 글",
@@ -384,6 +393,7 @@ const I18N = {
     auth_resend: "확인 메일 다시 보내기",
     auth_resend_ok: "확인 메일을 다시 보냈습니다.",
     err_login: "이메일 또는 비밀번호가 올바르지 않습니다",
+    err_provider_off: "이메일 로그인이 꺼져 있습니다. Supabase 대시보드에서 Email provider를 켜주세요.",
     easy_title: "간편 문의",
     easy_sub: "가입 없이 연락처만 남겨주세요. 담당자가 인증을 도와드리고 영업일 2일 이내에 견적을 보내드립니다.",
     easy_need: "어떤 제품을 찾고 계신가요?",
@@ -479,6 +489,7 @@ const I18N = {
     sec_categories: "Categories",
     sec_spotlight: "Live updates",
     sec_featured: "Featured products",
+    sec_faq: "FAQ",
     sec_new: "New arrivals",
     sec_columns: "Insights & Trends",
     sec_related: "Similar products",
@@ -486,11 +497,14 @@ const I18N = {
     spot_new: "New product",
     spot_inquiry: "New inquiry",
     spot_webinar: "Webinar",
+    wish_count: "{n} saved",
     inquiries_count: "inquiries",
     price: "Price",
+    negotiable_badge: "Negotiable",
     moq: "Minimum order (MOQ)",
     lead_time: "Lead time",
     supply_terms: "Supply terms",
+    locked_val: "Unlock after verification",
     locked_note: "Verified buyers only — free to join",
     cta_wishlist: "Add to wishlist",
     cta_wishlist_on: "In your wishlist",
@@ -599,6 +613,7 @@ const I18N = {
     auth_resend: "Resend confirmation email",
     auth_resend_ok: "Confirmation email sent again.",
     err_login: "Incorrect email or password",
+    err_provider_off: "Email login is disabled. An admin must enable the Email provider in Supabase.",
     easy_title: "Quick request",
     easy_sub: "No signup needed. Leave your contact and we will help you verify and send a quote within 2 business days.",
     easy_need: "What are you looking for?",
@@ -677,3 +692,12 @@ function applyI18n(root){
 }
 /* localized field helper: product fields stored as {vi,ko,en} */
 function L(field){ if(field==null) return ''; if(typeof field==='string') return field; return field[MK_LANG] || field.vi || field.en || ''; }
+
+/* ---------- 잠긴 거래조건 ----------
+   RLS 때문에 미인증 바이어에게는 가격·MOQ가 아예 전송되지 않는다.
+   그 자리에 넣는 표시값을 언어별로 바꾸기 위해, 데이터에는 이 '표식'만 넣고
+   화면에 그릴 때 lockVal()로 번역한다. (예전엔 한국어 문자열이 박혀 있어
+   베트남어 화면에도 '인증 후 열람'이 그대로 나왔다.) */
+const MK_LOCKED = 'mk-locked';
+function isLocked(v){ return v === MK_LOCKED || v == null || v === ''; }
+function lockVal(v){ return isLocked(v) ? t('locked_val') : v; }
