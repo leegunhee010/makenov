@@ -623,7 +623,7 @@ function productForm(id){
   const g = (o,k)=> (o && o[k]) ? o[k] : '';
   const nm = p?p.name:{}, tg = p?p.tagline:{}, bs = p?p.brandStory:{};
   return `
-    <div class="card"><div class="bar"><h3 style="margin:0">${p?'제품 수정':'새 제품 등록'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['f-name','f-tag','f-story'],true)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="pEditing=null;renderProducts()">취소</button><button class="btn btn-primary btn-sm" onclick="saveProduct('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>브랜드 / 제조사</label><input id="f-brand" value="${esc(p?p.brand:'')}" placeholder="DAON COSMETIC"></div><div class="fld"><label>소재지</label><input id="f-origin" value="${esc(p?p.origin:'')}" placeholder="Daegu, Korea"></div></div><div class="fld"><label>카테고리</label><select id="f-cat">${MK_CATEGORIES.map(c=>`<option value="${c.id}" ${p&&p.cat===c.id?'selected':''}>${esc(c.name.ko)}</option>`).join('')}</select></div><div class="sect"><h4>제품명 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><input id="f-name-ko" value="${esc(g(nm,'ko'))}"></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><input id="f-name-vi" value="${esc(g(nm,'vi'))}"></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><input id="f-name-en" value="${esc(g(nm,'en'))}"></div></div></div><div class="sect"><h4>한 줄 소개 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><textarea id="f-tag-ko">${esc(g(tg,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><textarea id="f-tag-vi">${esc(g(tg,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><textarea id="f-tag-en">${esc(g(tg,'en'))}</textarea></div></div></div><div class="sect"><h4>대표 이미지</h4>${uploader('f-img', p?p.img:'', {hint:'목록·카드에 쓰이는 사진입니다. 끌어다 놓거나 파일을 선택하세요.'})}</div><div class="sect"><h4>갤러리 <span style="color:var(--adm-sub);font-size:11px"> 상세페이지 상단 슬라이드</span></h4><div class="gal-grid" id="gal-list"></div><div class="bar" style="margin:12px 0 0"><button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('gal-file').click()">사진 추가 (여러 장 선택 가능)</button><input type="file" id="gal-file" accept="image/*" multiple hidden onchange="galAdd(this)"><span class="hint" id="gal-info" style="margin:0">비워두면 대표 이미지만 사용됩니다.</span></div></div><div class="sect"><h4>대표 영상 <span style="color:var(--mk-muted);font-size:11px"> 선택 · 없으면 비워두세요</span></h4><div class="fld"><label>영상 URL</label><input id="f-video" value="${esc(p&&p.video?p.video:'')}" placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."><p class="hint">유튜브·Vimeo 주소를 그대로 붙여넣으면 됩니다. 비워두면 상세페이지에 영상 영역이 아예 표시되지 않습니다.</p></div></div><div class="sect"><h4>거래 조건 <span style="color:var(--mk-lock);font-size:11px"> 인증 바이어만 열람</span></h4><div class="fgrid two"><div class="fld"><label>가격 / 공급가 <span style="color:var(--mk-accent);font-size:11px">USD 표기 권장</span></label><input id="f-price" value="${esc(p?p.price:'')}" placeholder="US$ 4.20 / unit (FOB Busan)"></div><div class="fld"><label>최소주문수량 MOQ</label><input id="f-moq" value="${esc(p?p.moq:'')}" placeholder="3,000 units"></div><div class="fld"><label>납기</label><input id="f-lead" value="${esc(p?p.lead:'')}" placeholder="30 days"></div><div class="fld"><label>공급 조건</label><input id="f-terms" value="${esc(p?p.terms:'')}" placeholder="OEM/ODM available"></div></div><label class="chk" style="margin-top:12px;display:inline-flex;gap:8px;align-items:center"><input type="checkbox" id="f-nego" ${p&&p.negotiable?'checked':''}> 가격 협의 가능 — 상세페이지 가격 옆에 <b>협의 가능</b> 배지 표시</label></div><div class="sect"><h4>브랜드 소개 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><textarea id="f-story-ko">${esc(g(bs,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><textarea id="f-story-vi">${esc(g(bs,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><textarea id="f-story-en">${esc(g(bs,'en'))}</textarea></div></div></div><div class="sect"><h4>상세 페이지 구성</h4><div id="blk-list"></div><div class="bar" style="margin:12px 0 0"><button class="btn btn-primary btn-sm" onclick="document.getElementById('detail-file').click()">상세페이지 통이미지 올리기</button><input type="file" id="detail-file" accept="image/*" hidden onchange="detailUpload(this)"><button class="btn btn-ghost btn-sm" onclick="addBlock('p')">+ 문단</button><button class="btn btn-ghost btn-sm" onclick="addBlock('img')">+ 이미지</button><button class="btn btn-ghost btn-sm" onclick="addBlock('video')">+ 영상</button></div><p class="hint" id="detail-info" style="margin:8px 0 0">세로로 긴 상세페이지 이미지를 그대로 올리세요. 가로 해상도는 유지하고 세로만 자동으로 나눠 담습니다.</p></div><div class="sect"><h4>노출 설정</h4><div class="fgrid"><div class="fld"><label>문의 수</label><input id="f-inq" type="number" value="${p?p.inquiries:0}"></div><div class="fld"><label>관심 수</label><input id="f-views" type="number" value="${p?p.views:0}"></div><div class="fld"><label>등록일</label><input id="f-date" value="${esc(p?p.createdAt:today())}"></div></div><div style="display:flex;gap:22px;margin-top:4px"><label class="chk"><input type="checkbox" id="f-featured" ${p&&p.featured?'checked':''}> 추천 제품 (홈 상단 노출)</label><label class="chk"><input type="checkbox" id="f-new" ${p&&p.isNew?'checked':''}> 신규 배지 표시</label></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="pEditing=null;renderProducts()">취소</button><button class="btn btn-primary" onclick="saveProduct('${id}')">저장</button></div></div>`;
+    <div class="card"><div class="bar"><h3 style="margin:0">${p?'제품 수정':'새 제품 등록'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['f-name','f-tag','f-story'],true)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="pEditing=null;renderProducts()">취소</button><button class="btn btn-primary btn-sm" onclick="saveProduct('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>브랜드 / 제조사</label><input id="f-brand" value="${esc(p?p.brand:'')}" placeholder="DAON COSMETIC"></div><div class="fld"><label>소재지</label><input id="f-origin" value="${esc(p?p.origin:'')}" placeholder="Daegu, Korea"></div></div><div class="fld"><label>카테고리</label><select id="f-cat">${MK_CATEGORIES.map(c=>`<option value="${c.id}" ${p&&p.cat===c.id?'selected':''}>${esc(c.name.ko)}</option>`).join('')}</select></div><div class="sect"><h4>제품명 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><input id="f-name-ko" value="${esc(g(nm,'ko'))}"></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><input id="f-name-vi" value="${esc(g(nm,'vi'))}"></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><input id="f-name-en" value="${esc(g(nm,'en'))}"></div></div></div><div class="sect"><h4>한 줄 소개 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><textarea id="f-tag-ko">${esc(g(tg,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><textarea id="f-tag-vi">${esc(g(tg,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><textarea id="f-tag-en">${esc(g(tg,'en'))}</textarea></div></div></div><div class="sect"><h4>대표 이미지</h4>${uploader('f-img', p?p.img:'', {hint:'목록·카드에 쓰이는 사진입니다. 끌어다 놓거나 파일을 선택하세요.'})}</div><div class="sect"><h4>갤러리 <span style="color:var(--adm-sub);font-size:11px"> 상세페이지 상단 슬라이드</span></h4><div class="gal-grid" id="gal-list"></div><div class="bar" style="margin:12px 0 0"><button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('gal-file').click()">사진 추가 (여러 장 선택 가능)</button><input type="file" id="gal-file" accept="image/*" multiple hidden onchange="galAdd(this)"><span class="hint" id="gal-info" style="margin:0">비워두면 대표 이미지만 사용됩니다.</span></div></div><div class="sect"><h4>대표 영상 <span style="color:var(--mk-muted);font-size:11px"> 선택 · 없으면 비워두세요</span></h4><div class="fld"><label>영상 URL</label><input id="f-video" value="${esc(p&&p.video?p.video:'')}" placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."><p class="hint">유튜브·Vimeo 주소를 그대로 붙여넣으면 됩니다. 비워두면 상세페이지에 영상 영역이 아예 표시되지 않습니다.</p></div></div><div class="sect"><h4>거래 조건 <span style="color:var(--mk-lock);font-size:11px"> 인증 바이어만 열람</span></h4><div class="fgrid two"><div class="fld"><label>가격 / 공급가 <span style="color:var(--mk-accent);font-size:11px">USD 표기 권장</span></label><input id="f-price" value="${esc(p?p.price:'')}" placeholder="US$ 4.20 / unit (FOB Busan)"></div><div class="fld"><label>최소주문수량 MOQ</label><input id="f-moq" value="${esc(p?p.moq:'')}" placeholder="3,000 units"></div><div class="fld"><label>납기</label><input id="f-lead" value="${esc(p?p.lead:'')}" placeholder="30 days"></div><div class="fld"><label>공급 조건</label><input id="f-terms" value="${esc(p?p.terms:'')}" placeholder="OEM/ODM available"></div></div><label class="chk" style="margin-top:12px;display:inline-flex;gap:8px;align-items:center"><input type="checkbox" id="f-nego" ${p&&p.negotiable?'checked':''}> 가격 협의 가능 — 상세페이지 가격 옆에 <b>협의 가능</b> 배지 표시</label></div><div class="sect"><h4>브랜드 소개 (3개 국어)</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span>한국어</label><textarea id="f-story-ko">${esc(g(bs,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span>베트남어</label><textarea id="f-story-vi">${esc(g(bs,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span>영어</label><textarea id="f-story-en">${esc(g(bs,'en'))}</textarea></div></div></div><div class="sect"><h4>상세 페이지 구성</h4><div id="blk-list"></div><div class="bar" style="margin:12px 0 0"><button class="btn btn-primary btn-sm" onclick="document.getElementById('detail-file').click()">상세페이지 통이미지 올리기 (여러 장 선택 가능)</button><input type="file" id="detail-file" accept="image/*" multiple hidden onchange="detailUpload(this)"><button class="btn btn-ghost btn-sm" onclick="addBlock('p')">+ 문단</button><button class="btn btn-ghost btn-sm" onclick="addBlock('img')">+ 이미지</button><button class="btn btn-ghost btn-sm" onclick="addBlock('video')">+ 영상</button></div><p class="hint" id="detail-info" style="margin:8px 0 0">세로로 긴 상세페이지 이미지를 그대로 올리세요. 가로 해상도는 유지하고 세로만 자동으로 나눠 담습니다.<br>상세페이지가 <b>여러 장으로 나뉘어 있으면 한 번에 모두 선택</b>하세요 — 파일명 순서(1, 2, 3 …)대로 이어 붙입니다.</p></div><div class="sect"><h4>노출 설정</h4><div class="fgrid"><div class="fld"><label>문의 수</label><input id="f-inq" type="number" value="${p?p.inquiries:0}"></div><div class="fld"><label>관심 수</label><input id="f-views" type="number" value="${p?p.views:0}"></div><div class="fld"><label>등록일</label><input id="f-date" value="${esc(p?p.createdAt:today())}"></div></div><div style="display:flex;gap:22px;margin-top:4px"><label class="chk"><input type="checkbox" id="f-featured" ${p&&p.featured?'checked':''}> 추천 제품 (홈 상단 노출)</label><label class="chk"><input type="checkbox" id="f-new" ${p&&p.isNew?'checked':''}> 신규 배지 표시</label></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="pEditing=null;renderProducts()">취소</button><button class="btn btn-primary" onclick="saveProduct('${id}')">저장</button></div></div>`;
 }
 
 /* 상세 블록 편집기 */
@@ -655,28 +655,46 @@ function uplOnChange(id){
    가로는 유지한 채 세로만 잘라 여러 이미지 블록으로 넣는다.
    화면에서는 이어 붙어 보이므로 사용자에겐 한 장이다. */
 async function detailUpload(input){
-  const file = input.files[0]; input.value = '';
-  if(!file) return;
-  const info = document.getElementById('detail-info');
-  const say  = m => { if(info) info.textContent = m; };
+  /* 상세페이지가 1장으로 안 끝나는 경우가 많다(가로 848 × 세로 1만 이상이 3장 등).
+     여러 장을 한 번에 받아 파일명 순서대로 이어 붙인다. */
+  const files = [...input.files];
+  input.value = '';
+  if(!files.length) return;
 
-  say('이미지를 읽는 중…');
-  try{
-    const r = await MkImg.saveDetail(file, (i,n)=>say(`분할 처리 중… ${i}/${n}`));
-    /* seq = 분할된 조각. 상세페이지에서 틈 없이 이어 붙인다.
-       w/h 를 같이 저장해 지연 로딩 중 화면이 밀리지 않게 한다. */
-    r.refs.forEach((ref,i) => pBlocks.push(
-      r.sliced ? { type:'img', src:ref, seq:true, w:r.sizes[i].w, h:r.sizes[i].h }
-               : { type:'img', src:ref }));
-    renderBlocks();
-    say(r.sliced
-      ? `원본 ${r.originW}×${r.originH} → 가로 ${r.w}px 유지, ${r.count}조각으로 나눠 넣었습니다 (${fmtBytes(r.bytes)})`
-      : `${r.w}×${r.totalH} 로 1장 추가했습니다 (${fmtBytes(r.bytes)})`);
-    toastA(`상세페이지 ${r.count}장 추가됨`);
-  }catch(e){
-    say(e.message || '처리에 실패했습니다');
-    toastA(e.message || '업로드 실패');
+  /* 파일명 자연 정렬 — 1, 2, 10 이 1, 10, 2 로 가지 않게 숫자 비교를 켠다 */
+  files.sort((a,b)=>a.name.localeCompare(b.name, 'ko', {numeric:true, sensitivity:'base'}));
+
+  const info = document.getElementById('detail-info');
+  const say  = m => { if(info) info.innerHTML = m; };
+  const many = files.length > 1;
+
+  let added = 0, bytes = 0;
+  const done = [];
+
+  for(let f = 0; f < files.length; f++){
+    const file = files[f];
+    const label = many ? `[${f+1}/${files.length}] ${esc(file.name)} · ` : '';
+    say(`${label}이미지를 읽는 중…`);
+    try{
+      const r = await MkImg.saveDetail(file, (i,n)=>say(`${label}분할 처리 중… ${i}/${n}`));
+      /* seq = 분할된 조각. 상세페이지에서 틈 없이 이어 붙인다.
+         w/h 를 같이 저장해 지연 로딩 중 화면이 밀리지 않게 한다.
+         파일이 여러 장이어도 전부 seq 라 화면에서는 한 장으로 이어진다. */
+      r.refs.forEach((ref,i) => pBlocks.push(
+        r.sliced ? { type:'img', src:ref, seq:true, w:r.sizes[i].w, h:r.sizes[i].h }
+                 : { type:'img', src:ref }));
+      added += r.count; bytes += r.bytes;
+      done.push(`${esc(file.name)} ${r.originW}×${r.originH} → ${r.count}조각`);
+      renderBlocks();                       // 한 장 끝날 때마다 목록에 바로 반영
+    }catch(e){
+      /* 한 장이 실패해도 나머지는 계속 올린다 — 처음부터 다시 하게 만들지 않는다 */
+      done.push(`<span style="color:var(--mk-danger)">${esc(file.name)} 실패 — ${esc(e.message||'')}</span>`);
+    }
   }
+
+  say(`총 <b>${added}조각</b>을 넣었습니다 (${fmtBytes(bytes)})<br>` + done.join('<br>')
+      + '<br><span style="color:var(--adm-sub)">순서가 다르면 블록의 ↑ ↓ 로 옮기세요.</span>');
+  toastA(`상세페이지 ${added}장 추가됨`);
 }
 function addBlock(type){
   pBlocks.push(type==='p' ? {type:'p', text:{vi:'',ko:'',en:''}} : {type, src:''});
