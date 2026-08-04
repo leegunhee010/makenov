@@ -216,7 +216,7 @@ ${SCRIPTS()}
 
 function colFile(c){ return c.slug || c.id; }   // 슬러그가 있으면 columns/<슬러그>.html
 
-function columnPage(c){
+function columnPage(c, colFaqs){
   const title = T(c.title, 'vi'), cat = T(c.cat, 'vi');
   const canonical = `${SITE}/columns/${colFile(c)}.html`;
   const desc = clip(c.seoDesc || T(c.excerpt, 'vi') || stripHtml(T(c.body, 'vi')), 155);
@@ -235,6 +235,17 @@ function columnPage(c){
       { '@type': 'ListItem', position: 3, name: title, item: canonical },
     ],
   }];
+
+  /* 이 칼럼에 달린 FAQ가 있으면 FAQPage 스키마도 같이 넣는다 — AI·검색이 읽는 부분 */
+  if(colFaqs && colFaqs.length){
+    jsonld.push({
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: colFaqs.map(f => ({
+        '@type': 'Question', name: T(f.q, 'vi'),
+        acceptedAnswer: { '@type': 'Answer', text: T(f.a, 'vi') },
+      })),
+    });
+  }
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -285,19 +296,27 @@ ${SCRIPTS()}
       .forEach(f => fs.unlinkSync(path.join(d, f)));
   });
 
-  /* 제품·칼럼 정적 생성 */
-  data.products.forEach(p => write(`products/${p.id}.html`, productPage(p, coMap[p.companyId])));
-  console.log(`products/*.html ${data.products.length}개 생성`);
-  data.columns.forEach(c => write(`columns/${colFile(c)}.html`, columnPage(c)));
-  console.log(`columns/*.html ${data.columns.length}개 생성 (${data.columns.filter(c=>c.slug).length}개 슬러그 사용)\n`);
-
-  /* FAQ — 홈 FAQPage 스키마용 (Supabase faqs → 테이블 없거나 비면 data.js 시드) */
+  /* FAQ — 홈/칼럼 FAQPage 스키마용 (Supabase faqs → 테이블 없거나 비면 data.js 시드).
+     칼럼을 굽기 전에 읽어야 칼럼별 FAQ를 그 페이지 스키마에 넣을 수 있다. */
   let faqData = data.faqs;
   if(!faqData || !faqData.length){
     try { faqData = loadFromSeed().faqs; } catch (e) { faqData = []; }
   }
-  const faqs = (faqData || []).filter(f => f.published !== false && (f.page || 'home') === 'home')
+  const livingFaqs = (faqData || []).filter(f => f.published !== false)
     .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  const faqsFor = page => livingFaqs.filter(f => (f.page || 'home') === page);
+  const faqs = faqsFor('home');
+
+  /* 제품·칼럼 정적 생성 */
+  data.products.forEach(p => write(`products/${p.id}.html`, productPage(p, coMap[p.companyId])));
+  console.log(`products/*.html ${data.products.length}개 생성`);
+  let colFaqCount = 0;
+  data.columns.forEach(c => {
+    const cf = faqsFor(c.id);
+    colFaqCount += cf.length;
+    write(`columns/${colFile(c)}.html`, columnPage(c, cf));
+  });
+  console.log(`columns/*.html ${data.columns.length}개 생성 (${data.columns.filter(c=>c.slug).length}개 슬러그 사용, 칼럼 FAQ ${colFaqCount}개)`);
   console.log(`FAQ ${faqs.length}개 → 홈 FAQPage 스키마\n`);
 
   /* 공개 페이지 head 주입 */

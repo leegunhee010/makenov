@@ -3,7 +3,7 @@
 const I18N = {
   vi: {
     // header / nav
-    nav_directory: "Danh mục sản phẩm",
+    nav_directory: "Sản phẩm",
     nav_columns: "Bài viết",
     nav_webinar: "Webinar",
     nav_about: "Giới thiệu",
@@ -236,7 +236,7 @@ const I18N = {
     days_ago: "ngày trước",
   },
   ko: {
-    nav_directory: "제품 디렉토리",
+    nav_directory: "제품",
     nav_columns: "칼럼",
     nav_webinar: "웨비나",
     nav_about: "소개",
@@ -456,7 +456,7 @@ const I18N = {
     days_ago: "일 전",
   },
   en: {
-    nav_directory: "Product Directory",
+    nav_directory: "Products",
     nav_columns: "Insights",
     nav_webinar: "Webinar",
     nav_about: "About",

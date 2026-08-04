@@ -780,13 +780,30 @@ function renderFaqTab(){
   const el = document.getElementById('tab-faq');
   if(!el) return;
   if(fEditing !== null){ el.innerHTML = faqForm(fEditing); return; }
-  const list = (typeof MK_FAQ !== 'undefined' ? [...MK_FAQ] : []).sort((a,b)=>(a.sort||0)-(b.sort||0));
+  /* 위치(홈/칼럼)별로 묶어서 보여준다 — 섞여 있으면 어느 페이지 것인지 구분이 안 된다 */
+  const list = (typeof MK_FAQ !== 'undefined' ? [...MK_FAQ] : [])
+    .sort((a,b)=> String(a.page||'home').localeCompare(String(b.page||'home')) || (a.sort||0)-(b.sort||0));
   el.innerHTML = `
-    <div class="card"><p class="note">메인페이지 하단 <b>자주 묻는 질문</b> 섹션입니다.
+    <div class="card"><p class="note"><b>자주 묻는 질문</b>을 관리합니다. <b>위치</b>를 골라 메인페이지에 넣을지, 특정 <b>칼럼 본문 아래</b>에 넣을지 정하세요.
       검색엔진과 AI(FAQPage 스키마)에도 전달되므로 바이어가 실제로 묻는 질문 위주로 관리하세요.
-      수정 후 배포 전에는 <code>node bake.js</code>를 다시 실행해야 스키마에 반영됩니다.</p><div class="bar"><span class="grow"></span><button class="btn btn-primary btn-sm" onclick="fEditing='';renderFaqTab()">+ 새 질문</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:64px">순서</th><th>질문</th><th style="width:80px">노출</th><th style="width:120px"></th></tr></thead><tbody>${list.length ? list.map(f=>`
-        <tr class="row-hover"><td>${f.sort||0}</td><td><b>${esc((f.q&&(f.q.ko||f.q.vi))||'')}</b><div class="sub">${esc((f.q&&f.q.vi)||'')}</div></td><td>${f.published!==false?'노출':'<span style="color:#B02A37">숨김</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="fEditing='${f.id}';renderFaqTab()">수정</button><button class="btn btn-ghost btn-sm" onclick="if(confirm('삭제할까요?')){admDo(Admin.deleteFaq('${f.id}'));}">삭제</button></td></tr>`).join('') : `<tr class="empty-row"><td colspan="4">FAQ가 없습니다</td></tr>`}
+      수정 후 배포 전에는 <code>node bake.js</code>를 다시 실행해야 스키마에 반영됩니다.</p><div class="bar"><span class="grow"></span><button class="btn btn-primary btn-sm" onclick="fEditing='';renderFaqTab()">+ 새 질문</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:64px">순서</th><th style="width:190px">위치</th><th>질문</th><th style="width:80px">노출</th><th style="width:120px"></th></tr></thead><tbody>${list.length ? list.map(f=>`
+        <tr class="row-hover"><td>${f.sort||0}</td><td>${faqPageLabel(f.page)}</td><td><b>${esc((f.q&&(f.q.ko||f.q.vi))||'')}</b><div class="sub">${esc((f.q&&f.q.vi)||'')}</div></td><td>${f.published!==false?'노출':'<span style="color:#B02A37">숨김</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="fEditing='${f.id}';renderFaqTab()">수정</button><button class="btn btn-ghost btn-sm" onclick="if(confirm('삭제할까요?')){admDo(Admin.deleteFaq('${f.id}'));}">삭제</button></td></tr>`).join('') : `<tr class="empty-row"><td colspan="5">FAQ가 없습니다</td></tr>`}
       </tbody></table></div></div>`;
+}
+
+/* FAQ가 붙을 위치 — 'home' 이거나 칼럼 id */
+function faqPageOptions(sel){
+  const cur = sel || 'home';
+  const cols = (typeof MK_COLUMNS !== 'undefined' ? MK_COLUMNS : []);
+  return `<option value="home" ${cur==='home'?'selected':''}>메인페이지</option>` +
+    cols.map(c=>`<option value="${c.id}" ${cur===c.id?'selected':''}>칼럼 · ${esc(L(c.title)||c.id)}</option>`).join('');
+}
+function faqPageLabel(page){
+  const p = page || 'home';
+  if(p === 'home') return '<b>메인페이지</b>';
+  const c = (typeof MK_COLUMNS !== 'undefined' ? MK_COLUMNS : []).find(x=>x.id===p);
+  return c ? `칼럼 · <span class="sub" style="display:inline">${esc(L(c.title))}</span>`
+           : `<span style="color:#B02A37">없는 칼럼 (${esc(p)})</span>`;
 }
 
 function faqForm(id){
@@ -794,7 +811,7 @@ function faqForm(id){
   const g = (o,k)=> (o && o[k]) ? o[k] : '';
   const q = f?f.q:{}, a = f?f.a:{};
   return `
-    <div class="card"><div class="bar"><h3 style="margin:0">${f?'질문 수정':'새 질문'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['q-q','q-a'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary btn-sm" onclick="saveFaq('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>순서 (작을수록 위)</label><input id="q-sort" type="number" value="${f?(f.sort||0):((typeof MK_FAQ!=='undefined'?MK_FAQ.length:0)+1)}"></div><div class="fld"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="q-pub" ${!f||f.published!==false?'checked':''} style="width:auto"> 사이트에 노출</label></div></div><div class="sect"><h4>질문</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-q-ko">${esc(g(q,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-q-vi">${esc(g(q,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-q-en">${esc(g(q,'en'))}</textarea></div></div></div><div class="sect"><h4>답변</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-a-ko" rows="4">${esc(g(a,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-a-vi" rows="4">${esc(g(a,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-a-en" rows="4">${esc(g(a,'en'))}</textarea></div></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary" onclick="saveFaq('${id}')">저장</button></div></div>`;
+    <div class="card"><div class="bar"><h3 style="margin:0">${f?'질문 수정':'새 질문'}</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="autoTranslate(this,['q-q','q-a'],false)" title="한국어를 베트남어·영어로 자동 번역 (빈 칸만 채움)">🌐 한국어 자동번역</button><button class="btn btn-ghost btn-sm" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary btn-sm" onclick="saveFaq('${id}')">저장</button></div><div class="fgrid two"><div class="fld"><label>위치 — 이 질문을 어디에 넣을지</label><select id="q-page">${faqPageOptions(f?f.page:'home')}</select><p class="hint">칼럼을 고르면 그 칼럼 본문 아래에 붙습니다.</p></div><div class="fld"><label>순서 (작을수록 위)</label><input id="q-sort" type="number" value="${f?(f.sort||0):((typeof MK_FAQ!=='undefined'?MK_FAQ.length:0)+1)}"></div></div><div class="fld"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="q-pub" ${!f||f.published!==false?'checked':''} style="width:auto"> 사이트에 노출</label></div><div class="sect"><h4>질문</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-q-ko">${esc(g(q,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-q-vi">${esc(g(q,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-q-en">${esc(g(q,'en'))}</textarea></div></div></div><div class="sect"><h4>답변</h4><div class="fgrid"><div class="fld"><label><span class="lang-tag">KO</span></label><textarea id="q-a-ko" rows="4">${esc(g(a,'ko'))}</textarea></div><div class="fld"><label><span class="lang-tag">VI</span></label><textarea id="q-a-vi" rows="4">${esc(g(a,'vi'))}</textarea></div><div class="fld"><label><span class="lang-tag">EN</span></label><textarea id="q-a-en" rows="4">${esc(g(a,'en'))}</textarea></div></div></div><div class="bar" style="margin-top:22px"><span class="grow"></span><button class="btn btn-ghost" onclick="fEditing=null;renderFaqTab()">취소</button><button class="btn btn-primary" onclick="saveFaq('${id}')">저장</button></div></div>`;
 }
 
 function saveFaq(id){
@@ -802,7 +819,7 @@ function saveFaq(id){
   if(!q.ko && !q.vi && !q.en){ toastA('질문을 입력하세요'); return; }
   toastA('저장하는 중…');
   admDo(Admin.upsertFaq({
-    id: id || Admin.newFaqId(), page:'home',
+    id: id || Admin.newFaqId(), page: av('q-page') || 'home',
     q, a, sort:+av('q-sort')||0, published:ac('q-pub'),
   }));
 }

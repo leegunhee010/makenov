@@ -1,5 +1,20 @@
 /* 칼럼 상세 페이지 렌더 — column.html(동적)과 columns/*.html(정적 굽기) 공용.
    구운 페이지는 window.MK_CID 로 칼럼을 지정하고, 동적 페이지는 ?id= 를 읽는다. */
+/* 칼럼별 FAQ — 관리자 FAQ 탭에서 '위치'를 이 칼럼으로 지정한 항목만 모은다.
+   faqs 테이블의 page 컬럼을 그대로 쓴다(홈은 'home', 칼럼은 칼럼 id).
+   검색·AI가 읽는 FAQPage 스키마는 bake.js가 같은 데이터로 넣는다. */
+function colFaqList(cid){
+  const all = (typeof MK_FAQ !== 'undefined' ? MK_FAQ : []);
+  return all.filter(f => f.published !== false && f.page === cid)
+            .sort((a,b) => (a.sort||0) - (b.sort||0));
+}
+function colFaq(cid){
+  const list = colFaqList(cid);
+  if(!list.length) return '';        // 등록된 게 없으면 섹션 자체를 만들지 않는다
+  return `<section class="col-faq"><h2 data-i18n="sec_faq"></h2><div class="faq-list">${list.map(f=>`
+      <details class="faq-item"><summary>${esc(L(f.q))}</summary><div class="a">${esc(L(f.a))}</div></details>`).join('')}</div></section>`;
+}
+
 function pageInit(){
   const id = window.MK_CID || new URLSearchParams(location.search).get('id');
   if(!MK_COLUMNS.length) return;       // 데이터가 없으면 정적 내용을 그대로 둔다
@@ -14,7 +29,7 @@ function pageInit(){
       <span>${esc(L(c.title))}</span></nav><span class="blog-single-cat">${esc(L(c.cat))}</span><h1>${esc(L(c.title))}</h1><div class="blog-single-meta"><span>${esc(c.date)}</span><i></i><span>${readTime(L(c.body))}</span></div><div class="blog-cover"><img src="${c.img}" alt=""></div><div class="blog-body">${L(c.body)}</div><div class="blog-nav">
       ${prev ? `<a href="column.html?id=${prev.id}"><div class="dir" data-i18n="col_prev"></div><b>${esc(L(prev.title))}</b></a>` : '<span></span>'}
       ${next ? `<a class="next" href="column.html?id=${next.id}"><div class="dir" data-i18n="col_next"></div><b>${esc(L(next.title))}</b></a>` : '<span></span>'}
-    </div><div class="blog-cta"><h3 data-i18n="promo_title"></h3><p data-i18n="promo_desc"></p><button class="btn btn-primary btn-lg" onclick="openAuth('signup')" data-i18n="promo_btn"></button></div>`;
+    </div>${colFaq(c.id)}<div class="blog-cta"><h3 data-i18n="promo_title"></h3><p data-i18n="promo_desc"></p><button class="btn btn-primary btn-lg" onclick="openAuth('signup')" data-i18n="promo_btn"></button></div>`;
 
   /* 다른 칼럼 */
   const others = MK_COLUMNS.filter(x=>x.id!==c.id).slice(0,2);
