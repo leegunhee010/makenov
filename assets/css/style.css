@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    MAKENOV — design system
    Mirrored from ohmycompany.com (2026-07-27 실측)
    Pretendard 16px / text #212529 / bg #fff
@@ -145,12 +145,27 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 }
 
 /* ---------- 히어로 배너 (omc 실측: 1110x400 풀블리드 + 오버레이) ---------- */
-.omc-hero{padding:24px 15px 0;margin-bottom:68px}
-/* 컨테이너를 1400으로 넓히면서 높이도 같이 올렸다 —
-   400 그대로 두면 가로만 늘어나 편지지처럼 납작해진다. 배경 아트 viewBox가 1600x560(2.86)이라 그 비율에 맞춘다. */
-.omc-hero .frame{position:relative;max-width:var(--maxw);margin:0 auto;height:490px;
+.omc-hero{padding:24px 0 0;margin-bottom:68px}
+/* addwel 실측: 카테고리 레일 240 + gap 12 + 슬라이더 1148 = 1400 */
+.hero-row{display:flex;gap:12px;align-items:stretch}
+.omc-hero .frame{position:relative;flex:1;min-width:0;height:400px;
   overflow:hidden;border-radius:var(--r-card);background:var(--mk-bg-soft)}
-@media(max-width:1024px){.omc-hero .frame{height:400px}}
+
+/* 좌측 카테고리 레일 — 디렉토리 사이트라 상시 노출이 낫다(addwel은 드롭다운) */
+.hero-cats{width:240px;flex-shrink:0;background:var(--mk-bg-soft);border-radius:var(--r-card);
+  padding:10px 0;display:flex;flex-direction:column}
+.hero-cats .all{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 20px 13px;font-size:14px;font-weight:700;color:var(--mk-primary-dark)}
+.hero-cats .all svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hero-cats ul{list-style:none;flex:1;overflow:auto}
+.hero-cats li a{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 20px;font-size:14px;color:var(--mk-body);transition:color .15s,background .15s}
+.hero-cats li a:hover{color:var(--mk-primary-dark);background:#fff}
+.hero-cats li a .n{font-size:12px;color:var(--mk-muted);font-variant-numeric:tabular-nums}
+.hero-cats li a:hover .n{color:var(--mk-primary)}
+
+@media(max-width:1024px){.hero-cats{display:none}.omc-hero .frame{height:360px}}
+@media(max-width:640px){.omc-hero .frame{height:300px}}
 .omc-hero .slide{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
 .omc-hero .slide.on{opacity:1;pointer-events:auto}
 .omc-hero .shot{position:absolute;inset:0;display:block}
@@ -178,13 +193,23 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .omc-hero .hero-cta .ghost:hover{background:rgba(255,255,255,.24)}
 /* 배경 아트는 SVG — object-fit로 프레임에 맞춤 */
 .omc-hero .shot img{background:var(--mk-navy-deep)}
-.omc-hero .dots{position:absolute;right:40px;bottom:44px;display:flex;gap:7px;z-index:3}
+.omc-hero .dots{position:absolute;right:40px;bottom:76px;display:flex;gap:7px;z-index:3}
 .omc-hero .dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);
   cursor:pointer;transition:all .2s}
 .omc-hero .dots i.on{background:#fff;width:22px;border-radius:100px}
+/* 이전·다음 — addwel 처럼 우하단. 점만 있으면 4장 중 어디인지는 알아도 넘기기가 번거롭다. */
+.omc-hero .hero-arrows{position:absolute;right:40px;bottom:30px;display:flex;gap:6px;z-index:3}
+.omc-hero .hero-arrows button{width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.32);color:#fff;display:flex;align-items:center;justify-content:center;
+  transition:background .15s}
+.omc-hero .hero-arrows button:hover{background:rgba(0,0,0,.55)}
+.omc-hero .hero-arrows svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:860px){
-  .omc-hero{padding:16px 16px 0;margin-bottom:44px}
+  .omc-hero{padding:16px 0 0;margin-bottom:44px}
   .omc-hero .frame{height:340px}
+  .omc-hero .hero-arrows{display:none}
+  .omc-hero .dots{bottom:26px}
   .omc-hero .copy{left:20px;right:20px;bottom:24px}
   .omc-hero .copy h1{font-size:21px;margin-bottom:8px}
   .omc-hero .copy p{font-size:13px;
