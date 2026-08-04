@@ -224,7 +224,7 @@ const I18N = {
     dir_empty: "Không có sản phẩm trong danh mục này",
     // columns
     col_title: "Bài viết & Xu hướng",
-    col_desc: "Câu chuyện sản phẩm Hàn Quốc và xu hướng thị trường",
+    col_desc: "Hướng dẫn sourcing và xu hướng thị trường cho nhà mua hàng",
     // footer
     ft_desc: "Nền tảng kết nối sản phẩm sáng tạo với nhà mua hàng toàn cầu.",
     ft_platform: "Nền tảng",
@@ -646,7 +646,7 @@ const I18N = {
     sort_inq: "문의 많은 순",
     dir_empty: "이 카테고리에 제품이 없습니다",
     col_title: "칼럼 & 트렌드",
-    col_desc: "한국 제품 이야기와 시장 트렌드",
+    col_desc: "바이어를 위한 소싱 가이드와 시장 이야기",
     ft_desc: "혁신 제품을 글로벌 바이어와 연결하는 플랫폼.",
     ft_platform: "플랫폼",
     ft_support: "지원",
@@ -1071,7 +1071,7 @@ const I18N = {
     sort_inq: "Most inquiries",
     dir_empty: "No products in this category",
     col_title: "Insights & Trends",
-    col_desc: "Korean product stories and market trends",
+    col_desc: "Sourcing guides and market notes for buyers",
     ft_desc: "Connecting innovative products with global buyers.",
     ft_platform: "Platform",
     ft_support: "Support",

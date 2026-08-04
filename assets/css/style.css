@@ -755,11 +755,25 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .blog-body strong,.blog-body b{font-weight:700;color:var(--col-ink)}
 .blog-body blockquote{border-left:3px solid var(--mk-primary);background:var(--mk-bg-soft);
   border-radius:0 var(--r-base) var(--r-base) 0;padding:18px 22px;margin:30px 0;color:var(--mk-body)}
+/* 본문 표 — 항목명(th)을 왼쪽에 두는 설명형. 좁은 화면에서는 위아래로 쌓는다 */
+.blog-body table{width:100%;margin:30px 0;border-collapse:collapse;font-size:16px;line-height:1.7;
+  border:1px solid var(--mk-line);border-radius:var(--r-base);overflow:hidden}
+.blog-body th,.blog-body td{padding:15px 18px;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--mk-line)}
+.blog-body tr:last-child th,.blog-body tr:last-child td{border-bottom:0}
+.blog-body th{width:150px;font-weight:700;color:var(--col-ink);background:var(--mk-bg-soft);white-space:nowrap}
+.blog-body td{color:var(--mk-body)}
 @media(max-width:860px){
   .blog-single{padding:28px 0 40px}
   .blog-single h1{font-size:26px}
   .blog-body{font-size:16px}
   .blog-body h2{font-size:22px;margin:34px 0 14px}
+  .blog-body table{font-size:15px}
+  .blog-body th,.blog-body td{display:block;width:auto;border-bottom:0;padding:13px 15px}
+  .blog-body th{padding-bottom:2px;background:none;white-space:normal}
+  .blog-body td{padding-top:0}
+  .blog-body tr{display:block;border-bottom:1px solid var(--mk-line)}
+  .blog-body tr:last-child{border-bottom:0}
 }
 
 /* ---------- 상세 하단: 이전/다음 · 관련글 ---------- */
