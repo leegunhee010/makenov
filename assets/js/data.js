@@ -141,6 +141,21 @@ const MK_COMPANIES = [
     intro:{vi:'DALSUNG TEA trồng và chế biến trà tại vùng Dalseong, Daegu theo chuẩn hữu cơ Hàn Quốc. Chuyên dòng trà ngũ cốc không caffeine, nhận OEM quy cách túi lọc.',
       ko:'달성티는 대구 달성군에서 유기농 인증 기준으로 차를 재배·가공합니다. 카페인 없는 곡물차 라인이 주력이며 티백 규격 OEM이 가능합니다.',
       en:'DALSUNG TEA grows and processes tea in Dalseong, Daegu under Korean organic standards, specializing in caffeine-free grain teas with tea-bag OEM available.'} },
+
+  /*  실제 기업 — 웰빙헬스팜 3wbmall.com / wh-pharm.com 공개정보 기준 (사업자번호·주소·대표 실값) */
+  { id:'wellbeing', brand:'WELLBEING HEALTHFARM', logo:'https://3wbmall.com/web/upload/weskin11/kr/main/logo.png',
+    cover:'https://3wbmall.com/web/upload/weskin11/kr/main/210114_pc_top.jpg', cat:'beauty',
+    name:{vi:'WELLBEING HEALTHFARM', ko:'(주)웰빙헬스팜', en:'WELLBEING HEALTHFARM Co., Ltd.'},
+    location:{vi:'Incheon, Hàn Quốc', ko:'인천 남동구', en:'Incheon, Korea'},
+    since:'2018', staff:'—', export:'—', moqPolicy:'문의',
+    brn:'118-81-22304', ceo:'박진수', tel:'070-7532-4508', site:'wh-pharm.com',
+    certs:['화장품 제조판매업'],
+    tagline:{vi:'Thương hiệu chăm sóc bàn chân K-Beauty — Goeunbal (Bàn chân mịn màng)',
+      ko:'대표 풋케어 브랜드 명품 고운발 — 발 각질·보습 전문',
+      en:'K-Beauty foot-care brand behind Goeunbal premium foot cream'},
+    intro:{vi:'WELLBEING HEALTHFARM (Incheon, Hàn Quốc) là nhà sản xuất mỹ phẩm chăm sóc sức khỏe, nổi bật với thương hiệu chăm sóc bàn chân "Goeunbal". Sản phẩm chủ lực là kem dưỡng gót chân chứa urea, được bán trực tiếp qua kênh chính hãng 3wbmall và Naver, với hàng nghìn đánh giá của người dùng Hàn Quốc.',
+      ko:'(주)웰빙헬스팜은 인천 남동구에 위치한 건강·화장품 제조기업으로, 대표 풋케어 브랜드 "명품 고운발"을 운영합니다. 우레아 성분 기반 발 각질·보습 크림을 자사몰(3wbmall)과 네이버에서 직접 판매하며 다수의 국내 사용후기를 보유하고 있습니다.',
+      en:'WELLBEING HEALTHFARM (Incheon, Korea) is a health & cosmetics manufacturer known for its "Goeunbal" foot-care brand. Its flagship urea-based foot cream sells directly through its own mall (3wbmall) and Naver, with thousands of Korean user reviews.'} },
 ];
 function mkCompany(id){ return MK_COMPANIES.find(c=>c.id===id); }
 function mkCompanyOf(product){
@@ -322,6 +337,71 @@ const MK_PRODUCTS = [
       {type:'p', text:{vi:'Người tiêu dùng Việt ngày càng tìm đồ uống lành mạnh không caffeine — trà gạo rang Hàn Quốc đang lên xu hướng.', ko:'베트남 소비자의 건강음료 수요 증가로 한국 곡물차가 트렌드로 부상 중입니다.', en:'Vietnamese consumers increasingly seek healthy caffeine-free drinks — Korean grain teas are trending.'}},
     ]
   },
+  {
+    id:'p9', cat:'beauty', featured:false, isNew:true, createdAt:'2026-07-29',
+    companyId:'wellbeing', brand:'WELLBEING HEALTHFARM', origin:'Incheon, Korea',
+    name:{vi:'Kem dưỡng gót chân Goeunbal (Bàn chân mịn màng)', ko:'명품 고운발 풋크림', en:'Goeunbal Premium Foot Cream'},
+    tagline:{vi:'Kem chứa urea làm mềm da chai sần, nứt gót chân — dưỡng ẩm cho bàn chân mịn màng',
+             ko:'우레아 성분으로 굳은살·갈라진 발뒤꿈치를 부드럽게, 발 각질 관리 풋크림',
+             en:'Urea foot cream that softens calluses and cracked heels while deeply moisturizing'},
+    /* 이미지는 3wbmall 핫링크를 끊고 내려받아 자체 호스팅 (핫링크는 상대 서버가 막으면 그대로 깨짐) */
+    img:'assets/img/products/goeunbal/main.jpg',
+    gallery:['assets/img/products/goeunbal/main.jpg'],
+    video:'', inquiries:0, views:0,
+    price:'US$ 3.50 / tube (FOB Incheon)', negotiable:true, moq:'문의', lead:'문의',
+    terms:'K-뷰티 풋케어 · 우레아 함유 · OEM/ODM 문의 · 국내 소비자가 9,900원(참고)',
+    brandStory:{vi:'Goeunbal là thương hiệu chăm sóc bàn chân của WELLBEING HEALTHFARM (Incheon, Hàn Quốc), bán trực tiếp qua kênh chính hãng với nhiều đánh giá của người dùng Hàn Quốc.',
+                ko:'명품 고운발은 (주)웰빙헬스팜(인천)의 풋케어 브랜드로, 자사몰 직판 및 다수의 국내 사용후기를 보유한 제품입니다.',
+                en:'Goeunbal is the foot-care brand of WELLBEING HEALTHFARM (Incheon, Korea), sold directly through its own mall with many Korean user reviews.'},
+    /* 본문 = 제조사 상세페이지(3wbmall) 내용을 3개 국어로 옮긴 것.
+       원본 상세 이미지는 전부 한국어라 아래 seq 이미지로 붙이되,
+       바이어가 실제로 읽는 정보는 텍스트 블록에 담는다. 수치는 이미지의 시험성적서 기재값. */
+    detail:[
+      {type:'p', text:{
+        vi:'Kem chứa urea giúp làm mềm và loại bỏ da chai sần, da khô nứt nẻ ở gót chân, đồng thời cấp ẩm để giữ bàn chân mềm mịn. Kết cấu thẩm thấu nhanh, dùng hằng ngày sau khi tắm.',
+        ko:'우레아 성분이 발뒤꿈치의 굳은살과 건조하게 갈라진 각질을 부드럽게 정돈하고, 동시에 수분을 공급해 매끈한 발을 유지해 줍니다. 흡수가 빠른 제형으로 목욕 후 매일 사용하기 좋습니다.',
+        en:'A urea-based cream that softens and smooths calluses and dry, cracked heels while supplying moisture for soft feet. Its fast-absorbing texture suits daily use after bathing.'}},
+
+      {type:'p', text:{
+        vi:'Thành phần chính: urea làm mềm sừng, cùng chiết xuất sữa ong chúa và keo ong (propolis). Ngoài ra còn có chiết xuất hoa kim ngân, hoa cúc La Mã, acerola, gạo và natri hyaluronate. Kết cấu nhẹ, không cần chà xát hay dũa gót — phù hợp cho cả nam và nữ, mọi lứa tuổi.',
+        ko:'핵심 성분은 각질을 연화시키는 우레아, 그리고 로얄젤리·프로폴리스 추출물입니다. 인동덩굴꽃·마트리카리아(캐모마일)·아세로라·쌀 추출물과 소듐하알루로네이트가 함께 들어갑니다. 가볍게 발리고, 각질을 깎거나 미는 물리적 제거가 필요 없어 남녀노소 모두 사용할 수 있습니다.',
+        en:'Key actives are urea for keratin softening, plus royal jelly and propolis extracts. The formula also carries honeysuckle, chamomile, acerola and rice extracts with sodium hyaluronate. It absorbs lightly and needs no filing or scrubbing, so it suits all ages and genders.'}},
+
+      {type:'p', text:{
+        vi:'Kết quả thử nghiệm (theo phiếu kiểm nghiệm của nhà sản xuất): thử nghiệm trên người trong 2 tuần cho thấy vùng da sừng ở gót chân giảm 56,95%; 95,54% người tham gia hài lòng (20 người, tuổi trung bình 34,1 — Human Skin Clinical Trial Center, HD-P24-0036 / IRB HD-IRB-P24-0036, 26/12/2024–09/01/2025). Thử nghiệm patch test kích ứng sơ cấp cho chỉ số 0,00 — xếp loại “không kích ứng (Excellent)”. Kiểm nghiệm 6 kim loại nặng, 6 chất độc hại và giới hạn vi sinh vật: tất cả “không phát hiện” (Korea Institute of Dermatological Sciences).',
+        ko:'시험 결과(제조사 시험성적서 기재값): 2주 인체적용시험에서 뒤꿈치 각질 면적 56.95% 개선, 시험대상자 만족도 95.54%(20명, 평균 34.1세 · 휴먼피부임상시험센터 HD-P24-0036 / IRB HD-IRB-P24-0036, 2024.12.26~2025.01.09). 피부첩포 일차자극 시험 자극지수 0.00 — "비자극(Excellent)" 판정. 중금속 6종·유해물질 6종·미생물 한도 시험은 전 항목 불검출(한국피부과학연구원).',
+        en:'Test results as stated on the manufacturer\'s reports: a 2-week human application study showed 56.95% reduction in heel callus area and 95.54% subject satisfaction (20 subjects, mean age 34.1 — Human Skin Clinical Trial Center, HD-P24-0036 / IRB HD-IRB-P24-0036, 26 Dec 2024–09 Jan 2025). A primary skin irritation patch test returned an index of 0.00, rated "non-irritating (Excellent)". Six heavy metals, six hazardous substances and microbial limits were all reported as not detected (Korea Institute of Dermatological Sciences).'}},
+
+      {type:'p', text:{
+        vi:'Thành tích tại thị trường Hàn Quốc (theo tư liệu của nhà sản xuất): hạng 1 doanh số kem dưỡng gót chân trên 11st (12/07/2020) và hạng 1 hạng mục foot cream trong Naver BEST 100 (22/10/2020). Trích dẫn tháng 5/2025: 31.454 đánh giá trên Coupang và 9.630 đánh giá đạt 4,83/5 trên Naver Shopping. Đây là số liệu bán lẻ nội địa Hàn Quốc, dùng để tham khảo mức độ chấp nhận của người tiêu dùng.',
+        ko:'한국 시장 실적(제조사 자료 기준): 11번가 풋크림 판매 BEST 1위(2020.07.12), 네이버 BEST 100 풋크림 부문 1위(2020.10.22). 2025년 5월 발췌 기준 쿠팡 상품평 31,454건, 네이버쇼핑 리뷰 9,630건 평점 4.83/5. 한국 내수 리테일 지표이며 소비자 수용도 참고용입니다.',
+        en:'Korean market track record per the manufacturer\'s materials: #1 foot-cream seller on 11st (12 Jul 2020) and #1 in the foot-cream category of Naver BEST 100 (22 Oct 2020). As captured in May 2025: 31,454 reviews on Coupang and 9,630 reviews averaging 4.83/5 on Naver Shopping. These are Korean domestic retail figures, offered as a proxy for consumer acceptance.'}},
+
+      {type:'p', text:{
+        vi:'Cách dùng: da sừng ít — dùng 2–3 lần/tuần, rửa chân, lau khô rồi massage cho kem thấm. Da sừng nhiều — dùng từ 5 lần/tuần trở lên, ngâm chân nước ấm, lau khô rồi massage. Bôi trước khi ngủ và mang tất sẽ cho hiệu quả tốt hơn.',
+        ko:'사용법: 각질이 적은 경우 주 2~3회 — 발을 씻고 물기를 없앤 뒤 마사지하듯 발라 흡수시킵니다. 각질이 많은 경우 주 5회 이상 — 따뜻한 물에 발을 불린 뒤 물기를 제거하고 마사지하듯 흡수시킵니다. 자기 전에 바르고 수면양말을 신으면 효과가 더 좋습니다.',
+        en:'How to use: for light calluses, apply 2–3 times a week — wash feet, pat dry, then massage in until absorbed. For heavy calluses, apply 5 or more times a week — soak feet in warm water, dry, then massage in. Applying before bed and wearing socks improves results.'}},
+
+      {type:'p', text:{
+        vi:'Thông tin sản phẩm: dung tích 110g · sản xuất tại Hàn Quốc · nhà sản xuất và chịu trách nhiệm phân phối: WELLBEING HEALTHFARM Co., Ltd. · dùng được cho mọi loại da · hạn dùng sau khi mở nắp 12 tháng · số bằng sáng chế 10-1777280. Dòng sản phẩm gồm 3 phiên bản: Goeunbal Premium 110g (sữa ong chúa + keo ong), WHB Goeunbal 100g (dưỡng ẩm) và Cheongchun Goeunbal 100g.',
+        ko:'제품 정보: 용량 110g · 제조국 대한민국 · 제조업자 및 책임판매업자 (주)웰빙헬스팜 · 모든 피부에 사용 · 개봉 후 사용기간 12개월 · 특허 제10-1777280호. 라인업은 명품 고운발 110g(로얄젤리·프로폴리스), WHB 고운발 100g(보습), 청춘 고운발 100g 3종입니다.',
+        en:'Product information: 110g · made in Korea · manufacturer and responsible distributor WELLBEING HEALTHFARM Co., Ltd. · suitable for all skin types · 12 months after opening · patent no. 10-1777280. The line comprises Goeunbal Premium 110g (royal jelly + propolis), WHB Goeunbal 100g (moisturizing) and Cheongchun Goeunbal 100g.'}},
+
+      {type:'p', text:{
+        vi:'Khí hậu nóng ẩm và thói quen đi dép hở của người Việt khiến nhu cầu chăm sóc gót chân tăng cao — dòng foot cream Hàn Quốc có dư địa tốt tại kênh nhà thuốc, cửa hàng mỹ phẩm và bán lẻ trực tuyến.',
+        ko:'덥고 습한 기후와 샌들 착용 문화로 베트남의 발 관리 수요가 높아, 한국산 풋크림은 약국·화장품 매장·온라인 리테일 채널에서 성장 여지가 큽니다.',
+        en:'Vietnam\'s hot, humid climate and open-sandal culture drive strong foot-care demand — Korean foot creams have room to grow across pharmacies, cosmetics stores and online retail.'}},
+
+      /* 제조사 원본 상세페이지 (한국어) — seq:true 라 틈 없이 이어 붙는다 */
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/01.jpg', w:861, h:3002},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/03.jpg', w:861, h:2006},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/04.jpg', w:861, h:3561},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/05.jpg', w:861, h:3201},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/06.jpg', w:861, h:2921},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/02.jpg', w:861, h:2010},
+      {type:'img', seq:true, src:'assets/img/products/goeunbal/07.jpg', w:861, h:2986},
+    ]
+  },
 ];
 
 const MK_COLUMNS = [
@@ -428,6 +508,54 @@ const MK_MAKER = {
   contactTel: '',
 };
 
+/* ---------- 메인페이지 FAQ (바이어용) ----------
+   관리자 FAQ 탭에서 편집. Supabase 모드에선 faqs 테이블이 이 시드를 덮어쓴다. */
+const MK_FAQ = [
+  { id:'f1', page:'home', sort:1, published:true,
+    q:{vi:'Đăng ký và sử dụng có mất phí không?', ko:'가입과 이용은 무료인가요?', en:'Is it free to join and use?'},
+    a:{vi:'Hoàn toàn miễn phí — đăng ký, xem sản phẩm, gửi yêu cầu báo giá và xác thực doanh nghiệp đều không mất phí.',
+       ko:'네. 가입, 제품 열람, 견적 문의, 사업자 인증 모두 무료입니다.',
+       en:'Yes. Signing up, browsing products, sending quotation requests and business verification are all free.'} },
+  { id:'f2', page:'home', sort:2, published:true,
+    q:{vi:'Vì sao giá và MOQ bị khóa?', ko:'가격과 최소주문수량(MOQ)이 왜 잠겨 있나요?', en:'Why are prices and MOQs locked?'},
+    a:{vi:'Giá, MOQ, thời gian giao hàng và điều kiện cung ứng chỉ hiển thị cho nhà mua đã xác thực doanh nghiệp. Đăng ký miễn phí và xác thực để xem ngay.',
+       ko:'가격·MOQ·납기·공급 조건은 사업자 인증을 통과한 바이어에게만 공개됩니다. 무료 가입 후 인증하면 바로 열람할 수 있습니다.',
+       en:'Price, MOQ, lead time and supply terms are visible only to verified buyers. Sign up free and verify your business to unlock them.'} },
+  { id:'f3', page:'home', sort:3, published:true,
+    q:{vi:'Xác thực doanh nghiệp như thế nào?', ko:'사업자 인증은 어떻게 하나요?', en:'How does business verification work?'},
+    a:{vi:'Việt Nam dùng mã số thuế (MST), Hàn Quốc dùng số đăng ký kinh doanh, các quốc gia khác xác thực bằng email tên miền công ty. Thường chỉ mất khoảng 1 phút.',
+       ko:'베트남은 세금코드(MST), 한국은 사업자등록번호, 그 외 국가는 회사 이메일 도메인으로 인증합니다. 보통 1분이면 끝납니다.',
+       en:'Vietnam verifies by tax code (MST), Korea by business registration number, and other countries by company email domain. It usually takes about a minute.'} },
+  { id:'f4', page:'home', sort:4, published:true,
+    q:{vi:'Có làm việc trực tiếp với nhà sản xuất không?', ko:'제조사와 직접 거래하나요?', en:'Do I deal directly with manufacturers?'},
+    a:{vi:'Có. Yêu cầu của bạn được chuyển thẳng đến nhà sản xuất, không qua trung gian. MAKENOV đảm nhận việc kết nối và xác thực.',
+       ko:'네. 문의는 제조사에 직접 전달되며 중간 유통 마진이 없습니다. MAKENOV는 연결과 검증을 담당합니다.',
+       en:'Yes. Your inquiry goes straight to the manufacturer with no middleman margins. MAKENOV handles matching and verification.'} },
+  { id:'f5', page:'home', sort:5, published:true,
+    q:{vi:'Có thể thương lượng MOQ không?', ko:'최소주문수량은 협의할 수 있나요?', en:'Can MOQs be negotiated?'},
+    a:{vi:'Tùy sản phẩm, nhưng nhiều nhà sản xuất sẵn sàng thương lượng đơn hàng nhỏ để thử nghiệm thị trường. Hãy ghi số lượng mong muốn khi gửi yêu cầu báo giá.',
+       ko:'제품마다 다르지만, 많은 제조사가 테스트 오더용 소량 주문 협의에 열려 있습니다. 견적 문의 시 희망 수량을 적어주세요.',
+       en:'It varies by product, but many manufacturers are open to smaller trial orders. State your desired quantity in the quotation request.'} },
+  { id:'f6', page:'home', sort:6, published:true,
+    q:{vi:'Tôi có thể gửi yêu cầu bằng ngôn ngữ nào?', ko:'어떤 언어로 문의할 수 있나요?', en:'Which languages can I use?'},
+    a:{vi:'Tiếng Việt, tiếng Anh và tiếng Hàn đều được. Khi cần, đội ngũ MAKENOV sẽ hỗ trợ trao đổi.',
+       ko:'베트남어·영어·한국어 모두 가능합니다. 필요하면 MAKENOV 팀이 소통을 지원합니다.',
+       en:'Vietnamese, English and Korean are all fine. The MAKENOV team can assist with communication when needed.'} },
+];
+
+/* ---------- 사이트 설정 (관리자 '설정' 탭에서 편집) ----------
+   지금은 상단 띠배너만. 문구를 코드(i18n.js)에 박아두면 운영 중에 못 바꾸므로
+   여기로 뺐다. Supabase 모드에선 settings 테이블이 이 값을 덮어쓴다. */
+const MK_SETTINGS = {
+  topbarOn: true,
+  topbarLink: '',            // 비우면 링크 없는 안내 배너
+  topbar: {
+    vi: 'Doanh nghiệp Hàn Quốc đang tìm nhà phân phối — xác thực miễn phí để xem giá',
+    ko: '해외 유통 파트너를 찾는 제조사 모집 중 — 사업자 인증하면 가격 열람 무료',
+    en: 'Makers are looking for distribution partners — verify free to unlock pricing',
+  },
+};
+
 /* ---------- 관리자 오버라이드 (관리자에서 저장하면 여기로 들어옴) ----------
    원본 시드는 위 배열, 관리자 편집분은 localStorage. 배포 시 '내보내기'로 data.js에 구움. */
 (function(){
@@ -446,6 +574,14 @@ const MK_MAKER = {
   try{
     const h = JSON.parse(localStorage.getItem('mk_hero_override')||'null');
     if(Array.isArray(h)) { MK_HERO.length = 0; h.forEach(x=>MK_HERO.push(x)); }
+  }catch(e){}
+  try{
+    const f = JSON.parse(localStorage.getItem('mk_faqs_override')||'null');
+    if(Array.isArray(f)) { MK_FAQ.length = 0; f.forEach(x=>MK_FAQ.push(x)); }
+  }catch(e){}
+  try{
+    const st = JSON.parse(localStorage.getItem('mk_settings_override')||'null');
+    if(st && typeof st === 'object') Object.assign(MK_SETTINGS, st);
   }catch(e){}
 })();
 
