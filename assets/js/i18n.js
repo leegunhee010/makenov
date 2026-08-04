@@ -10,8 +10,8 @@ const I18N = {
     nav_columns: "Bài viết",
     nav_webinar: "Webinar",
     nav_about: "Giới thiệu",
-    nav_about_buyer: "Dành cho nhà mua",
-    nav_about_maker: "Dành cho nhà sản xuất",
+    nav_about_buyer: "Bạn là nhà mua?",
+    nav_about_maker: "Bạn là nhà sản xuất?",
     login: "Đăng nhập",
     signup: "Đăng ký",
     logout: "Đăng xuất",
@@ -257,8 +257,8 @@ const I18N = {
 
     // nav — 서비스 소개 / 이용 가이드 / 고객센터
     nav_about: "Giới thiệu",
-    nav_about_buyer: "Dành cho nhà mua",
-    nav_about_maker: "Dành cho nhà sản xuất",
+    nav_about_buyer: "Bạn là nhà mua?",
+    nav_about_maker: "Bạn là nhà sản xuất?",
     nav_guide: "Hướng dẫn",
     nav_support: "Hỗ trợ",
 
@@ -665,8 +665,8 @@ const I18N = {
 
     // nav
     nav_about: "서비스 소개",
-    nav_about_buyer: "바이어를 위한 소개",
-    nav_about_maker: "제조사를 위한 소개",
+    nav_about_buyer: "바이어라면?",
+    nav_about_maker: "제조사라면?",
     nav_guide: "이용 가이드",
     nav_support: "고객센터",
 
@@ -841,8 +841,8 @@ const I18N = {
     nav_columns: "Insights",
     nav_webinar: "Webinar",
     nav_about: "About",
-    nav_about_buyer: "For buyers",
-    nav_about_maker: "For manufacturers",
+    nav_about_buyer: "Are you a buyer?",
+    nav_about_maker: "Are you a manufacturer?",
     login: "Log in",
     signup: "Sign up",
     logout: "Log out",
@@ -1075,8 +1075,8 @@ const I18N = {
 
     // nav
     nav_about: "About",
-    nav_about_buyer: "For buyers",
-    nav_about_maker: "For manufacturers",
+    nav_about_buyer: "Are you a buyer?",
+    nav_about_maker: "Are you a manufacturer?",
     nav_guide: "Guide",
     nav_support: "Support",
 
