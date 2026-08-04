@@ -392,7 +392,6 @@ ${SCRIPTS()}
         ].map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
       }] },
     /* 비공개·준비 중 페이지 — 색인 제외 */
-    { file: 'webinar.html', lang: 'vi', title: 'Webinar | MAKENOV', robots: 'noindex,nofollow' },
     { file: 'mypage.html',  lang: 'vi', title: 'Trang của tôi | MAKENOV', robots: 'noindex,nofollow' },
     { file: 'admin/index.html', title: 'MAKENOV 관리자', robots: 'noindex,nofollow' },
   ];
