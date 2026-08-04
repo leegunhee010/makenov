@@ -110,6 +110,7 @@ const MkData = {
         nt.data.forEach(n => MK_NOTICES.push({
           id:n.id, title:n.title, body:n.body,
           date:String(n.date||'').slice(0,10), published:!!n.published,
+          cat:n.cat||'notice', pinned:!!n.pinned,
         }));
       }
     }catch(e){}
@@ -468,6 +469,7 @@ Object.assign(Admin, {
   async upsertNotice(n){
     const { error } = await SB.from('notices').upsert({
       id:n.id, title:n.title, body:n.body, date:n.date, published:n.published!==false,
+      cat:n.cat||'notice', pinned:!!n.pinned,
     });
     if(error) throw error;
     await MkData.loadContent();
