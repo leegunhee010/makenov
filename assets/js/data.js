@@ -723,9 +723,9 @@ const MK_SETTINGS = {
   topbarOn: true,
   topbarLink: '',            // 비우면 링크 없는 안내 배너
   topbar: {
-    vi: 'Doanh nghiệp Hàn Quốc đang tìm nhà phân phối — xác thực miễn phí để xem giá',
-    ko: '해외 유통 파트너를 찾는 제조사 모집 중 — 사업자 인증하면 가격 열람 무료',
-    en: 'Makers are looking for distribution partners — verify free to unlock pricing',
+    vi: 'Xác thực doanh nghiệp là mở ngay giá và MOQ. Miễn phí, khoảng một phút',
+    ko: '사업자 인증하면 가격과 MOQ가 바로 열립니다. 인증은 무료, 1분이면 끝납니다',
+    en: 'Verify your business and prices unlock instantly. Free, about a minute',
   },
 };
 

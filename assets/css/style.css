@@ -105,6 +105,20 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .mk-nav .gnb{margin-left:auto;display:flex;gap:26px}
 .mk-nav .gnb a{font-size:15px;font-weight:600;color:var(--mk-ink)}
 .mk-nav .gnb a:hover{color:var(--mk-primary);border-bottom-color:var(--mk-primary)}
+/* 서비스 소개 — 바이어용 / 제조사용 드롭다운 */
+.mk-nav .drop{position:relative;display:flex;align-items:center}
+.mk-nav .drop > a::after{content:"";display:inline-block;vertical-align:middle;margin-left:6px;
+  width:6px;height:6px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  transform:translateY(-2px) rotate(45deg);transition:transform .18s}
+.mk-nav .drop:hover > a::after{transform:translateY(1px) rotate(225deg)}
+.mk-nav .drop .menu{position:absolute;top:100%;left:50%;transform:translate(-50%,6px);
+  min-width:190px;background:#fff;border:1px solid var(--mk-line);border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);padding:6px;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transition:opacity .15s,transform .15s,visibility .15s;z-index:210}
+.mk-nav .drop:hover .menu,.mk-nav .drop:focus-within .menu{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.mk-nav .drop .menu a{font-size:14px;font-weight:500;color:var(--mk-body);
+  padding:10px 14px;border-radius:7px;border-bottom:0;white-space:nowrap}
+.mk-nav .drop .menu a:hover{background:var(--mk-primary-soft);color:var(--mk-primary-dark);border-bottom:0}
 @media(max-width:1180px){.mk-nav{gap:22px;font-size:17px}.mk-nav .gnb{gap:18px}}
 .mk-head-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .mk-lang{display:flex;border:1px solid var(--mk-line-strong);border-radius:var(--r-sm);overflow:hidden;margin-right:8px}
@@ -1052,20 +1066,103 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .np-body{max-width:720px;font-size:15px;line-height:1.8;color:var(--mk-body)}
 .np-body p{margin-bottom:12px}
 
-/* ---------- 서비스 소개 / 고객센터 전용 ---------- */
+/* ---------- 서비스 소개 ----------
+   핵심 장치(가격 잠금)를 화면 한가운데로 끌어낸 구성. */
+.ab-hero{padding:74px 0 66px;text-align:center;
+  background:linear-gradient(180deg,var(--mk-primary-soft) 0%,#fff 100%)}
+.ab-kick{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;
+  color:var(--mk-primary-dark);background:#fff;border:1px solid var(--mk-primary);
+  border-radius:var(--r-pill);padding:7px 16px;margin-bottom:24px}
+.ab-hero h1{font-size:46px;font-weight:800;line-height:1.28;letter-spacing:-.03em;color:var(--mk-ink)}
+.ab-lead{max-width:620px;margin:20px auto 0;font-size:17px;line-height:1.75;color:var(--mk-body)}
+.ab-hero-cta{display:flex;justify-content:center;gap:10px;margin-top:32px}
+.ab-hero-cta .btn-lg{height:54px;padding:0 30px;font-size:16px}
+.ab-stats{display:flex;justify-content:center;gap:0;margin-top:56px}
+.ab-stats > div{padding:0 44px;text-align:center;border-left:1px solid var(--mk-line-strong)}
+.ab-stats > div:first-child{border-left:0}
+.ab-stats b{display:block;font-size:32px;font-weight:800;letter-spacing:-.03em;color:var(--mk-primary-dark)}
+.ab-stats span{display:block;font-size:13px;color:var(--mk-muted);margin-top:7px}
+@media(max-width:860px){
+  .ab-hero{padding:52px 0 46px}
+  .ab-hero h1{font-size:30px}
+  .ab-lead{font-size:15px}
+  .ab-hero-cta{flex-direction:column}
+  .ab-stats{flex-direction:column;gap:22px;margin-top:38px}
+  .ab-stats > div{border-left:0;padding:0}
+}
+
+.ab-sec{padding:78px 0}
+.ab-sec.soft{background:var(--mk-bg-soft)}
+.ab-head{max-width:720px;margin-bottom:44px}
+.ab-tag{display:inline-block;font-size:13px;font-weight:700;color:var(--mk-primary-dark);
+  background:var(--mk-primary-soft);border-radius:4px;padding:5px 11px;margin-bottom:16px}
+.ab-tag.light{background:rgba(255,255,255,.14);color:#fff}
+.ab-head h2{font-size:32px;font-weight:800;line-height:1.38;letter-spacing:-.02em;color:var(--mk-ink)}
+.ab-head p{font-size:16px;line-height:1.75;color:var(--mk-body);margin-top:14px}
+@media(max-width:860px){.ab-sec{padding:52px 0}.ab-head h2{font-size:23px}}
+
+/* 핵심 장치 — 다크 밴드 + 잠금 전후 비교 데모 */
+.ab-lock{background:linear-gradient(115deg,var(--mk-navy-deep) 0%,var(--mk-navy) 100%);padding:78px 0}
+.ab-lock-row{display:grid;grid-template-columns:1fr 520px;gap:56px;align-items:center}
+@media(max-width:1100px){.ab-lock-row{grid-template-columns:1fr;gap:34px}}
+.ab-lock-tx h2{font-size:32px;font-weight:800;line-height:1.38;letter-spacing:-.02em;color:#fff;margin-bottom:18px}
+.ab-lock-tx p{font-size:16px;line-height:1.8;color:rgba(255,255,255,.76)}
+.ab-lock-note{margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,.16);
+  font-size:15px !important;color:var(--mk-mint) !important;font-weight:600}
+.ab-lock-demo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.ab-lock-demo{grid-template-columns:1fr}}
+.ab-lock-demo .pane{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;padding:18px 18px 8px}
+.ab-lock-demo .pane.on{background:#fff;border-color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.ab-lock-demo .cap{font-size:12px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:12px}
+.ab-lock-demo .pane.on .cap{color:var(--mk-primary-dark)}
+.ab-lock-demo .rows > div{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px}
+.ab-lock-demo .pane.on .rows > div{border-bottom-color:var(--mk-line)}
+.ab-lock-demo .rows > div:last-child{border-bottom:0}
+.ab-lock-demo .rows span{color:rgba(255,255,255,.55)}
+.ab-lock-demo .pane.on .rows span{color:var(--mk-muted)}
+.ab-lock-demo .rows b{font-size:14px;font-weight:700;color:var(--mk-ink)}
+.ab-lock-demo .bar{width:74px;height:11px;border-radius:3px;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.26) 0 4px,transparent 4px 8px)}
+
+/* 왜 만들었나 — 카드 대신 큰 번호 + 본문 */
+.ab-probs{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+@media(max-width:960px){.ab-probs{grid-template-columns:1fr;gap:28px}}
+.ab-probs > div{display:flex;gap:18px;align-items:flex-start}
+.ab-probs i{font-style:normal;font-size:34px;font-weight:800;line-height:1;letter-spacing:-.03em;
+  color:var(--mk-line-strong);flex-shrink:0}
+.ab-probs h3{font-size:18px;font-weight:700;color:var(--mk-ink);margin-bottom:9px;line-height:1.4}
+.ab-probs p{font-size:15px;line-height:1.75;color:var(--mk-body)}
+
+/* 국가별 인증 */
+.ab-vers{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--mk-ink)}
+@media(max-width:860px){.ab-vers{grid-template-columns:1fr}}
+.ab-vers > div{padding:28px 26px 30px;border-bottom:1px solid var(--mk-line);border-left:1px solid var(--mk-line)}
+.ab-vers > div:first-child{border-left:0}
+.ab-vers h3{font-size:17px;font-weight:700;color:var(--mk-ink);margin-bottom:9px}
+.ab-vers p{font-size:15px;line-height:1.75;color:var(--mk-body)}
+
 /* 바이어용 · 제조사용 2열 */
-.ab-two{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}
+.ab-two{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
 @media(max-width:860px){.ab-two{grid-template-columns:1fr}}
-.ab-col{background:#fff;border-radius:var(--r-card);padding:34px 32px}
+.ab-col{background:#fff;border-radius:var(--r-card);padding:36px 34px}
+.ab-col.dark{background:var(--mk-navy-deep)}
 .ab-col-tag{display:inline-block;background:var(--mk-primary-soft);color:var(--mk-primary-dark);
   font-size:12px;font-weight:700;padding:0 10px;height:25px;line-height:25px;border-radius:4px;margin-bottom:14px}
+.ab-col.dark .ab-col-tag{background:rgba(50,209,177,.16);color:var(--mk-mint)}
 .ab-col h3{font-size:20px;font-weight:700;color:var(--mk-ink);margin-bottom:18px;line-height:1.4}
+.ab-col.dark h3{color:#fff}
 .ab-col ul{list-style:none;margin-bottom:24px}
-.ab-col li{position:relative;padding:9px 0 9px 22px;font-size:15px;line-height:1.6;color:var(--mk-body);
+.ab-col li{position:relative;padding:11px 0 11px 22px;font-size:15px;line-height:1.6;color:var(--mk-body);
   border-bottom:1px solid var(--mk-line)}
+.ab-col.dark li{color:rgba(255,255,255,.8);border-bottom-color:rgba(255,255,255,.12)}
 .ab-col li:last-child{border-bottom:0}
-.ab-col li::before{content:"";position:absolute;left:2px;top:17px;width:7px;height:7px;
+.ab-col li::before{content:"";position:absolute;left:2px;top:19px;width:7px;height:7px;
   border-radius:50%;background:var(--mk-primary)}
+.ab-col.dark li::before{background:var(--mk-mint)}
+.ab-mbtn{background:var(--mk-mint);color:var(--mk-navy-deep);font-weight:700}
+.ab-mbtn:hover{background:#fff}
 
 /* 고객센터 */
 .sp-val{display:block;margin-top:14px;font-size:15px;font-weight:700;color:var(--mk-primary-dark)}

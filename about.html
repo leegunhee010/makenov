@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260804y">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805a">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Giới thiệu MAKENOV — Nhà mua và nhà sản xuất đều đã xác thực</title>
@@ -26,41 +26,78 @@
 
 <main>
 
-  <section class="lp-hero">
-    <div class="lp-wrap">
-      <div class="lp-kick" data-i18n="ab_kick"></div>
+  <!-- 1. 히어로 — 이 서비스의 장치 한 문장 + 지표 스트립 -->
+  <section class="ab-hero">
+    <div class="wrap">
+      <div class="ab-kick" data-i18n="ab_kick"></div>
       <h1 id="ab-title"></h1>
-      <p class="lead" data-i18n="ab_lead"></p>
-      <div class="lp-hero-cta">
-        <a class="btn btn-primary" href="directory.html" data-i18n="hero_cta_browse"></a>
-        <a class="btn ghost" href="guide.html" data-i18n="nav_guide"></a>
+      <p class="ab-lead" data-i18n="ab_lead"></p>
+      <div class="ab-hero-cta">
+        <button class="btn btn-primary btn-lg" onclick="openAuth('signup')" data-i18n="hero_cta_join"></button>
+        <a class="btn btn-ghost btn-lg" href="directory.html" data-i18n="hero_cta_browse"></a>
+      </div>
+      <div class="ab-stats">
+        <div><b data-i18n="ab_s1_n"></b><span data-i18n="ab_s1_l"></span></div>
+        <div><b data-i18n="ab_s2_n"></b><span data-i18n="ab_s2_l"></span></div>
+        <div><b data-i18n="ab_s3_n"></b><span data-i18n="ab_s3_l"></span></div>
       </div>
     </div>
   </section>
 
-  <!-- 문제 -->
-  <section class="lp-sec">
-    <div class="lp-wrap">
-      <div class="lp-head">
-        <div class="tag" data-i18n="ab_p_tag"></div>
+  <!-- 2. 핵심 장치 — 잠금을 말로 설명하지 않고 화면으로 보여준다 -->
+  <section class="ab-sec ab-lock">
+    <div class="wrap">
+      <div class="ab-lock-row">
+        <div class="ab-lock-tx">
+          <div class="ab-tag light" data-i18n="ab_lock_tag"></div>
+          <h2 id="ab-lock-title"></h2>
+          <p data-i18n="ab_lock_desc"></p>
+          <p class="ab-lock-note" data-i18n="ab_lock_note"></p>
+        </div>
+        <div class="ab-lock-demo">
+          <div class="pane">
+            <div class="cap" data-i18n="ab_lock_before"></div>
+            <div class="rows">
+              <div><span data-i18n="price"></span><i class="bar"></i></div>
+              <div><span data-i18n="moq"></span><i class="bar"></i></div>
+              <div><span data-i18n="lead_time"></span><i class="bar"></i></div>
+              <div><span data-i18n="supply_terms"></span><i class="bar"></i></div>
+            </div>
+          </div>
+          <div class="pane on">
+            <div class="cap" data-i18n="ab_lock_after"></div>
+            <div class="rows">
+              <div><span data-i18n="price"></span><b>US$ 4.20</b></div>
+              <div><span data-i18n="moq"></span><b>500</b></div>
+              <div><span data-i18n="lead_time"></span><b>30 days</b></div>
+              <div><span data-i18n="supply_terms"></span><b>FOB · OEM</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 왜 만들었나 — 카드 대신 큰 번호 + 본문 -->
+  <section class="ab-sec">
+    <div class="wrap">
+      <div class="ab-head">
+        <div class="ab-tag" data-i18n="ab_p_tag"></div>
         <h2 id="ab-p-title"></h2>
       </div>
-      <div class="lp-cards">
-        <div class="lp-card"><div class="n">01</div>
-          <h3 data-i18n="ab_p1_t"></h3><p data-i18n="ab_p1_d"></p></div>
-        <div class="lp-card"><div class="n">02</div>
-          <h3 data-i18n="ab_p2_t"></h3><p data-i18n="ab_p2_d"></p></div>
-        <div class="lp-card"><div class="n">03</div>
-          <h3 data-i18n="ab_p3_t"></h3><p data-i18n="ab_p3_d"></p></div>
+      <div class="ab-probs">
+        <div><i>01</i><div><h3 data-i18n="ab_p1_t"></h3><p data-i18n="ab_p1_d"></p></div></div>
+        <div><i>02</i><div><h3 data-i18n="ab_p2_t"></h3><p data-i18n="ab_p2_d"></p></div></div>
+        <div><i>03</i><div><h3 data-i18n="ab_p3_t"></h3><p data-i18n="ab_p3_d"></p></div></div>
       </div>
     </div>
   </section>
 
-  <!-- 양쪽에게 무엇을 주는가 -->
-  <section class="lp-sec soft">
-    <div class="lp-wrap">
-      <div class="lp-head">
-        <div class="tag" data-i18n="ab_h_tag"></div>
+  <!-- 4. 양쪽이 얻는 것 -->
+  <section class="ab-sec soft">
+    <div class="wrap">
+      <div class="ab-head">
+        <div class="ab-tag" data-i18n="ab_h_tag"></div>
         <h2 data-i18n="ab_h_title"></h2>
       </div>
       <div class="ab-two">
@@ -68,40 +105,36 @@
           <div class="ab-col-tag" data-i18n="ab_b_tag"></div>
           <h3 data-i18n="ab_b_title"></h3>
           <ul>
-            <li data-i18n="ab_b1"></li>
-            <li data-i18n="ab_b2"></li>
-            <li data-i18n="ab_b3"></li>
-            <li data-i18n="ab_b4"></li>
+            <li data-i18n="ab_b1"></li><li data-i18n="ab_b2"></li>
+            <li data-i18n="ab_b3"></li><li data-i18n="ab_b4"></li>
           </ul>
           <a class="btn btn-primary btn-sm" href="directory.html" data-i18n="hero_cta_browse"></a>
         </div>
-        <div class="ab-col">
+        <div class="ab-col dark">
           <div class="ab-col-tag" data-i18n="ab_m_tag"></div>
           <h3 data-i18n="ab_m_title"></h3>
           <ul>
-            <li data-i18n="ab_m1"></li>
-            <li data-i18n="ab_m2"></li>
-            <li data-i18n="ab_m3"></li>
-            <li data-i18n="ab_m4"></li>
+            <li data-i18n="ab_m1"></li><li data-i18n="ab_m2"></li>
+            <li data-i18n="ab_m3"></li><li data-i18n="ab_m4"></li>
           </ul>
-          <a class="btn btn-soft btn-sm" href="maker.html" data-i18n="util_maker"></a>
+          <a class="btn btn-sm ab-mbtn" href="maker.html" data-i18n="util_maker"></a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 인증 방식 -->
-  <section class="lp-sec">
-    <div class="lp-wrap">
-      <div class="lp-head">
-        <div class="tag" data-i18n="ab_v_tag"></div>
+  <!-- 5. 국가별 인증 -->
+  <section class="ab-sec">
+    <div class="wrap">
+      <div class="ab-head">
+        <div class="ab-tag" data-i18n="ab_v_tag"></div>
         <h2 data-i18n="ab_v_title"></h2>
         <p data-i18n="ab_v_desc"></p>
       </div>
-      <div class="lp-cards">
-        <div class="lp-card"><h3 data-i18n="ab_v1_t"></h3><p data-i18n="ab_v1_d"></p></div>
-        <div class="lp-card"><h3 data-i18n="ab_v2_t"></h3><p data-i18n="ab_v2_d"></p></div>
-        <div class="lp-card"><h3 data-i18n="ab_v3_t"></h3><p data-i18n="ab_v3_d"></p></div>
+      <div class="ab-vers">
+        <div><h3 data-i18n="ab_v1_t"></h3><p data-i18n="ab_v1_d"></p></div>
+        <div><h3 data-i18n="ab_v2_t"></h3><p data-i18n="ab_v2_d"></p></div>
+        <div><h3 data-i18n="ab_v3_t"></h3><p data-i18n="ab_v3_d"></p></div>
       </div>
     </div>
   </section>
@@ -117,21 +150,24 @@
 
 </main>
 <footer class="mk-footer" id="mk-footer"></footer>
-<script src="assets/js/config.js?v=20260804y"></script>
-<script src="assets/js/pixel.js?v=20260804y"></script>
+<script src="assets/js/config.js?v=20260805a"></script>
+<script src="assets/js/pixel.js?v=20260805a"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260804y"></script>
-<script src="assets/js/data.js?v=20260804y"></script>
-<script src="assets/js/store.js?v=20260804y"></script>
-<script src="assets/js/verify.js?v=20260804y"></script>
-<script src="assets/js/upload.js?v=20260804y"></script>
-<script src="assets/js/store-supabase.js?v=20260804y"></script>
-<script src="assets/js/app.js?v=20260804y"></script>
+<script src="assets/js/i18n.js?v=20260805a"></script>
+<script src="assets/js/data.js?v=20260805a"></script>
+<script src="assets/js/store.js?v=20260805a"></script>
+<script src="assets/js/verify.js?v=20260805a"></script>
+<script src="assets/js/upload.js?v=20260805a"></script>
+<script src="assets/js/store-supabase.js?v=20260805a"></script>
+<script src="assets/js/app.js?v=20260805a"></script>
 <script>
-/* 제목에 줄바꿈(\n)이 들어있어 data-i18n 으로는 <br> 처리가 안 된다 */
+/* 줄바꿈(\n)이 든 제목은 data-i18n 으로 <br> 처리가 안 된다 */
 function pageInit(){
-  document.getElementById('ab-title').innerHTML   = esc(t('ab_title')).replace(/\n/g,'<br>');
-  document.getElementById('ab-p-title').innerHTML = esc(t('ab_p_title')).replace(/\n/g,'<br>');
+  const br = (id,key)=>{ const el=document.getElementById(id);
+    if(el) el.innerHTML = esc(t(key)).replace(/\n/g,'<br>'); };
+  br('ab-title','ab_title');
+  br('ab-lock-title','ab_lock_title');
+  br('ab-p-title','ab_p_title');
 }
 </script>
 </body>
