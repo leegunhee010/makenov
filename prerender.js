@@ -58,6 +58,10 @@ const withLangs = f => LANGS.map(pre => pre + f);
 
 const PAGES = [
   ...HUBS.flatMap(withLangs),
+  /* ⚠ maker.html 은 언어판이 없지만 사전 렌더는 반드시 해야 한다.
+     본문을 maker-copy.js 에서 그리도록 바꾼 뒤로 정적 HTML 이 비었다.
+     여기 빠지면 크롤러가 보는 본문이 7,800자에서 0자가 된다. */
+  'maker.html',
   /* 고객센터는 탭 페이지다. 기본(공지) 말고 FAQ·1:1 탭 내용도 같은 URL 안에 있으므로
      해시별로 한 번씩 더 렌더해서 사본에 이어 붙인다. 안 그러면 FAQ 답변이
      정적 HTML 에서 통째로 빠진다. */

@@ -26,10 +26,10 @@ function mkCopySources(){
       kind:'i18n', root:(typeof I18N !== 'undefined') ? I18N : null },
     { id:'about', label:'서비스 소개(바이어)', hint:'about.html 본문',
       kind:'tree', root:(typeof AB !== 'undefined') ? AB : null },
-    /* maker.html 은 한국 공급사 대상이라 문구가 한국어 평문이다.
-       ⚠ 본문 대부분은 maker.html 안에 직접 쓰여 있어서 여기서는 못 고친다.
-          이 항목으로 고칠 수 있는 건 통계 4칸·주요 시장·연락처뿐이다. */
-    { id:'maker', label:'공급사 안내',     hint:'통계·주요 시장·연락처 (본문은 maker.html 안에 있어 제외)',
+    /* maker.html 은 한국 공급사 대상이라 문구가 한국어 평문이다 */
+    { id:'makerbody', label:'공급사 안내 본문', hint:'maker.html 전체 — 히어로·비교표·절차·FAQ·신청 폼',
+      kind:'tree', strLeaf:true, root:(typeof MKC !== 'undefined') ? MKC : null },
+    { id:'maker', label:'공급사 안내 수치',  hint:'통계 4칸·주요 시장·연락처',
       kind:'tree', strLeaf:true, root:(typeof MK_MAKER !== 'undefined') ? MK_MAKER : null },
     { id:'site',  label:'상단 배너',       hint:'전 페이지 최상단 띠',
       kind:'tree', root:(typeof MK_SETTINGS !== 'undefined') ? MK_SETTINGS : null },
