@@ -409,33 +409,191 @@ function renderDash(){
    1. 문의함
    ============================================================ */
 const ST_LABEL = { new:['신규','st-new'], doing:['처리중','st-doing'], done:['완료','st-done'] };
-let inqFilter = 'all';
+let inqFilter = 'all', inqSearch = '', inqProd = 'all', inqSort = 'new';
+
+/* 제품 표시명 — 목록·모달·CSV 공용 */
+function inqProdName(pid){
+  const p = mkProduct(pid);
+  return p ? (p.name.ko || p.name.vi || pid) : pid;
+}
+
+/* 검색·제품·상태를 모두 적용한 문의 목록 (테이블·CSV 공용) */
+function filteredInqs(){
+  const q = inqSearch.trim().toLowerCase();
+  let list = (ADM.inqs||[]).filter(i=>{
+    if(inqFilter !== 'all' && Admin.inqMeta(i.id).status !== inqFilter) return false;
+    if(inqProd !== 'all' && i.pid !== inqProd) return false;
+    if(q){
+      const hay = [i.company, i.contactName, i.buyerEmail, i.mst, i.message,
+                   i.zalo, i.phone, inqProdName(i.pid), Admin.inqMeta(i.id).memo]
+        .map(x=>String(x||'').toLowerCase()).join(' ');
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const ord = { new:0, doing:1, done:2 };
+  const S = {
+    new:     (a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)),
+    old:     (a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)),
+    product: (a,b)=>inqProdName(a.pid).localeCompare(inqProdName(b.pid),'ko'),
+    company: (a,b)=>String(a.company||'').localeCompare(String(b.company||''),'ko'),
+    status:  (a,b)=>(ord[Admin.inqMeta(a.id).status]??0)-(ord[Admin.inqMeta(b.id).status]??0),
+  };
+  return list.slice().sort(S[inqSort] || S.new);
+}
 
 function renderInq(){
-  const all = ADM.inqs.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
-  const list = all.filter(i=> inqFilter==='all' || Admin.inqMeta(i.id).status===inqFilter );
+  const all = (ADM.inqs||[]).slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const list = filteredInqs();
   const cnt = s => all.filter(i=>Admin.inqMeta(i.id).status===s).length;
 
+  /* 제품별 문의 수 — 많은 순으로 골라 담는다 */
+  const byP = {}; all.forEach(i=>{ byP[i.pid] = (byP[i.pid]||0)+1; });
+  const prodOpts = Object.keys(byP).sort((a,b)=>byP[b]-byP[a]);
+  const opt = (v,cur,label)=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(label)}</option>`;
+  const filtered = (inqSearch || inqProd!=='all' || inqFilter!=='all' || inqSort!=='new');
+
   document.getElementById('tab-inq').innerHTML = `
-    <div class="card"><p class="note">바이어가 보낸 견적 문의입니다. 상태를 바꾸고 메모를 남길 수 있습니다.
-    <br>2단계 Supabase 연동 시 전체 문의가 서버에 실시간 수집되고 텔레그램 알림이 갑니다.</p><div class="bar"><button class="btn btn-sm ${inqFilter==='all'?'btn-primary':'btn-ghost'}"onclick="inqFilter='all';renderInq()">전체 ${all.length}</button><button class="btn btn-sm ${inqFilter==='new'?'btn-primary':'btn-ghost'}"onclick="inqFilter='new';renderInq()">신규 ${cnt('new')}</button><button class="btn btn-sm ${inqFilter==='doing'?'btn-primary':'btn-ghost'}" onclick="inqFilter='doing';renderInq()">처리중 ${cnt('doing')}</button><button class="btn btn-sm ${inqFilter==='done'?'btn-primary':'btn-ghost'}"onclick="inqFilter='done';renderInq()">완료 ${cnt('done')}</button><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="exportInquiries()">CSV 내보내기</button></div><div class="tbl-wrap"><table><thead><tr><th style="width:96px">일시</th><th>제품</th><th>회사</th><th>담당자 / 연락처</th><th>내용 · 메모</th><th style="width:150px">상태</th></tr></thead><tbody>${list.length ? list.map(i=>{
+    <div class="card"><p class="note">바이어가 보낸 견적 문의입니다. <b>행을 누르면 문의 전문과 바이어 정보</b>가 열립니다.</p>
+    <div class="bar"><button class="btn btn-sm ${inqFilter==='all'?'btn-primary':'btn-ghost'}" onclick="inqFilter='all';renderInq()">전체 ${all.length}</button><button class="btn btn-sm ${inqFilter==='new'?'btn-primary':'btn-ghost'}" onclick="inqFilter='new';renderInq()">신규 ${cnt('new')}</button><button class="btn btn-sm ${inqFilter==='doing'?'btn-primary':'btn-ghost'}" onclick="inqFilter='doing';renderInq()">처리중 ${cnt('doing')}</button><button class="btn btn-sm ${inqFilter==='done'?'btn-primary':'btn-ghost'}" onclick="inqFilter='done';renderInq()">완료 ${cnt('done')}</button></div>
+    <div class="bar">
+      <input class="srch" style="min-width:220px" placeholder="회사·담당자·제품·내용·메모 검색" value="${esc(inqSearch)}" oninput="inqSearch=this.value;renderInq()">
+      <select class="srch" style="min-width:190px" onchange="inqProd=this.value;renderInq()">${opt('all',inqProd,`제품 전체 (${all.length})`)}${prodOpts.map(pid=>opt(pid,inqProd,`${inqProdName(pid)} (${byP[pid]})`)).join('')}</select>
+      <select class="srch" style="min-width:118px" onchange="inqSort=this.value;renderInq()">${opt('new',inqSort,'최신순')}${opt('old',inqSort,'오래된순')}${opt('product',inqSort,'제품순')}${opt('company',inqSort,'회사순')}${opt('status',inqSort,'상태순')}</select>
+      <span class="grow"></span>
+      <span class="note" style="margin:0">${list.length}건${filtered?` / ${all.length}`:''}</span>
+      ${filtered?`<button class="btn btn-ghost btn-sm" onclick="inqSearch='';inqProd='all';inqFilter='all';inqSort='new';renderInq()">초기화</button>`:''}
+      <button class="btn btn-ghost btn-sm" onclick="exportInquiries()">CSV 내보내기</button>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th style="width:96px">일시</th><th>제품</th><th>회사</th><th>담당자 / 연락처</th><th>내용 · 메모</th><th style="width:150px">상태</th></tr></thead><tbody>${list.length ? list.map(i=>{
         const p = mkProduct(i.pid), m = Admin.inqMeta(i.id), lb = ST_LABEL[m.status]||ST_LABEL.new;
-        return `<tr class="row-hover"><td>${new Date(i.createdAt).toLocaleDateString('ko-KR')}<div class="sub">${new Date(i.createdAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</div></td><td>${p?esc(p.name.ko||p.name.vi):esc(i.pid)}<div class="sub">${p?esc(p.brand):''}</div></td><td>${esc(i.company||'-')}<div class="sub">${esc(i.mst||'')}</div></td><td>${esc(i.contactName||'-')}<div class="sub">${esc(i.zalo||'')}<br>${esc(i.buyerEmail||'')}</div></td><td>${esc(i.message||'-')}
+        const msg = String(i.message||'').trim();
+        return `<tr class="row-hover" style="cursor:pointer" onclick="if(!event.target.closest('input,select,button'))openInq('${i.id}')"><td>${new Date(i.createdAt).toLocaleDateString('ko-KR')}<div class="sub">${new Date(i.createdAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</div></td><td>${esc(inqProdName(i.pid))}<div class="sub">${p?esc(p.brand):''}</div></td><td>${esc(i.company||'-')}<div class="sub">${esc(i.mst||'')}</div></td><td>${esc(i.contactName||'-')}<div class="sub">${esc(i.zalo||'')}<br>${esc(i.buyerEmail||'')}</div></td><td>${msg ? esc(msg.length>60?msg.slice(0,60)+'…':msg) : '<span class="sub">내용 없음</span>'}
             <div style="margin-top:6px"><input class="srch" style="width:100%;min-width:0;font-size:12px;padding:5px 8px"
               placeholder="메모" value="${esc(m.memo)}"
               onchange="Admin.setInqMeta('${i.id}',{memo:this.value});toastA('메모 저장됨')"></div></td><td><span class="pill-st ${lb[1]}">${lb[0]}</span><div style="margin-top:6px"><select class="srch" style="width:100%;min-width:0;font-size:12px;padding:5px 8px"
                 onchange="admDo(Admin.setInqMeta('${i.id}',{status:this.value}),0)"><option value="new"${m.status==='new'?'selected':''}>신규</option><option value="doing" ${m.status==='doing'?'selected':''}>처리중</option><option value="done"${m.status==='done'?'selected':''}>완료</option></select></div><button class="btn btn-ghost btn-sm" style="margin-top:5px;width:100%"
               onclick="if(confirm('이 문의를 삭제할까요?')){admDo(Admin.deleteInquiry('${i.id}'),0);}">삭제</button></td></tr>`;
-      }).join('') : `<tr class="empty-row"><td colspan="6">해당하는 문의가 없습니다</td></tr>`}
+      }).join('') : `<tr class="empty-row"><td colspan="6">${all.length?'조건에 맞는 문의가 없습니다':'아직 들어온 문의가 없습니다'}</td></tr>`}
       </tbody></table></div></div>`;
 }
 
+/* ============================================================
+   상세 보기 모달 — 문의 · 바이어
+   ============================================================ */
+function openAdmModal(title, html){
+  document.getElementById('adm-modal-title').textContent = title;
+  document.getElementById('adm-modal-body').innerHTML = html;
+  document.getElementById('adm-modal').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeAdmModal(){
+  document.getElementById('adm-modal').hidden = true;
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAdmModal(); });
+
+const dl = rows => `<dl class="dl">${rows.filter(r=>r[1]).map(r=>`<dt>${esc(r[0])}</dt><dd>${r[2]==='raw'?r[1]:esc(r[1])}</dd>`).join('')}</dl>`;
+const fmtDT = s => s ? new Date(s).toLocaleString('ko-KR') : '-';
+
+/* 한 바이어의 문의 목록 (모달 안에서 서로 오갈 수 있게) */
+function inqsOfBuyer(email, exceptId){
+  return (ADM.inqs||[]).filter(i=>i.buyerEmail===email && i.id!==exceptId);
+}
+function miniInqList(items){
+  if(!items.length) return '<p class="note" style="margin:0">다른 문의가 없습니다.</p>';
+  return `<ul class="minilist">${items.map(i=>{
+    const m = Admin.inqMeta(i.id), lb = ST_LABEL[m.status]||ST_LABEL.new;
+    return `<li onclick="openInq('${i.id}')"><b>${esc(inqProdName(i.pid))}</b> <span class="pill-st ${lb[1]}" style="margin-left:6px">${lb[0]}</span><div class="sub">${fmtDT(i.createdAt)}${i.message?' · '+esc(String(i.message).slice(0,40)):''}</div></li>`;
+  }).join('')}</ul>`;
+}
+
+function openInq(id){
+  const i = (ADM.inqs||[]).find(x=>x.id===id);
+  if(!i) return;
+  const m = Admin.inqMeta(i.id), lb = ST_LABEL[m.status]||ST_LABEL.new;
+  const p = mkProduct(i.pid);
+  const c = i.country ? mkCountry(i.country) : null;
+  const buyer = (ADM.buyers||[]).find(b=>b.email===i.buyerEmail);
+
+  openAdmModal('문의 상세', `
+    ${dl([
+      ['접수 일시', fmtDT(i.createdAt)],
+      ['상태', `<span class="pill-st ${lb[1]}">${lb[0]}</span>`, 'raw'],
+      ['제품', p ? `${esc(inqProdName(i.pid))} <span class="sub">${esc(p.brand)}</span>` : esc(i.pid), 'raw'],
+    ])}
+    <div class="mbox"><h4>문의 내용</h4>
+      <div class="msg">${String(i.message||'').trim() ? esc(i.message) : '<span class="sub">내용 없이 문의만 눌렀습니다.</span>'}</div>
+    </div>
+    <div class="mbox"><h4>보낸 바이어</h4>
+      ${dl([
+        ['회사', i.company],
+        ['등록번호', i.mst],
+        ['국가', c ? `${c.flag} ${c.name.ko}` : i.country],
+        ['주소', i.address],
+        ['담당자', [i.contactName, i.position].filter(Boolean).join(' · ')],
+        ['이메일', i.buyerEmail],
+        ['전화', i.phone],
+        ['메신저', i.zalo],
+        ['인증', VERIFY_LABEL[i.verifiedBy] || i.verifiedBy],
+        ['등급', i.tier === 'vip' ? 'VIP' : '인증 바이어'],
+      ])}
+      ${buyer ? `<button class="btn btn-ghost btn-sm" onclick="openBuyer('${esc(buyer.email)}')">이 바이어 전체 보기</button>` : ''}
+    </div>
+    <div class="mbox"><h4>같은 바이어의 다른 문의</h4>${miniInqList(inqsOfBuyer(i.buyerEmail, i.id))}</div>
+    <div class="mbox"><h4>처리</h4>
+      <div class="bar" style="margin:0">
+        <select class="srch" style="min-width:120px" onchange="admDo(Admin.setInqMeta('${i.id}',{status:this.value}),0)">
+          <option value="new" ${m.status==='new'?'selected':''}>신규</option>
+          <option value="doing" ${m.status==='doing'?'selected':''}>처리중</option>
+          <option value="done" ${m.status==='done'?'selected':''}>완료</option></select>
+        <input class="srch grow" placeholder="메모" value="${esc(m.memo)}"
+          onchange="Admin.setInqMeta('${i.id}',{memo:this.value});toastA('메모 저장됨')">
+      </div>
+    </div>`);
+}
+
+function openBuyer(email){
+  const b = (ADM.buyers||[]).find(x=>x.email===email);
+  if(!b) return;
+  const c = b.country ? mkCountry(b.country) : null;
+  const tier = Admin.tier(b.email);
+  const mine = (ADM.inqs||[]).filter(i=>i.buyerEmail===email);
+
+  openAdmModal(b.company || email, `
+    ${dl([
+      ['가입일', b.createdAt ? new Date(b.createdAt).toLocaleDateString('ko-KR') : ''],
+      ['국가', c ? `${c.flag} ${c.name.ko}` : b.country],
+      ['회사', b.company],
+      ['등록번호', b.regNo || b.mst],
+      ['주소', b.address],
+      ['담당자', [b.contactName, b.position].filter(Boolean).join(' · ')],
+      ['이메일', b.email],
+      ['전화', b.phone],
+      ['메신저', b.messenger || b.zalo],
+      ['인증 방식', VERIFY_LABEL[b.verifiedBy] || b.verifiedBy],
+      ['인증 상태', b.status],
+      ['등급', tier === 'vip' ? 'VIP' : '인증 바이어'],
+    ])}
+    <div class="mbox"><h4>문의 ${mine.length}건</h4>${miniInqList(mine)}</div>
+    <div class="mbox"><h4>등급</h4>
+      <select class="srch" style="min-width:150px"
+        onchange="admDo(Admin.setTier('${esc(b.email)}',this.value),0);toastA('등급 변경됨')">
+        <option value="verified" ${tier!=='vip'?'selected':''}>인증 바이어</option>
+        <option value="vip" ${tier==='vip'?'selected':''}>VIP</option></select>
+      <p class="note" style="margin:8px 0 0">VIP로 올리면 한국 기업 직통 연락처를 열어줍니다.</p>
+    </div>`);
+}
+
+/* 화면에서 걸어 둔 검색·제품·상태·정렬을 그대로 내보낸다 */
 function exportInquiries(){
-  const rows = [['일시','제품','회사','등록번호','담당자','연락처','이메일','내용','상태','메모']];
-  ADM.inqs.forEach(i=>{
+  const rows = [['일시','제품','브랜드','회사','등록번호','국가','담당자','직함','전화','메신저','이메일','내용','상태','메모']];
+  filteredInqs().forEach(i=>{
     const p = mkProduct(i.pid), m = Admin.inqMeta(i.id);
-    rows.push([new Date(i.createdAt).toLocaleString('ko-KR'), p?(p.name.ko||p.name.vi):i.pid,
-      i.company||'', i.mst||'', i.contactName||'', i.zalo||'', i.buyerEmail||'',
+    const c = i.country ? mkCountry(i.country) : null;
+    rows.push([new Date(i.createdAt).toLocaleString('ko-KR'), inqProdName(i.pid), p?p.brand:'',
+      i.company||'', i.mst||'', (c&&c.name.ko)||i.country||'',
+      i.contactName||'', i.position||'', i.phone||'', i.zalo||'', i.buyerEmail||'',
       (i.message||'').replace(/\n/g,' '), (ST_LABEL[m.status]||ST_LABEL.new)[0], m.memo||'']);
   });
   downloadFile('makenov-문의_'+today()+'.csv',
@@ -516,7 +674,7 @@ function renderBuyers(){
         const c = b.country ? mkCountry(b.country) : null;
         const tier = Admin.tier(b.email);
         const n = bInqCount(b);
-        return `<tr class="row-hover"><td>${b.createdAt?new Date(b.createdAt).toLocaleDateString('ko-KR'):'-'}</td><td>${c?c.flag:''} ${esc(b.countryName||b.country||'')}</td><td>${esc(b.company)}<div class="sub">${esc(b.address||'')}</div></td><td>${esc(b.regNo||b.mst||'-')}</td><td>${esc(VERIFY_LABEL[b.verifiedBy]||'-')}<div class="sub">${esc(b.status||'')}</div></td><td>${esc(b.contactName||'')}<div class="sub">${esc(b.position||'')}</div></td><td>${esc(b.phone||b.zalo||'')}<div class="sub">${esc(b.messenger||'')} ${esc(b.messengerId||'')}<br>${esc(b.email)}</div></td><td><b>${n}</b></td><td>${tier==='vip'?'<span class="pill-st st-vip">VIP</span>':'<span class="pill-st st-done">인증</span>'}
+        return `<tr class="row-hover" style="cursor:pointer" onclick="if(!event.target.closest('input,select,button'))openBuyer('${esc(b.email)}')"><td>${b.createdAt?new Date(b.createdAt).toLocaleDateString('ko-KR'):'-'}</td><td>${c?c.flag:''} ${esc(b.countryName||b.country||'')}</td><td>${esc(b.company)}<div class="sub">${esc(b.address||'')}</div></td><td>${esc(b.regNo||b.mst||'-')}</td><td>${esc(VERIFY_LABEL[b.verifiedBy]||'-')}<div class="sub">${esc(b.status||'')}</div></td><td>${esc(b.contactName||'')}<div class="sub">${esc(b.position||'')}</div></td><td>${esc(b.phone||b.zalo||'')}<div class="sub">${esc(b.messenger||'')} ${esc(b.messengerId||'')}<br>${esc(b.email)}</div></td><td><b>${n}</b></td><td>${tier==='vip'?'<span class="pill-st st-vip">VIP</span>':'<span class="pill-st st-done">인증</span>'}
             <div style="margin-top:6px"><select class="srch" style="width:100%;min-width:0;font-size:12px;padding:5px 8px"
                 onchange="admDo(Admin.setTier('${esc(b.email)}',this.value),0);toastA('등급 변경됨')"><option value="verified" ${tier!=='vip'?'selected':''}>인증 바이어</option><option value="vip"${tier==='vip'?'selected':''}>VIP</option></select></div></td></tr>`;
       }).join('') : `<tr class="empty-row"><td colspan="9">${all.length?'조건에 맞는 바이어가 없습니다':'아직 가입한 바이어가 없습니다'}</td></tr>`}

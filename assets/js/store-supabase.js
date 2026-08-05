@@ -378,22 +378,41 @@ Object.assign(Store, {
     return (data||[]).map(i=>({ id:i.id, pid:i.product_id, message:i.message,
       createdAt:i.created_at, status:i.status }));
   },
+  /* ⚠ profiles 를 임베드(select('*, profiles(...)'))하면 안 된다.
+     inquiries.buyer_id 는 auth.users 를 참조하고 profiles 와는 외래키가 없어서
+     PostgREST 가 관계를 찾지 못하고 에러를 낸다. 그 에러를 삼키는 바람에
+     관리자 문의함이 DB에 문의가 있어도 계속 0건으로 보였다.
+     두 번 나눠 읽고 자바스크립트에서 붙인다. */
   async allInquiries(){
-    const { data } = await SB.from('inquiries')
-      .select('*, profiles(email,company,reg_no,contact_name,messenger)')
+    const { data, error } = await SB.from('inquiries').select('*')
       .order('created_at',{ascending:false});
-    return (data||[]).map(i=>({
-      id:i.id, pid:i.product_id, message:i.message, createdAt:i.created_at,
-      status:i.status, memo:i.memo,
-      buyerEmail:i.profiles?.email, company:i.profiles?.company, mst:i.profiles?.reg_no,
-      contactName:i.profiles?.contact_name, zalo:i.profiles?.messenger,
-    }));
+    if(error){ console.warn('문의 로드 실패:', error.message); return []; }
+    const rows = data || [];
+
+    const ids = [...new Set(rows.map(i=>i.buyer_id).filter(Boolean))];
+    const prof = {};
+    if(ids.length){
+      const { data:ps } = await SB.from('profiles').select('*').in('id', ids);
+      (ps||[]).forEach(p=>{ prof[p.id] = p; });
+    }
+    return rows.map(i=>{
+      const p = prof[i.buyer_id] || {};
+      return {
+        id:i.id, pid:i.product_id, message:i.message, createdAt:i.created_at,
+        status:i.status, memo:i.memo,
+        buyerId:i.buyer_id, buyerEmail:p.email, company:p.company, mst:p.reg_no,
+        contactName:p.contact_name, position:p.position, zalo:p.messenger,
+        phone:p.phone, address:p.address, country:p.country,
+        verifiedBy:p.verified_by, tier:p.tier,
+      };
+    });
   },
   async allBuyers(){
     const { data } = await SB.from('profiles').select('*').order('created_at',{ascending:false});
     return (data||[]).map(p=>({
-      email:p.email, company:p.company, mst:p.reg_no, country:p.country, address:p.address,
-      contactName:p.contact_name, position:p.position, zalo:p.messenger,
+      email:p.email, company:p.company, mst:p.reg_no, regNo:p.reg_no,
+      country:p.country, address:p.address, phone:p.phone,
+      contactName:p.contact_name, position:p.position, zalo:p.messenger, messenger:p.messenger,
       verifiedBy:p.verified_by, status:p.verify_note, tier:p.tier, createdAt:p.created_at, _id:p.id,
     }));
   },
