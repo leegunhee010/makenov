@@ -140,13 +140,17 @@ const CATS = runSeed().MK_CATEGORIES || [];
 const catName = (id, lang) => { const c = CATS.find(x => x.id === id); return c ? T(c.name, lang || 'vi') : ''; };
 
 /* ---------- 2. 공통 head 블록 ---------- */
-function seoBlock({ title, desc, canonical, ogImage, ogType, robots, jsonld, alt }){
+/* ogUrl: canonical 없이 OG 만 필요한 페이지용.
+   ?id= 뷰어 화면은 noindex 라 canonical 을 두지 않는데, OG 가 canonical 에 딸려 있어서
+   같이 사라졌다. 사람이 실제로 공유하는 주소가 이쪽이라 미리보기 카드가 안 떴다. */
+function seoBlock({ title, desc, canonical, ogUrl, ogImage, ogType, robots, jsonld, alt }){
   const lines = [];
   lines.push(`<title>${esc(title)}</title>`);
   if(desc)      lines.push(`<meta name="description" content="${esc(desc)}">`);
   if(robots)    lines.push(`<meta name="robots" content="${robots}">`);
   if(canonical) lines.push(`<link rel="canonical" href="${canonical}">`);
   if(alt)       lines.push(altTags(alt));      // alt = 기본형(베트남어) 상대경로
+  canonical = canonical || ogUrl;
   if(canonical){
     lines.push(`<meta property="og:type" content="${ogType || 'website'}">`);
     lines.push(`<meta property="og:site_name" content="MAKENOV">`);
@@ -179,7 +183,7 @@ function injectSeo(file, cfg){
 /* ---------- 3. 정적 페이지 템플릿 ---------- */
 const SCRIPTS = () => [
   'assets/js/config.js', 'assets/js/pixel.js', null /* supabase CDN */,
-  'assets/js/i18n.js', 'assets/js/data.js',
+  'assets/js/i18n.js', 'assets/js/baked.js', 'assets/js/data.js',
   'assets/js/store.js', 'assets/js/verify.js', 'assets/js/upload.js',
   'assets/js/store-supabase.js', 'assets/js/app.js',
 ].map(s => s === null
@@ -712,15 +716,15 @@ ${forceLang(lang)}${SCRIPTS()}
     /* ?id= 로 보는 뷰어 화면. 같은 내용의 정식 주소는
        products/ · columns/ · companies/ 쪽이라 색인은 막고 링크만 따라가게 둔다.
        안 그러면 같은 제품이 두 주소로 크롤링된다. */
-    { file: 'product.html', lang: 'vi',
-      title: 'Sản phẩm | MAKENOV',
-      desc: 'Chi tiết sản phẩm trên MAKENOV.', robots: 'noindex,follow' },
-    { file: 'company.html', lang: 'vi',
-      title: 'Nhà cung cấp | MAKENOV',
-      desc: 'Hồ sơ nhà cung cấp trên MAKENOV.', robots: 'noindex,follow' },
-    { file: 'column.html', lang: 'vi',
-      title: 'Bài viết | MAKENOV',
-      desc: 'Bài viết trên MAKENOV.', robots: 'noindex,follow' },
+    { file: 'product.html', lang: 'vi', robots: 'noindex,follow',
+      title: 'Sản phẩm | MAKENOV', ogUrl: SITE + '/product.html',
+      desc: 'Chi tiết sản phẩm trên MAKENOV.' },
+    { file: 'company.html', lang: 'vi', robots: 'noindex,follow',
+      title: 'Nhà cung cấp | MAKENOV', ogUrl: SITE + '/company.html',
+      desc: 'Hồ sơ nhà cung cấp trên MAKENOV.' },
+    { file: 'column.html', lang: 'vi', robots: 'noindex,follow',
+      title: 'Bài viết | MAKENOV', ogUrl: SITE + '/column.html',
+      desc: 'Bài viết trên MAKENOV.' },
     /* 한국 공급사 대상 랜딩 — 한국어 + FAQ 스키마 */
     { file: 'maker.html', lang: 'ko',
       title: '제품 등록 문의 | MAKENOV · 전시회 없이 해외 바이어를 만나는 방법',
@@ -838,6 +842,23 @@ Disallow: /mypage.html
 Sitemap: ${SITE}/sitemap.xml
 `);
   console.log('robots.txt 생성');
+
+  /* baked.js — 구워진 문서 목록.
+     카드가 전부 product.html?id= 로 링크해서, 사람이 공유하는 주소도 검색이 읽는 주소도
+     색인 안 되는 뷰어 쪽이었다. 카드를 정식 주소로 보내되, 관리자에서 방금 등록하고
+     아직 굽지 않은 문서는 파일이 없으니 404 가 난다. 그래서 "구워진 것만" 정식 주소로
+     보내도록 목록을 내보낸다. 없는 id 는 예전처럼 ?id= 뷰어로 간다. */
+  write('assets/js/baked.js',
+`/* bake.js 가 생성 — 직접 수정하지 마세요.
+   구워진 정적 문서 목록. app.js 의 mkDocUrl() 이 이 목록에 있는 것만
+   정식 주소(products/…html)로 링크하고, 없으면 ?id= 뷰어로 보낸다. */
+window.MK_BAKED = ${JSON.stringify({
+  products: data.products.map(p => p.id),
+  companies: data.companies.map(c => c.id),
+  columns: Object.fromEntries(data.columns.map(c => [c.id, colFile(c)])),
+}, null, 2)};
+`);
+  console.log('assets/js/baked.js 생성 (정식 주소 링크용 목록)');
 
   /* sitemap.html — 사람도 크롤러도 읽는 전체 목록.
      제품·칼럼 카드가 전부 product.html?id= / column.html?id= 로 링크해서,

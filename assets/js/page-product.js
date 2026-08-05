@@ -71,7 +71,7 @@ function pageInit(){
         <h2 data-i18n="brand_story"></h2>
         <div class="pd-body"><p>${esc(L(p.brandStory))}</p></div>
         ${co?`
-        <a class="co-inline" href="company.html?id=${co.id}">
+        <a class="co-inline" href="${mkDocUrl('company',co.id)}">
           <img src="${co.logo}" alt="" loading="lazy">
           <div class="tx">
             <div class="nm">${esc(L(co.name))}</div>

@@ -1316,6 +1316,27 @@ function mkUrl(rel){
   return m[1].replace(/\.html$/, '.' + l + '.html') + (m[2] || '');
 }
 
+/* 제품·칼럼·공급사 문서의 정식 주소.
+   구워진 문서면 products/p0.html 같은 정식 주소로, 아직 안 구워졌으면
+   예전처럼 product.html?id=p0 뷰어로 보낸다(파일이 없으면 404 이므로).
+   목록은 bake.js 가 assets/js/baked.js 로 내보낸다. */
+function mkDocUrl(kind, id){
+  const B = window.MK_BAKED;
+  const viewer = { product:'product.html', company:'company.html', column:'column.html' }[kind]
+    + '?id=' + encodeURIComponent(id);
+  if(!B) return viewer;
+  /* 구운 문서는 세 언어가 모두 있으므로 지금 언어판으로 보낸다 */
+  const l = window.MK_FORCE_LANG;
+  const doc = rel => (!l || l === 'vi') ? rel : rel.replace(/\.html$/, '.' + l + '.html');
+  if(kind === 'product') return B.products.indexOf(id) < 0 ? viewer : doc('products/' + id + '.html');
+  if(kind === 'company') return B.companies.indexOf(id) < 0 ? viewer : doc('companies/' + id + '.html');
+  if(kind === 'column'){
+    const slug = B.columns && B.columns[id];
+    return slug ? doc('columns/' + slug + '.html') : viewer;
+  }
+  return viewer;
+}
+
 /* 지금 주소의 다른 언어판 경로. 없으면 null */
 function mkLangHref(l){
   /* 이 페이지에 언어판이 있는지는 head 의 hreflang 링크로 판단한다.
