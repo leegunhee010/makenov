@@ -446,7 +446,13 @@ function columnPage(c, colFaqs, prev, next, others, lang){
   const title = T(c.title, lang), cat = T(c.cat, lang);
   const relVi = `columns/${colFile(c)}.html`;
   const canonical = `${SITE}/${langFile(relVi, lang)}`;
-  const desc = clip((lang === 'vi' && c.seoDesc) || T(c.excerpt, lang) || stripHtml(T(c.body, lang)), 155);
+  /* ⚠ seo_title / seo_desc 는 한국어로 저장돼 있다.
+     마이그레이션에서 한국어 마스터를 그대로 넣었고 관리자 화면에도 노출되지 않는다.
+     그래서 한국어판에만 쓴다. 예전에는 베트남어판에 붙어서, 베트남어 본문에
+     한국어 제목·설명이 달려 있었다(검색결과에 한국어가 뜬다).
+     언어별 SEO 문구를 따로 쓰려면 이 두 컬럼을 jsonb 로 바꿔야 한다. */
+  const useSeo = lang === 'ko';
+  const desc = clip((useSeo && c.seoDesc) || T(c.excerpt, lang) || stripHtml(T(c.body, lang)), 155);
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Article',
     headline: title, alternativeHeadline: LANGS.map(l => T(c.title, l)).find(x => x && x !== title),
@@ -478,7 +484,7 @@ function columnPage(c, colFaqs, prev, next, others, lang){
     });
   }
 
-  const headTitle = (lang === 'vi' && c.seoTitle) ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV`;
+  const headTitle = (useSeo && c.seoTitle) ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV`;
 
   return `<!DOCTYPE html>
 <html lang="${HTML_LANG[lang]}">
