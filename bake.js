@@ -14,8 +14,9 @@
      canonical·OG·sitemap이 전부 새 도메인으로 다시 구워진다.
    ★ 관리자에서 제품·칼럼을 추가/수정한 뒤에도 다시 실행해야
      정적 페이지와 sitemap에 반영된다.
-   ★ 이 스크립트 다음에 `node prerender.js` 를 돌린다.
-     JS로 그리는 7개 페이지를 크롤러용 정적 사본으로 굽는 단계다.
+   ⚠ 이 파일을 혼자 돌리지 말 것. `node build.js` 를 쓴다.
+     bake 는 허브 언어판을 다시 찍으면서 사전 렌더 블록을 지우므로,
+     prerender.js 를 이어서 돌리지 않으면 언어판이 크롤러에게 빈 페이지로 나간다.
 
    ⚠ 2026-08-05 현재 makenov.com 은 아직 등록되지 않은 도메인이다(NXDOMAIN).
      지금 배포처는 https://leegunhee010.github.io/makenov/ 인데 canonical 은

@@ -32,6 +32,141 @@
 <header class="mk-header" id="mk-header"></header>
 
 <main class="wrap">
+<!-- mk:pre (prerender.js가 관리 — 직접 수정 금지) -->
+<div id="mk-prerender"><div class="page-head" style="padding-bottom:14px"><h1 data-i18n="sp_kick">Support</h1></div>
+  <div class="nb-tabs">
+    <a href="#notice" data-tab="notice" class="on">Notices</a>
+    <a href="#faq" data-tab="faq" class="">FAQ</a>
+    <a href="#ask" data-tab="ask" class="">1:1 enquiry</a></div>
+  <div class="nb-body">
+    <div class="nb-bar">
+      <div class="nb-search">
+        <input value="" placeholder="Search notices" onkeydown="if(event.key==='Enter')ntSearch()">
+        <button class="btn btn-primary btn-sm" onclick="ntSearch()">Search</button>
+        <button class="btn btn-ghost btn-sm" onclick="spQ='';spCat='all';spPage=1;spRender()">Reset</button>
+      </div>
+      <div class="nb-cats">
+        <button class="on" onclick="spCat='all';spPage=1;spRender()">All</button>
+        <button class="" onclick="spCat='notice';spPage=1;spRender()">Notice</button>
+        <button class="" onclick="spCat='new';spPage=1;spRender()">New product</button>
+        <button class="" onclick="spCat='update';spPage=1;spRender()">Update</button>
+        <button class="" onclick="spCat='event';spPage=1;spRender()">Event</button></div>
+    </div>
+    <div class="nb-total">3 posts</div>
+    <div class="tbl-wrap-pub"><table class="nb-table">
+      <thead><tr><th class="no">No.</th><th class="cat">Type</th><th>Title</th><th class="dt">Date</th></tr></thead>
+      <tbody>
+        <tr onclick="spId='n1';history.replaceState(null,'','#notice-n1');spRender()">
+          <td class="no">1</td>
+          <td class="cat">Notice</td>
+          <td class="tt"><i class="top">TOP</i><span>MAKENOV is open</span></td>
+          <td class="dt">2026.07.29</td>
+        </tr>
+        <tr onclick="spId='n2';history.replaceState(null,'','#notice-n2');spRender()">
+          <td class="no">2</td>
+          <td class="cat">New product</td>
+          <td class="tt"><span>Goeunbal foot cream — full detail page published</span></td>
+          <td class="dt">2026.08.04</td>
+        </tr>
+        <tr onclick="spId='n3';history.replaceState(null,'','#notice-n3');spRender()">
+          <td class="no">3</td>
+          <td class="cat">New product</td>
+          <td class="tt"><span>Three MIRALET dermacosmetics by INCORE now listed</span></td>
+          <td class="dt">2026.08.04</td>
+        </tr>
+      </tbody></table></div>
+    </div>
+
+<nav class="mk-static-mk-header">
+  <div class="wrap"><div class="mk-head-top"><a class="mk-logo" href="index.html"><img src="assets/img/logo.png?v=20260805u" alt="MAKENOV" onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></a><div class="mk-search"><input type="search" data-i18n-ph="search_ph" onkeydown="if(event.key==='Enter'){if(this.value===undefined){var el=document.getElementById('mk-search-input')}else{var el=this}
+      if(el.value.trim()){mkTrack('Search',{search_string:el.value.trim()});location.href='directory.html?q='+encodeURIComponent(el.value.trim())}}" placeholder="Search products, brands..."><span class="ico" role="button" tabindex="0" onclick="if(this.value===undefined){var el=document.getElementById('mk-search-input')}else{var el=this}
+      if(el.value.trim()){mkTrack('Search',{search_string:el.value.trim()});location.href='directory.html?q='+encodeURIComponent(el.value.trim())}"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></span></div><div class="mk-head-right"><div class="mk-lang"><button data-lang="vi" onclick="setLang('vi')">VI</button><button data-lang="ko" onclick="setLang('ko')">KO</button><button data-lang="en" onclick="setLang('en')" class="on">EN</button></div><a class="mk-util opt" href="maker.html"><svg viewBox="0 0 24 24"><path d="M3 20V11l5 3V11l5 3V6l8 5v9z"></path><path d="M3 20h18"></path></svg><span class="lb" data-i18n="util_maker">List a product</span></a><a class="mk-util" href="mypage.html"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-9.5A3.9 3.9 0 0 1 12 7a3.9 3.9 0 0 1 7 3.5c0 5-7 9.5-7 9.5z"></path></svg><span class="badge">0</span><span class="lb" data-i18n="util_wish">Wishlist</span></a>
+      <a class="mk-util" onclick="openAuth('login')" style="cursor:pointer"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"></circle><path d="M4.5 20c.9-3.6 4-5.6 7.5-5.6s6.6 2 7.5 5.6"></path></svg><span class="lb" data-i18n="login">Log in</span></a><button class="btn btn-primary btn-sm" style="margin-left:6px;height:40px;padding:0 18px" onclick="openAuth('signup')" data-i18n="signup">Sign up</button>
+    </div></div><nav class="mk-nav mk-head-nav"><a href="directory.en.html" data-i18n="nav_directory">Products</a><a href="companies.en.html" data-i18n="nav_companies">Makers</a><a href="columns.en.html" data-i18n="nav_columns">Insights</a><span class="gnb"><span class="drop"><a href="about.en.html" data-i18n="nav_about">About</a><span class="menu"><a href="about.en.html" data-i18n="nav_about_buyer">Are you a buyer?</a><a href="maker.html" data-i18n="nav_about_maker">Are you a manufacturer?</a></span></span><a href="guide.en.html" data-i18n="nav_guide">Guide</a><span class="drop"><a href="support.en.html" data-i18n="nav_support">Support</a><span class="menu"><a href="support.en.html#notice" data-i18n="nav_sp_notice">Notices</a><a href="support.en.html#faq" data-i18n="nav_sp_faq">FAQ</a><a href="support.en.html#ask" data-i18n="nav_sp_ask">Send an enquiry</a></span></span></span></nav></div></nav>
+<nav class="mk-static-mk-footer">
+  <div class="wrap"><div><div class="logo"><img src="assets/img/logo.png?v=20260805u" alt="MAKENOV" onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc">Connecting innovative products with global buyers.</p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform">Platform</h4><a href="directory.en.html" data-i18n="nav_directory">Products</a><a href="columns.en.html" data-i18n="nav_columns">Insights</a></div><div><h4 data-i18n="ft_support">Support</h4><a href="support.en.html" data-i18n="nav_support">Support</a><a href="guide.en.html" data-i18n="nav_guide">Guide</a><a href="sitemap.html">Sơ đồ trang</a><a href="mailto:contact@makenov.com" data-i18n="ft_contact">Contact</a></div><div><h4 data-i18n="ft_company">Company</h4><a href="about.en.html" data-i18n="nav_about">About</a><a href="maker.html" data-i18n="ft_kr">For Korean companies</a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div></nav>
+<div class="nb-body">
+    <div class="nb-bar">
+      <div class="nb-search">
+        <input value="" placeholder="Search notices" onkeydown="if(event.key==='Enter')fqSearch()">
+        <button class="btn btn-primary btn-sm" onclick="fqSearch()">Search</button>
+        <button class="btn btn-ghost btn-sm" onclick="fqQ='';spRender()">Reset</button>
+      </div>
+    </div>
+    <div class="nb-total">6 posts</div>
+    <div class="tbl-wrap-pub"><table class="nb-table fq-table">
+      <thead><tr><th class="no">No.</th><th>Title</th><th class="chv"></th></tr></thead>
+      <tbody>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">1</td>
+          <td class="tt"><span>Is it free to join and use?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>Yes. Signing up, browsing products, sending quotation requests and business verification are all free.</div></td></tr>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">2</td>
+          <td class="tt"><span>Why are prices and MOQs locked?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>Price, MOQ, lead time and supply terms are visible only to verified buyers. Sign up free and verify your business to unlock them.</div></td></tr>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">3</td>
+          <td class="tt"><span>How does business verification work?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>Vietnam verifies by tax code (MST), Korea by business registration number, and other countries by company email domain. It usually takes about a minute.</div></td></tr>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">4</td>
+          <td class="tt"><span>Do I deal directly with manufacturers?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>Yes. Your inquiry goes straight to the manufacturer with no middleman margins. MAKENOV handles matching and verification.</div></td></tr>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">5</td>
+          <td class="tt"><span>Can MOQs be negotiated?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>It varies by product, but many manufacturers are open to smaller trial orders. State your desired quantity in the quotation request.</div></td></tr>
+        <tr class="fq-row" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+          <td class="no">6</td>
+          <td class="tt"><span>Which languages can I use?</span></td>
+          <td class="chv"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg></td>
+        </tr>
+        <tr class="fq-ans"><td></td><td colspan="2"><div>Vietnamese, English and Korean are all fine. The MAKENOV team can assist with communication when needed.</div></td></tr>
+      </tbody></table></div></div>
+<div class="nb-body"><div class="ask-grid">
+    <div class="ask-form">
+      <p class="nb-lead">No account needed. Just leave an email or phone number we can reply to. We reply within two business days. If it's urgent, say so in your message.</p>
+      <div class="lp-err"></div>
+      <div class="f-row"><label>Enquiry type</label>
+        <select>
+          <option value="general">General</option>
+          <option value="verify">Business verification</option>
+          <option value="product">Product / quote</option>
+          <option value="maker">Product listing (manufacturer)</option>
+        </select></div>
+      <div class="f-2col">
+        <div class="f-row"><label>Company name</label><input></div>
+        <div class="f-row"><label>Contact name<i class="req">*</i></label><input></div>
+      </div>
+      <div class="f-2col">
+        <div class="f-row"><label>Email<i class="req">*</i></label><input type="email" placeholder="name@company.com"></div>
+        <div class="f-row"><label>Phone number</label><input inputmode="tel"></div>
+      </div>
+      <div class="f-row"><label>What are you looking for?<i class="req">*</i></label>
+        <textarea rows="7" placeholder="The more specific, the faster the reply. For product questions, include the product name."></textarea></div>
+      <label class="ask-agree"><input type="checkbox"> <span>I agree to the collection and use of personal data to answer this enquiry<i class="req">*</i></span></label>
+      <div class="ask-actions"><button class="btn btn-primary" onclick="sendSupport()">Send question</button></div>
+    </div>
+    <aside class="ask-side">
+      <div class="box"><h4>Hours</h4><p>Mon–Fri 09:00–18:00 (Korea time, UTC+9) · Lunch 12:30–13:30 · Closed weekends and public holidays</p><b class="mail">contact@makenov.com</b></div>
+      <div class="box"><h4>Before you send</h4>
+        <p>Price and MOQ questions get answered faster via the quote button on the product page itself.</p>
+        <p>The FAQ already covers many common questions. <a href="#faq" data-tab="faq">FAQ →</a></p></div>
+    </aside>
+  </div></div></div>
+<!-- /mk:pre -->
+
 
 
 
