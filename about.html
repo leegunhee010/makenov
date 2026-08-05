@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805m">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805n">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Giới thiệu MAKENOV — Nhà mua và nhà sản xuất đều đã xác thực</title>
@@ -23,20 +23,163 @@
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>
-<main id="ab-root"></main>
+<main id="ab-root">
+<!-- mk:pre (prerender.js가 관리 — 직접 수정 금지) -->
+<div id="mk-prerender"><section class="lp-hero buyer">
+    <div class="lp-wrap">
+      <div class="lp-kick">Dành cho nhà mua</div>
+      <h1>Xem sản phẩm đổi mới từ khắp thế giới ở một nơi,<br>và đặt lịch trao đổi thẳng với nhà sản xuất.</h1>
+      <p class="lead">Không cần đợi hội chợ, không cần bay đi đâu. Chỉ cần xác thực doanh nghiệp là giá và số lượng tối thiểu mở ra ngay tại chỗ.</p>
+      <div class="lp-hero-cta">
+        <button class="btn btn-primary" onclick="openAuth('signup')">Xác thực miễn phí</button>
+        <a class="btn ghost" href="directory.html">Xem sản phẩm</a>
+      </div>
+      <div class="lp-hero-facts">
+        <div><b>365 ngày</b><span>Hội chợ ba ngày, ở đây cả năm</span></div><div><b>0đ</b><span>Đăng ký và xác thực</span></div><div><b>1 phút</b><span>Thời gian xác thực</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Cách sourcing hiện nay</div>
+        <h2>Dựa vào hội chợ thì sẽ như thế này</h2><p>Nếu hội chợ là con đường duy nhất để tìm hàng mới, ba việc sau sẽ đi kèm.</p></div>
+      <div class="lp-cards">
+        <div class="lp-card"><div class="n">01</div>
+          <h3>Ngày được xem hàng đã bị ấn định</h3><p>Hội chợ diễn ra một hai lần mỗi năm, mỗi lần ba ngày. Giữa hai kỳ mà cần hàng mới thì phải đợi kỳ sau, hoặc lấy từ nhà cung cấp quen.</p></div><div class="lp-card"><div class="n">02</div>
+          <h3>Mỗi lần đi là một lần tốn</h3><p>Vé bay, khách sạn, phiên dịch, và mấy ngày rời khỏi công việc. Kỳ hội chợ sau lại tốn đúng khoản đó.</p></div><div class="lp-card"><div class="n">03</div>
+          <h3>Nhận một bản báo giá mất vài tuần</h3><p>Tại chỗ chỉ trao đổi danh thiếp và catalogue. Về nhà gửi email rồi chờ, và thời điểm cần hàng trôi qua.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Khác ở đâu</div><h2>So với đi hội chợ</h2></div>
+      <table class="lp-vs">
+        <thead><tr><th></th><th>Hội chợ</th><th>MAKENOV</th></tr></thead>
+        <tbody><tr><th>Thời điểm xem được</th>
+          <td class="old">1–2 lần mỗi năm, mỗi lần ba ngày</td><td class="new">Quanh năm</td></tr><tr><th>Chi phí</th>
+          <td class="old">Vé bay · khách sạn · phiên dịch</td><td class="new">Không có</td></tr><tr><th>Số sản phẩm xem được</th>
+          <td class="old">Bằng số gian hàng đi được trong ba ngày</td><td class="new">Toàn bộ sản phẩm đã đăng</td></tr><tr><th>Xem đơn giá</th>
+          <td class="old">Tại chỗ khó hỏi, phải email sau</td><td class="new">Xác thực xong xem ngay trên trang sản phẩm</td></tr><tr><th>So sánh sản phẩm</th>
+          <td class="old">Bằng catalogue mang về</td><td class="new">Lưu vào danh sách rồi đặt điều kiện cạnh nhau</td></tr><tr><th>Tình trạng sau khi hỏi</th>
+          <td class="old">Không biết gì cho tới khi có hồi âm</td><td class="new">Hiển thị đã nhận, đang xử lý, đã trả lời</td></tr><tr><th>Ngôn ngữ</th>
+          <td class="old">Phải tự tìm phiên dịch</td><td class="new">Tiếng Việt · Anh · Hàn</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="ab-lock">
+    <div class="wrap">
+      <div class="ab-lock-row">
+        <div class="ab-lock-tx">
+          <div class="ab-tag light">Cách hiển thị giá</div>
+          <h2>Giá chỉ được gửi tới nhà mua đã xác thực</h2>
+          <p>Đơn giá, số lượng tối thiểu, thời gian giao hàng và điều kiện cung ứng chỉ gửi tới tài khoản đã xác thực doanh nghiệp. Không phải che trên màn hình: chưa xác thực thì dữ liệu không được gửi đi.</p>
+          <p class="ab-lock-note">Nhờ vậy nhà sản xuất mới đăng giá xuất khẩu thật.</p>
+        </div>
+        <div class="ab-lock-demo">
+          <div class="pane"><div class="cap">Trước khi xác thực</div>
+            <div class="rows">
+              <div><span>Giá</span><i class="bar"></i></div>
+              <div><span>Số lượng tối thiểu (MOQ)</span><i class="bar"></i></div>
+              <div><span>Thời gian giao hàng</span><i class="bar"></i></div>
+              <div><span>Điều kiện cung ứng</span><i class="bar"></i></div>
+            </div></div>
+          <div class="pane on"><div class="cap">Sau khi xác thực</div>
+            <div class="rows">
+              <div><span>Giá</span><b>US$ 4.20</b></div>
+              <div><span>Số lượng tối thiểu (MOQ)</span><b>500</b></div>
+              <div><span>Thời gian giao hàng</span><b>30 days</b></div>
+              <div><span>Điều kiện cung ứng</span><b>FOB · OEM</b></div>
+            </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Cách dùng</div><h2>Bốn bước, từ đăng ký đến đặt lịch trao đổi</h2></div>
+      <div class="lp-steps">
+        <div class="lp-step on"><div class="st">STEP 01</div>
+          <h3>Đăng ký</h3><p>Chọn quốc gia, nhập thông tin công ty và người phụ trách.</p></div><div class="lp-step on"><div class="st">STEP 02</div>
+          <h3>Xác thực doanh nghiệp</h3><p>Việt Nam dùng mã số thuế, Hàn Quốc dùng số đăng ký kinh doanh, các nước khác dùng email tên miền công ty.</p></div><div class="lp-step on"><div class="st">STEP 03</div>
+          <h3>Xem giá</h3><p>Xác thực xong sẽ thấy giá, số lượng tối thiểu và thời gian giao hàng. Sản phẩm quan tâm có thể lưu lại.</p></div><div class="lp-step on"><div class="st">STEP 04</div>
+          <h3>Gửi yêu cầu hoặc đặt lịch</h3><p>Chọn giữa hỏi nhanh, yêu cầu báo giá chính thức, hoặc đặt lịch gặp qua video.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Chúng tôi cung cấp</div><h2>Bạn làm được gì trên MAKENOV</h2></div>
+      <div class="lp-bens">
+        <div class="lp-ben"><div class="k">01</div><div>
+          <h3>Duyệt sản phẩm toàn cầu</h3><p>Lọc theo ngành hàng và tìm kiếm, xem theo thứ tự mới đăng.</p></div></div><div class="lp-ben"><div class="k">02</div><div>
+          <h3>Xem điều kiện giao dịch</h3><p>Xem đơn giá xuất khẩu, số lượng tối thiểu, thời gian giao hàng và điều kiện cung ứng.</p></div></div><div class="lp-ben"><div class="k">03</div><div>
+          <h3>Xem thông tin nhà sản xuất</h3><p>Năm thành lập, chứng nhận, năng lực sản xuất và các sản phẩm khác của họ.</p></div></div><div class="lp-ben"><div class="k">04</div><div>
+          <h3>Hỏi nhiều sản phẩm một lần</h3><p>Lưu vào danh sách quan tâm rồi hỏi báo giá một lần, mỗi yêu cầu tới đúng nhà sản xuất.</p></div></div><div class="lp-ben"><div class="k">05</div><div>
+          <h3>Đặt lịch gặp qua video</h3><p>Để lại khung giờ mong muốn, MAKENOV sẽ hẹn lịch với nhà sản xuất và gửi link.</p></div></div><div class="lp-ben"><div class="k">06</div><div>
+          <h3>Hỗ trợ ba ngôn ngữ</h3><p>Xem và hỏi bằng tiếng Việt, Hàn hoặc Anh. Khó trao đổi thì đội ngũ hỗ trợ.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Xác thực doanh nghiệp</div>
+        <h2>Xác thực miễn phí, mất khoảng một phút</h2><p>Đối chiếu với thông tin đăng ký doanh nghiệp của từng quốc gia.</p></div>
+      <div class="ab-vers">
+        <div><h3>Việt Nam</h3><p>Nhập mã số thuế (MST), tên và địa chỉ công ty tự động điền.</p></div><div><h3>Hàn Quốc</h3><p>Số đăng ký kinh doanh được đối chiếu trạng thái với cơ quan thuế.</p></div><div><h3>Các nước khác</h3><p>Xác thực bằng email tên miền công ty. Không dùng được email miễn phí.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec soft">
+    <div class="lp-wrap">
+      <div class="lp-head"><div class="tag">Câu hỏi thường gặp</div><h2>Những điều nên biết trước khi đăng ký</h2></div>
+      <div class="lp-faq">
+        <details><summary>Có mất phí không?</summary>
+          <div class="a">Đăng ký, xác thực, xem sản phẩm và hỏi báo giá đều miễn phí. Không phí thành viên, không hoa hồng.</div></details><details><summary>Vì sao phải xác thực mới thấy giá?</summary>
+          <div class="a">Vì đó là điều kiện để nhà sản xuất công khai đơn giá thật. Ai cũng xem được thì họ sẽ không đăng giá.</div></details><details><summary>Có thể đặt số lượng nhỏ trước không?</summary>
+          <div class="a">Tùy sản phẩm. Sản phẩm có nhãn có thể thương lượng thì bàn được đơn nhỏ, hãy ghi số lượng mong muốn khi hỏi.</div></details><details><summary>Có thanh toán qua MAKENOV không?</summary>
+          <div class="a">Không. Yêu cầu được chuyển thẳng tới nhà sản xuất, hợp đồng và thanh toán cũng làm với họ. Chúng tôi không cộng chênh lệch.</div></details><details><summary>Có nhận được giấy tờ để công bố sản phẩm không?</summary>
+          <div class="a">Khi hỏi báo giá, hãy chọn giấy tờ cần: bảng thành phần, C/O, phiếu kiểm nghiệm, catalogue.</div></details><details><summary>Sản phẩm đến từ những nước nào?</summary>
+          <div class="a">Nhà sản xuất trên toàn thế giới đều có thể đăng. Mỗi sản phẩm đều ghi xuất xứ và danh mục đang tiếp tục mở rộng.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-last">
+    <div class="lp-wrap">
+      <h2>Xác thực ngay để xem giá</h2>
+      <p>Xác thực miễn phí, mất khoảng một phút. Xem sản phẩm trước cũng được.</p>
+      <button class="btn btn-primary" onclick="openAuth('signup')">Xác thực miễn phí</button>
+    </div>
+  </section></div>
+<!-- /mk:pre -->
+
+
+
+
+
+
+</main>
 <footer class="mk-footer" id="mk-footer"></footer>
 
-<script src="assets/js/config.js?v=20260805m"></script>
-<script src="assets/js/pixel.js?v=20260805m"></script>
+<script src="assets/js/config.js?v=20260805n"></script>
+<script src="assets/js/pixel.js?v=20260805n"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805m"></script>
-<script src="assets/js/data.js?v=20260805m"></script>
-<script src="assets/js/store.js?v=20260805m"></script>
-<script src="assets/js/verify.js?v=20260805m"></script>
-<script src="assets/js/upload.js?v=20260805m"></script>
-<script src="assets/js/store-supabase.js?v=20260805m"></script>
-<script src="assets/js/app.js?v=20260805m"></script>
-<script src="assets/js/about-copy.js?v=20260805m"></script>
+<script src="assets/js/i18n.js?v=20260805n"></script>
+<script src="assets/js/data.js?v=20260805n"></script>
+<script src="assets/js/store.js?v=20260805n"></script>
+<script src="assets/js/verify.js?v=20260805n"></script>
+<script src="assets/js/upload.js?v=20260805n"></script>
+<script src="assets/js/store-supabase.js?v=20260805n"></script>
+<script src="assets/js/app.js?v=20260805n"></script>
+<script src="assets/js/about-copy.js?v=20260805n"></script>
 <script>
 /* DB 없이 아래 AB 데이터만으로 완성되는 화면 — boot 를 기다리지 않고 즉시 렌더 */
 window.MK_EARLY_RENDER = true;

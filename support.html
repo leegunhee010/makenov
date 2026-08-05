@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805m">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805n">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
 <title>Hỗ trợ khách hàng | MAKENOV</title>
@@ -25,6 +25,58 @@
 <header class="mk-header" id="mk-header"></header>
 
 <main class="wrap">
+<!-- mk:pre (prerender.js가 관리 — 직접 수정 금지) -->
+<div id="mk-prerender"><div class="page-head" style="padding-bottom:14px"><h1 data-i18n="sp_kick">Hỗ trợ khách hàng</h1></div>
+  <div class="nb-tabs">
+    <a href="#notice" data-tab="notice" class="on">Thông báo</a>
+    <a href="#faq" data-tab="faq" class="">Câu hỏi thường gặp</a>
+    <a href="#ask" data-tab="ask" class="">Hỏi đáp 1:1</a></div>
+  <div class="nb-body">
+    <div class="nb-bar">
+      <div class="nb-search">
+        <input value="" placeholder="Nhập từ khóa tìm kiếm" onkeydown="if(event.key==='Enter')ntSearch()">
+        <button class="btn btn-primary btn-sm" onclick="ntSearch()">Tìm</button>
+        <button class="btn btn-ghost btn-sm" onclick="spQ='';spCat='all';spPage=1;spRender()">Đặt lại</button>
+      </div>
+      <div class="nb-cats">
+        <button class="on" onclick="spCat='all';spPage=1;spRender()">Tất cả</button>
+        <button class="" onclick="spCat='notice';spPage=1;spRender()">Thông báo</button>
+        <button class="" onclick="spCat='new';spPage=1;spRender()">Sản phẩm mới</button>
+        <button class="" onclick="spCat='update';spPage=1;spRender()">Cập nhật</button>
+        <button class="" onclick="spCat='event';spPage=1;spRender()">Sự kiện</button></div>
+    </div>
+    <div class="nb-total">Tổng 3 bài</div>
+    <div class="tbl-wrap-pub"><table class="nb-table">
+      <thead><tr><th class="no">STT</th><th class="cat">Phân loại</th><th>Tiêu đề</th><th class="dt">Ngày đăng</th></tr></thead>
+      <tbody>
+        <tr onclick="spId='n1';history.replaceState(null,'','#notice-n1');spRender()">
+          <td class="no">1</td>
+          <td class="cat">Thông báo</td>
+          <td class="tt"><i class="top">TOP</i><span>MAKENOV chính thức mở cửa</span></td>
+          <td class="dt">2026.07.29</td>
+        </tr>
+        <tr onclick="spId='n2';history.replaceState(null,'','#notice-n2');spRender()">
+          <td class="no">2</td>
+          <td class="cat">Sản phẩm mới</td>
+          <td class="tt"><span>Kem dưỡng gót chân Goeunbal — trang chi tiết đầy đủ</span></td>
+          <td class="dt">2026.08.04</td>
+        </tr>
+        <tr onclick="spId='n3';history.replaceState(null,'','#notice-n3');spRender()">
+          <td class="no">3</td>
+          <td class="cat">Sản phẩm mới</td>
+          <td class="tt"><span>Ra mắt 3 sản phẩm MIRALET của INCORE (Daegu)</span></td>
+          <td class="dt">2026.08.04</td>
+        </tr>
+      </tbody></table></div>
+    </div></div>
+<!-- /mk:pre -->
+
+
+
+
+
+
+
   <!-- 고객센터 — addwel.co.kr/bbs/notice 실측 구조:
        페이지 타이틀 → 3등분 폴더 탭(공지사항/FAQ/1:1 문의) → 게시판 -->
   <div class="page-head" style="padding-bottom:14px"><h1 data-i18n="sp_kick"></h1></div>
@@ -33,16 +85,16 @@
 </main>
 
 <footer class="mk-footer" id="mk-footer"></footer>
-<script src="assets/js/config.js?v=20260805m"></script>
-<script src="assets/js/pixel.js?v=20260805m"></script>
+<script src="assets/js/config.js?v=20260805n"></script>
+<script src="assets/js/pixel.js?v=20260805n"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805m"></script>
-<script src="assets/js/data.js?v=20260805m"></script>
-<script src="assets/js/store.js?v=20260805m"></script>
-<script src="assets/js/verify.js?v=20260805m"></script>
-<script src="assets/js/upload.js?v=20260805m"></script>
-<script src="assets/js/store-supabase.js?v=20260805m"></script>
-<script src="assets/js/app.js?v=20260805m"></script>
+<script src="assets/js/i18n.js?v=20260805n"></script>
+<script src="assets/js/data.js?v=20260805n"></script>
+<script src="assets/js/store.js?v=20260805n"></script>
+<script src="assets/js/verify.js?v=20260805n"></script>
+<script src="assets/js/upload.js?v=20260805n"></script>
+<script src="assets/js/store-supabase.js?v=20260805n"></script>
+<script src="assets/js/app.js?v=20260805n"></script>
 <script>
 /* DB 없이 시드만으로 완성되는 화면 — boot 를 기다리지 않고 즉시 렌더 */
 window.MK_EARLY_RENDER = true;

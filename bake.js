@@ -14,6 +14,24 @@
      canonical·OG·sitemap이 전부 새 도메인으로 다시 구워진다.
    ★ 관리자에서 제품·칼럼을 추가/수정한 뒤에도 다시 실행해야
      정적 페이지와 sitemap에 반영된다.
+   ★ 이 스크립트 다음에 `node prerender.js` 를 돌린다.
+     JS로 그리는 7개 페이지를 크롤러용 정적 사본으로 굽는 단계다.
+
+   ⚠ 2026-08-05 현재 makenov.com 은 아직 등록되지 않은 도메인이다(NXDOMAIN).
+     지금 배포처는 https://leegunhee010.github.io/makenov/ 인데 canonical 은
+     makenov.com 을 가리키므로, 도메인을 붙이기 전까지는 검색 색인이 되지 않는다.
+     도메인을 살 때까지 색인을 원하면 SITE 를 배포처 주소로 바꾸면 된다.
+
+     [도메인 연결 순서]  이 순서를 지켜야 사이트가 죽지 않는다
+       1. makenov.com 구입
+       2. DNS 에 A 레코드 4개 등록
+          185.199.108.153 / 185.199.109.153 / 185.199.110.153 / 185.199.111.153
+          (www 를 쓸 거면 CNAME www → leegunhee010.github.io)
+       3. DNS 전파 확인:  nslookup makenov.com
+       4. 그다음에야 저장소 루트에 CNAME 파일(내용: makenov.com) 추가 후 푸시
+          ⚠ 3번 전에 CNAME 을 넣으면 GitHub Pages 가 현재 주소를 makenov.com 으로
+            리다이렉트해버려서 사이트 전체가 접속 불가가 된다
+       5. GitHub 저장소 Settings > Pages 에서 Enforce HTTPS 체크
    ============================================================ */
 const fs = require('fs');
 const path = require('path');

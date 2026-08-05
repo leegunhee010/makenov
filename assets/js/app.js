@@ -649,6 +649,13 @@ function productCard(p){
 document.addEventListener('DOMContentLoaded', async ()=>{
   document.documentElement.lang = MK_LANG;
 
+  /* 0) 사전 렌더 블록 제거.
+        prerender.js 가 크롤러용으로 구워 넣은 정적 사본이다. JS가 도는 브라우저에서는
+        아래에서 실제 렌더가 일어나므로 부팅 첫 줄에서 걷어낸다.
+        (원본 컨테이너는 그대로 남아 있어서 pageInit 이 평소대로 채운다) */
+  const pre = document.getElementById('mk-prerender');
+  if(pre) pre.remove();
+
   /* 1) 헤더·푸터·번역을 먼저 그린다.
         Supabase 응답을 기다렸다가 그리면, 그동안 정적 HTML(제목만)이 홀로 떠 있다가
         데이터가 도착하는 순간 전체가 다시 그려져 화면이 깜빡인다. */

@@ -194,7 +194,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .omc-hero .veil{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(to top,rgba(4,12,18,.82) 0%,rgba(4,12,18,.42) 38%,rgba(4,12,18,0) 74%)}
 .omc-hero .copy{position:absolute;left:40px;right:40px;bottom:40px;z-index:2;pointer-events:none}
-.omc-hero .copy h1{font-size:32px;font-weight:700;line-height:1.34;letter-spacing:-.02em;
+.omc-hero .copy h1,.omc-hero .copy h2{font-size:32px;font-weight:700;line-height:1.34;letter-spacing:-.02em;
   color:#fff;margin-bottom:10px;max-width:660px}
 .omc-hero .copy p{font-size:15px;line-height:1.6;color:rgba(255,255,255,.86);max-width:600px}
 /* 히어로 CTA — copy 블록 안, pointer-events 복구 */
@@ -224,7 +224,7 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   .omc-hero .hero-arrows{display:none}
   .omc-hero .dots{bottom:26px}
   .omc-hero .copy{left:20px;right:20px;bottom:24px}
-  .omc-hero .copy h1{font-size:21px;margin-bottom:8px}
+  .omc-hero .copy h1,.omc-hero .copy h2{font-size:21px;margin-bottom:8px}
   .omc-hero .copy p{font-size:13px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .omc-hero .hero-cta{margin-top:14px}
