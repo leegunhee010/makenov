@@ -115,3 +115,47 @@ function mkApplyCopy(map){
 
 /* 부팅 순서 문제 방지 — 설정이 늦게 와도 다시 적용할 수 있게 보관해 둔다 */
 window.MK_COPY_OVERRIDE = window.MK_COPY_OVERRIDE || {};
+
+/* ------------------------------------------------------------
+   구역 이름
+   ------------------------------------------------------------
+   nav_directory 같은 키만 늘어놓으면 어디 문구인지 알 수가 없다.
+   키 앞머리(또는 최상위 섹션)를 사람이 읽는 이름으로 바꿔 묶어 준다.
+   ------------------------------------------------------------ */
+const MK_COPY_GROUPS = {
+  ui: {
+    nav:'헤더 메뉴', util:'헤더 아이콘', search:'헤더 검색', ft:'푸터',
+    hero:'홈 히어로', sec:'홈 섹션 제목', rail:'홈 카테고리', spot:'홈 실시간',
+    dir:'제품 목록', cat:'카테고리 이름', sort:'정렬',
+    col:'칼럼', co:'공급사', sp:'고객센터', nt:'공지사항', gd:'이용 가이드',
+    ab:'서비스 소개', auth:'로그인 · 회원가입', my:'마이페이지',
+    inq:'문의 폼', easy:'간편 문의', err:'오류 메시지',
+    promo:'CTA 배너', cta:'CTA 버튼',
+    locked:'가격 잠금', price:'가격 잠금', moq:'가격 잠금', lead:'가격 잠금',
+    supply:'가격 잠금', negotiable:'가격 잠금',
+    pd:'제품 상세', detail:'제품 상세', brand:'제품 상세', views:'제품 상세',
+    catalog:'카탈로그', kr:'한국 소개', mk:'공통', webinar:'웨비나(미사용)',
+    login:'로그인 · 회원가입', signup:'로그인 · 회원가입', logout:'로그인 · 회원가입',
+    mypage:'마이페이지', wish:'마이페이지', inquiries:'마이페이지',
+  },
+  /* 랜딩은 최상위 섹션이 곧 구역이다 */
+  about: {
+    hero:'1 히어로', problem:'2 문제 제기', vs:'3 비교', lock:'4 가격 잠금',
+    steps:'5 이용 절차', bens:'6 받는 것', verify:'7 인증', faq:'8 FAQ', last:'9 마무리',
+  },
+  makerbody: {
+    hero:'1 히어로', problem:'2 문제 제기', compare:'3 비교표', promise:'4 약속 · 시장',
+    how:'5 등록 절차', benefit:'6 받는 것', verify:'7 인증', fit:'8 적합 여부',
+    faq:'9 FAQ', apply:'10 신청 폼', last:'11 마무리',
+  },
+  maker: { stats:'통계 4칸', markets:'주요 시장', contactEmail:'연락처', contactTel:'연락처' },
+  site:  { topbar:'상단 배너' },
+};
+
+/* 경로에서 구역 이름을 뽑는다 */
+function mkCopyGroup(field){
+  const rest = field.path.slice(field.src.length + 1);
+  const head = field.src === 'ui' ? rest.split('_')[0] : rest.split('.')[0];
+  const map = MK_COPY_GROUPS[field.src] || {};
+  return map[head] || '기타';
+}

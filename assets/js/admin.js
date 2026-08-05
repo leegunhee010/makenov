@@ -1089,8 +1089,9 @@ function saveNotice(id){
 /* ============================================================
    카피 수정 — 사이트 문구를 코드 없이 고친다
    ============================================================ */
-let cpSrc = 'ui', cpSearch = '', cpOnlyEdited = false;
+let cpSrc = 'ui', cpSearch = '', cpOnlyEdited = false, cpGroup = 'all';
 let cpDraft = {};          // 저장 전 편집분 { path: {vi,ko,en} }
+let cpOpen = {};           // 펼쳐 놓은 항목
 
 /* 지금 화면에서 쓰는 값 = 저장분 + 편집분 */
 function cpValue(f){
@@ -1136,6 +1137,11 @@ async function cpReset(path){
   renderCopy();
 }
 
+function cpToggle(path){
+  cpOpen[path] = !cpOpen[path];
+  renderCopy();
+}
+
 function renderCopy(){
   const el = document.getElementById('tab-copy');
   if(!el) return;
@@ -1144,53 +1150,94 @@ function renderCopy(){
 
   const all = mkCopyFields();
   const q = cpSearch.trim().toLowerCase();
+  const searching = q.length > 0;
+
+  /* 검색 중이면 구역·소스 상관없이 전체에서 찾는다.
+     사람은 "사이트에서 본 그 문구"로 찾지, 어느 페이지 소속인지 모른다. */
   const list = all.filter(f=>{
-    if(f.src !== cpSrc) return false;
     if(cpOnlyEdited && !cpIsEdited(f)) return false;
-    if(q){
+    if(searching){
       const v = cpValue(f);
-      const hay = [f.label, v.ko, v.vi, v.en].map(x=>String(x||'').toLowerCase()).join(' ');
-      if(!hay.includes(q)) return false;
+      return [f.label, v.ko, v.vi, v.en].map(x=>String(x||'').toLowerCase()).join(' ').includes(q);
     }
+    if(f.src !== cpSrc) return false;
+    if(cpGroup !== 'all' && mkCopyGroup(f) !== cpGroup) return false;
     return true;
   });
   const editedCnt = all.filter(cpIsEdited).length;
   const cur = sources.find(s=>s.id===cpSrc) || sources[0];
 
-  const row = f => {
+  /* 현재 소스의 구역 칩 */
+  const gCount = {};
+  all.filter(f=>f.src===cpSrc).forEach(f=>{ const g=mkCopyGroup(f); gCount[g]=(gCount[g]||0)+1; });
+  const groups = Object.keys(gCount).sort((a,b)=>a.localeCompare(b,'ko'));
+
+  const one = f => {
     const v = cpValue(f);
     const on = cpIsEdited(f);
+    const open = cpOpen[f.path] || searching;
+    const ko = String(v.ko || v.vi || v.en || '').replace(/\n/g,' ');
+    if(!open){
+      return `<div class="cp-item${on?' on':''}" onclick="cpToggle('${esc(f.path)}')">
+        <span class="tx">${esc(ko.length>78?ko.slice(0,78)+'…':ko)}</span>
+        <span class="wh">${esc(searching ? mkCopyGroup(f) : f.label)}</span>
+        ${on?'<span class="dot">수정됨</span>':''}
+      </div>`;
+    }
     const box = (l, label) => v[l] === undefined ? '' : `
       <div class="fld" style="margin:0">
         <label><span class="lang-tag">${label}</span></label>
         <textarea rows="${String(v[l]||'').length > 70 ? 3 : 1}"
           oninput="cpEdit('${esc(f.path)}','${l}',this.value)">${esc(v[l]||'')}</textarea>
       </div>`;
-    return `<div class="cfaq" style="${on?'border-color:var(--mk-primary)':''}">
-      <div class="blk-head" style="margin-bottom:8px">
-        <b style="font-family:var(--font-body);color:${on?'var(--mk-primary)':'var(--adm-sub)'}">${esc(f.label)}${on?' · 수정됨':''}</b>
-        ${on?`<div class="acts"><button onclick="cpReset('${esc(f.path)}')">되돌리기</button></div>`:''}
+    return `<div class="cp-item open${on?' on':''}">
+      <div class="cp-head" onclick="cpToggle('${esc(f.path)}')">
+        <span class="wh">${esc(mkCopyGroup(f))} · ${esc(f.label)}</span>
+        <span class="grow"></span>
+        ${on?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();cpReset('${esc(f.path)}')">되돌리기</button>`:''}
+        <span class="fold">접기</span>
       </div>
       <div class="fgrid">${box('ko','KO')}${box('vi','VI')}${box('en','EN')}</div>
     </div>`;
   };
 
+  /* 구역 제목을 끼워 넣어 어디 문구인지 보이게 한다 */
+  let body = '';
+  if(!list.length){
+    body = `<p class="note" style="text-align:center;padding:44px 0">찾는 문구가 없습니다. 사이트에 보이는 그대로 입력해 보세요.</p>`;
+  } else if(searching){
+    body = list.map(one).join('');
+  } else {
+    const byG = {};
+    list.forEach(f=>{ const g=mkCopyGroup(f); (byG[g]=byG[g]||[]).push(f); });
+    body = Object.keys(byG).sort((a,b)=>a.localeCompare(b,'ko')).map(g=>
+      `<div class="cp-group">${esc(g)} <b>${byG[g].length}</b></div>` + byG[g].map(one).join('')).join('');
+  }
+
   el.innerHTML = `
     <div class="card">
-      <p class="note">사이트에 나가는 문구를 여기서 고칩니다. 저장하면 바로 반영되고, 원본 파일은 그대로 있어서 언제든 되돌릴 수 있습니다.
-      <br><b>${esc(cur.label)}</b> — ${esc(cur.hint)}</p>
+      <p class="note" style="margin-bottom:12px">사이트에 나가는 문구를 고칩니다. <b>바꾸고 싶은 문구를 그대로 검색창에 넣는 것이 가장 빠릅니다.</b>
+      저장하면 바로 반영되고, 원본은 그대로 있어서 언제든 되돌릴 수 있습니다.</p>
       <div class="bar">
-        ${sources.map(s=>`<button class="btn btn-sm ${cpSrc===s.id?'btn-primary':'btn-ghost'}" onclick="cpSrc='${s.id}';renderCopy()">${esc(s.label)}</button>`).join('')}
-      </div>
-      <div class="bar">
-        <input class="srch" style="min-width:240px" placeholder="문구 또는 키 검색" value="${esc(cpSearch)}" oninput="cpSearch=this.value;renderCopy()">
-        <label class="chk"><input type="checkbox" ${cpOnlyEdited?'checked':''} onchange="cpOnlyEdited=this.checked;renderCopy()"> 수정한 것만</label>
+        <input class="srch cp-find" placeholder="예: 관심제품 — 사이트에서 본 문구를 그대로" value="${esc(cpSearch)}"
+          oninput="cpSearch=this.value;renderCopy()">
+        ${searching?`<button class="btn btn-ghost btn-sm" onclick="cpSearch='';renderCopy()">지우기</button>`:''}
         <span class="grow"></span>
-        <span class="note" style="margin:0">${list.length}개 · 전체 수정 <b>${editedCnt}</b>건</span>
+        <label class="chk"><input type="checkbox" ${cpOnlyEdited?'checked':''} onchange="cpOnlyEdited=this.checked;renderCopy()"> 수정한 것만</label>
+        <span class="note" style="margin:0">${list.length}개${editedCnt?` · 수정 <b>${editedCnt}</b>건`:''}</span>
         <span class="note" style="margin:0" id="cp-dirty">${Object.keys(cpDraft).length?Object.keys(cpDraft).length+'건 편집됨':''}</span>
         <button class="btn btn-primary btn-sm" id="cp-save" ${Object.keys(cpDraft).length?'':'disabled'} onclick="cpSave()">저장</button>
       </div>
-      ${list.length ? list.map(row).join('') : `<p class="note" style="text-align:center;padding:40px 0">조건에 맞는 문구가 없습니다</p>`}
+      ${searching ? `<p class="note" style="margin:0 0 10px">전체에서 <b>${list.length}개</b> 찾았습니다.</p>` : `
+      <div class="bar" style="margin-bottom:8px">
+        ${sources.map(s=>`<button class="btn btn-sm ${cpSrc===s.id?'btn-primary':'btn-ghost'}" onclick="cpSrc='${s.id}';cpGroup='all';renderCopy()">${esc(s.label)}</button>`).join('')}
+      </div>
+      <div class="bchips" style="margin-bottom:14px">
+        <button class="bchip${cpGroup==='all'?' on':''}" onclick="cpGroup='all';renderCopy()">전체 <b>${all.filter(f=>f.src===cpSrc).length}</b></button>
+        ${groups.map(g=>`<button class="bchip${cpGroup===g?' on':''}" onclick="cpGroup='${esc(g).replace(/'/g,"\\'")}';renderCopy()">${esc(g)} <b>${gCount[g]}</b></button>`).join('')}
+      </div>
+      <p class="note" style="margin:0 0 10px">${esc(cur.hint)}</p>`}
+      ${body}
     </div>`;
 }
 
