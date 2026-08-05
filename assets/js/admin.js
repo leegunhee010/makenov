@@ -1139,15 +1139,45 @@ async function cpReset(path){
 
 function cpToggle(path){
   cpOpen[path] = !cpOpen[path];
-  renderCopy();
+  cpRefreshList();
 }
 
-function renderCopy(){
-  const el = document.getElementById('tab-copy');
-  if(!el) return;
-  const sources = mkCopySources();
-  if(!sources.length){ el.innerHTML = `<div class="card"><p class="note">문구 원본을 찾지 못했습니다.</p></div>`; return; }
+/* 검색어가 바뀔 때 목록만 갈아 끼운다.
+   ⚠ 예전엔 여기서 renderCopy() 로 화면 전체를 다시 그렸는데,
+     그러면 입력창 DOM 자체가 새로 만들어져 한 글자 칠 때마다 포커스가 날아갔다.
+     검색창은 절대 건드리지 않는다. */
+function cpFind(v){
+  cpSearch = v;
+  const browse = document.getElementById('cp-browse');
+  if(browse) browse.hidden = cpSearch.trim().length > 0;
+  const clr = document.getElementById('cp-clear');
+  if(clr) clr.hidden = cpSearch.trim().length === 0;
+  cpRefreshList();
+}
 
+function cpClearSearch(){
+  cpSearch = '';
+  const inp = document.querySelector('.cp-find');
+  if(inp){ inp.value = ''; inp.focus(); }
+  cpFind('');
+}
+
+/* 목록과 개수 표시만 다시 그린다 */
+function cpRefreshList(){
+  const box = document.getElementById('cp-list');
+  if(!box) return renderCopy();
+  const { body, count, editedCnt } = cpBuildList();
+  box.innerHTML = body;
+  const cnt = document.getElementById('cp-count');
+  if(cnt) cnt.innerHTML = `${count}개${editedCnt?` · 수정 <b>${editedCnt}</b>건`:''}`;
+  const found = document.getElementById('cp-found');
+  if(found){
+    found.hidden = !cpSearch.trim();
+    found.innerHTML = `전체에서 <b>${count}개</b> 찾았습니다.`;
+  }
+}
+
+function cpBuildList(){
   const all = mkCopyFields();
   const q = cpSearch.trim().toLowerCase();
   const searching = q.length > 0;
@@ -1165,12 +1195,6 @@ function renderCopy(){
     return true;
   });
   const editedCnt = all.filter(cpIsEdited).length;
-  const cur = sources.find(s=>s.id===cpSrc) || sources[0];
-
-  /* 현재 소스의 구역 칩 */
-  const gCount = {};
-  all.filter(f=>f.src===cpSrc).forEach(f=>{ const g=mkCopyGroup(f); gCount[g]=(gCount[g]||0)+1; });
-  const groups = Object.keys(gCount).sort((a,b)=>a.localeCompare(b,'ko'));
 
   const one = f => {
     const v = cpValue(f);
@@ -1214,30 +1238,52 @@ function renderCopy(){
       `<div class="cp-group">${esc(g)} <b>${byG[g].length}</b></div>` + byG[g].map(one).join('')).join('');
   }
 
+  return { body, count:list.length, editedCnt };
+}
+
+function renderCopy(){
+  const el = document.getElementById('tab-copy');
+  if(!el) return;
+  const sources = mkCopySources();
+  if(!sources.length){ el.innerHTML = `<div class="card"><p class="note">문구 원본을 찾지 못했습니다.</p></div>`; return; }
+
+  const all = mkCopyFields();
+  const searching = cpSearch.trim().length > 0;
+  const cur = sources.find(s=>s.id===cpSrc) || sources[0];
+
+  /* 현재 소스의 구역 칩 */
+  const gCount = {};
+  all.filter(f=>f.src===cpSrc).forEach(f=>{ const g=mkCopyGroup(f); gCount[g]=(gCount[g]||0)+1; });
+  const groups = Object.keys(gCount).sort((a,b)=>a.localeCompare(b,'ko'));
+
+  const { body, count, editedCnt } = cpBuildList();
+
   el.innerHTML = `
     <div class="card">
       <p class="note" style="margin-bottom:12px">사이트에 나가는 문구를 고칩니다. <b>바꾸고 싶은 문구를 그대로 검색창에 넣는 것이 가장 빠릅니다.</b>
       저장하면 바로 반영되고, 원본은 그대로 있어서 언제든 되돌릴 수 있습니다.</p>
       <div class="bar">
         <input class="srch cp-find" placeholder="예: 관심제품 — 사이트에서 본 문구를 그대로" value="${esc(cpSearch)}"
-          oninput="cpSearch=this.value;renderCopy()">
-        ${searching?`<button class="btn btn-ghost btn-sm" onclick="cpSearch='';renderCopy()">지우기</button>`:''}
+          oninput="cpFind(this.value)">
+        <button class="btn btn-ghost btn-sm" id="cp-clear" ${searching?'':'hidden'} onclick="cpClearSearch()">지우기</button>
         <span class="grow"></span>
-        <label class="chk"><input type="checkbox" ${cpOnlyEdited?'checked':''} onchange="cpOnlyEdited=this.checked;renderCopy()"> 수정한 것만</label>
-        <span class="note" style="margin:0">${list.length}개${editedCnt?` · 수정 <b>${editedCnt}</b>건`:''}</span>
+        <label class="chk"><input type="checkbox" ${cpOnlyEdited?'checked':''} onchange="cpOnlyEdited=this.checked;cpRefreshList()"> 수정한 것만</label>
+        <span class="note" style="margin:0" id="cp-count">${count}개${editedCnt?` · 수정 <b>${editedCnt}</b>건`:''}</span>
         <span class="note" style="margin:0" id="cp-dirty">${Object.keys(cpDraft).length?Object.keys(cpDraft).length+'건 편집됨':''}</span>
         <button class="btn btn-primary btn-sm" id="cp-save" ${Object.keys(cpDraft).length?'':'disabled'} onclick="cpSave()">저장</button>
       </div>
-      ${searching ? `<p class="note" style="margin:0 0 10px">전체에서 <b>${list.length}개</b> 찾았습니다.</p>` : `
-      <div class="bar" style="margin-bottom:8px">
-        ${sources.map(s=>`<button class="btn btn-sm ${cpSrc===s.id?'btn-primary':'btn-ghost'}" onclick="cpSrc='${s.id}';cpGroup='all';renderCopy()">${esc(s.label)}</button>`).join('')}
+      <p class="note" style="margin:0 0 10px" id="cp-found" ${searching?'':'hidden'}>전체에서 <b>${count}개</b> 찾았습니다.</p>
+      <div id="cp-browse" ${searching?'hidden':''}>
+        <div class="bar" style="margin-bottom:8px">
+          ${sources.map(s=>`<button class="btn btn-sm ${cpSrc===s.id?'btn-primary':'btn-ghost'}" onclick="cpSrc='${s.id}';cpGroup='all';renderCopy()">${esc(s.label)}</button>`).join('')}
+        </div>
+        <div class="bchips" style="margin-bottom:14px">
+          <button class="bchip${cpGroup==='all'?' on':''}" onclick="cpGroup='all';renderCopy()">전체 <b>${all.filter(f=>f.src===cpSrc).length}</b></button>
+          ${groups.map(g=>`<button class="bchip${cpGroup===g?' on':''}" onclick="cpGroup='${esc(g).replace(/'/g,"\\'")}';renderCopy()">${esc(g)} <b>${gCount[g]}</b></button>`).join('')}
+        </div>
+        <p class="note" style="margin:0 0 10px">${esc(cur.hint)}</p>
       </div>
-      <div class="bchips" style="margin-bottom:14px">
-        <button class="bchip${cpGroup==='all'?' on':''}" onclick="cpGroup='all';renderCopy()">전체 <b>${all.filter(f=>f.src===cpSrc).length}</b></button>
-        ${groups.map(g=>`<button class="bchip${cpGroup===g?' on':''}" onclick="cpGroup='${esc(g).replace(/'/g,"\\'")}';renderCopy()">${esc(g)} <b>${gCount[g]}</b></button>`).join('')}
-      </div>
-      <p class="note" style="margin:0 0 10px">${esc(cur.hint)}</p>`}
-      ${body}
+      <div id="cp-list">${body}</div>
     </div>`;
 }
 
