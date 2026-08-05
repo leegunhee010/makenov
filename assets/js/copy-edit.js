@@ -57,6 +57,7 @@
   function closePop(){ if(pop){ pop.remove(); pop = null; } }
 
   function openPop(el, fields){
+    if(!isAdmin()) return;
     closePop();
     const saved = window.MK_COPY_OVERRIDE || {};
     let field = fields[0];
@@ -134,7 +135,15 @@
     if(el) el.classList.add('mkedit-hot');
   }
 
+  /* 관리자인지 매번 확인한다.
+     저장은 RLS(is_admin())가 막아 주지만, 편집 UI 자체가 일반 방문자에게
+     열리면 안 된다. 아래 함수들은 이 검사를 통과해야만 동작한다. */
+  function isAdmin(){
+    return typeof MkData !== 'undefined' && !!MkData.admin;
+  }
+
   function setMode(v){
+    if(v && !isAdmin()) return;
     on = v;
     document.body.classList.toggle('mkedit-on', on);
     if(!on){
@@ -149,6 +158,7 @@
   }
 
   function mount(){
+    if(!isAdmin()) return;
     if(document.querySelector('.mkedit-bar')) return;
     const bar = document.createElement('div');
     bar.className = 'mkedit-bar';
@@ -158,14 +168,18 @@
     setMode(new URLSearchParams(location.search).get('edit') === '1');
   }
 
-  /* 관리자 판단 전에도 부를 수 있게 열어 둔다 (수동 실행·점검용) */
-  window.MkEdit = { mount, setMode, resolve, target, isOn: () => on };
-
-  /* 관리자에게만 — 부팅이 끝난 뒤 판단한다 */
+  /* 관리자에게만 — 부팅이 끝난 뒤 판단한다.
+     ⚠ window.MkEdit 는 관리자로 확인된 뒤에만 붙인다.
+        예전엔 무조건 붙여 놔서, 일반 방문자도 콘솔에서 MkEdit.mount() 를 부르면
+        편집 UI 가 열렸다(저장은 RLS 가 막았지만 화면이 열리는 것 자체가 잘못이다). */
   document.addEventListener('DOMContentLoaded', () => {
     const tick = setInterval(() => {
       if(typeof MkData === 'undefined') return clearInterval(tick);
-      if(MkData.admin){ clearInterval(tick); mount(); }
+      if(MkData.admin){
+        clearInterval(tick);
+        window.MkEdit = { mount, setMode, resolve, target, isOn: () => on };
+        mount();
+      }
     }, 400);
     setTimeout(() => clearInterval(tick), 12000);
   });
