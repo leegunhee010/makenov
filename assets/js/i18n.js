@@ -234,6 +234,7 @@ const I18N = {
     ft_faq: "Câu hỏi thường gặp",
     ft_about: "Về MAKENOV",
     ft_kr: "Dành cho doanh nghiệp Hàn Quốc",
+    ft_sitemap: "Sơ đồ trang",
     // misc
     added_cart: "Đã thêm vào danh sách quan tâm",
     removed_cart: "Đã xóa khỏi danh sách",
@@ -655,6 +656,7 @@ const I18N = {
     ft_faq: "자주 묻는 질문",
     ft_about: "MAKENOV 소개",
     ft_kr: "한국 기업 안내",
+    ft_sitemap: "사이트맵",
     added_cart: "관심제품에 담았습니다",
     removed_cart: "관심제품에서 제거했습니다",
     catalog_locked: "카탈로그는 사업자 인증 후 받을 수 있습니다",
@@ -1080,6 +1082,7 @@ const I18N = {
     ft_faq: "FAQ",
     ft_about: "About MAKENOV",
     ft_kr: "For Korean companies",
+    ft_sitemap: "Site map",
     added_cart: "Added to wishlist",
     removed_cart: "Removed from wishlist",
     catalog_locked: "Verify your business to download the catalogue",
