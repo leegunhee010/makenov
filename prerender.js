@@ -50,11 +50,11 @@ if (process.argv[2] === '--serve') {
 }
 
 /* 사전 렌더 대상. 로그인 상태에 따라 내용이 달라지는 mypage/admin 은 제외한다. */
-/* 허브 페이지. bake.js 가 같은 이름의 .ko.html / .en.html 을 함께 굽기 때문에
+/* 허브 페이지. bake.js 가 ko/ · en/ 폴더에 같은 구조로 한 벌씩 더 굽기 때문에
    언어판도 그대로 렌더 대상에 넣는다(파일이 없으면 알아서 건너뛴다). */
 const HUBS = ['index.html', 'directory.html', 'companies.html', 'about.html', 'guide.html', 'columns.html'];
-const LANGS = ['', '.ko', '.en'];
-const withLangs = f => LANGS.map(sfx => f.replace(/\.html$/, sfx + '.html'));
+const LANGS = ['', 'ko/', 'en/'];
+const withLangs = f => LANGS.map(pre => pre + f);
 
 const PAGES = [
   ...HUBS.flatMap(withLangs),

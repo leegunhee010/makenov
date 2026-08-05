@@ -1305,15 +1305,23 @@ function t(key){ return (I18N[MK_LANG] && I18N[MK_LANG][key]) || I18N.vi[key] ||
 const MK_LANG_PAGES = ['index.html','directory.html','companies.html','columns.html',
                        'about.html','guide.html','support.html'];
 
+/* 사이트 루트의 경로.
+   모든 페이지의 <base> 가 루트를 가리키므로 baseURI 에서 그대로 얻는다.
+   (GitHub Pages 처럼 하위 경로에 올라가도 맞는다) */
+function mkSiteRoot(){
+  return new URL(document.baseURI).pathname.replace(/[^/]*$/, '');
+}
+
 /* 네비게이션 링크를 지금 언어판으로 맞춘다.
    한국어 페이지에서 헤더 '제품'이 directory.html(베트남어)로 가면
-   한국어 페이지들로 들어오는 내부 링크가 하나도 생기지 않는다. */
+   한국어 페이지들로 들어오는 내부 링크가 하나도 생기지 않는다.
+   문서 안의 상대경로는 <base> 덕분에 루트 기준이라 앞에 언어 폴더만 붙이면 된다. */
 function mkUrl(rel){
   const l = window.MK_FORCE_LANG;
   if(!l || l === 'vi') return rel;
   const m = String(rel).match(/^([^#?]+)([#?].*)?$/);
   if(!m || MK_LANG_PAGES.indexOf(m[1]) < 0) return rel;
-  return m[1].replace(/\.html$/, '.' + l + '.html') + (m[2] || '');
+  return l + '/' + m[1] + (m[2] || '');
 }
 
 /* 제품·칼럼·공급사 문서의 정식 주소.
@@ -1327,7 +1335,7 @@ function mkDocUrl(kind, id){
   if(!B) return viewer;
   /* 구운 문서는 세 언어가 모두 있으므로 지금 언어판으로 보낸다 */
   const l = window.MK_FORCE_LANG;
-  const doc = rel => (!l || l === 'vi') ? rel : rel.replace(/\.html$/, '.' + l + '.html');
+  const doc = rel => (!l || l === 'vi') ? rel : l + '/' + rel;
   if(kind === 'product') return B.products.indexOf(id) < 0 ? viewer : doc('products/' + id + '.html');
   if(kind === 'company') return B.companies.indexOf(id) < 0 ? viewer : doc('companies/' + id + '.html');
   if(kind === 'column'){
@@ -1343,11 +1351,12 @@ function mkLangHref(l){
      링크의 href 는 절대주소(확정 도메인 기준)라 이동에는 쓰지 않고,
      존재 여부만 본다. 실제 이동 경로는 파일명 규칙으로 만든다. */
   if(!document.querySelector('link[rel="alternate"][hreflang="' + l + '"]')) return null;
-  let p = location.pathname;
-  if(/\/$/.test(p)) p += 'index.html';
-  p = p.replace(/\.(ko|en)\.html$/, '.html');          // 기본형(베트남어)으로 되돌리고
-  if(l !== 'vi') p = p.replace(/\.html$/, '.' + l + '.html');
-  return p + location.search + location.hash;
+  const root = mkSiteRoot();
+  let rel = location.pathname.slice(root.length);
+  if(rel === '' || /\/$/.test(rel)) rel += 'index.html';
+  rel = rel.replace(/^(ko|en)\//, '');                 // 기본형(베트남어)으로 되돌리고
+  if(l !== 'vi') rel = l + '/' + rel;
+  return root + rel + location.search + location.hash;
 }
 
 function setLang(l){

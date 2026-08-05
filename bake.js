@@ -57,14 +57,25 @@ const VER = (read('index.html').match(/\?v=([0-9a-zA-Z]+)/) || [, ''])[1];
 const v = f => VER ? `${f}?v=${VER}` : f;
 
 /* ---------- 언어판 ----------
-   베트남어가 기본형(about.html)이고, 한국어·영어는 파일을 따로 굽는다
-   (about.ko.html / about.en.html). 같은 폴더에 두므로 상대경로가 그대로 산다.
-   주소마다 언어가 하나로 정해져야 hreflang 으로 세 판을 묶을 수 있다. */
+   베트남어가 기본형이고 한국어·영어는 언어 폴더에 같은 구조로 한 벌씩 더 굽는다.
+
+     about.html            →  ko/about.html            en/about.html
+     products/p9.html      →  ko/products/p9.html      en/products/p9.html
+
+   주소마다 언어가 하나로 정해져야 hreflang 으로 세 판을 묶을 수 있다.
+   상대경로는 <base> 로 해결한다. 모든 페이지의 base 가 사이트 루트를 가리키므로
+   문서 안에서는 어디서든 'assets/…' 'ko/directory.html' 처럼 루트 기준으로 쓴다. */
 const LANGS = ['vi', 'ko', 'en'];
 const HTML_LANG = { vi: 'vi', ko: 'ko', en: 'en' };
 
-/* 'about.html' + 'ko' → 'about.ko.html' (vi 는 그대로) */
-const langFile = (rel, lang) => lang === 'vi' ? rel : rel.replace(/\.html$/, `.${lang}.html`);
+/* 'about.html' + 'ko' → 'ko/about.html' (vi 는 그대로) */
+const langFile = (rel, lang) => lang === 'vi' ? rel : `${lang}/${rel}`;
+
+/* 그 파일에서 사이트 루트로 올라가는 <base>. 루트 파일이면 필요 없다 */
+function baseTag(rel){
+  const depth = (rel.match(/\//g) || []).length;
+  return depth ? `<base href="${'../'.repeat(depth)}">` : '';
+}
 
 /* 기본형 상대경로를 주면 세 언어 + x-default 의 hreflang 링크를 만든다.
    href 는 절대주소여야 검색엔진이 짝을 인식한다. */
@@ -250,7 +261,7 @@ function productPage(p, co, related, lang){
 <html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
-<base href="../">
+${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType: 'product', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
@@ -332,7 +343,7 @@ function companyPage(co, prods, lang){
 <html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
-<base href="../">
+${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title: `${name} | MAKENOV`, desc, canonical, ogImage: co.cover || co.logo, jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
@@ -490,7 +501,7 @@ function columnPage(c, colFaqs, prev, next, others, lang){
 <html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
-<base href="../">
+${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title: headTitle, desc, canonical, ogImage: c.img, ogType: 'article', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
@@ -529,6 +540,9 @@ ${forceLang(lang)}${SCRIPTS()}
   const coMap = {};
   data.companies.forEach(c => coMap[c.id] = c);
   console.log(`데이터: ${data.source} — 제품 ${data.products.length} · 칼럼 ${data.columns.length} · 기업 ${data.companies.length}\n`);
+
+  /* 언어 폴더는 통째로 다시 만든다 (지운 문서가 남으면 중복 URL 이 된다) */
+  ['ko', 'en'].forEach(d => fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }));
 
   /* 이전 산출물 정리 — 슬러그가 바뀌면 옛 파일이 남아 중복 URL이 되므로 싹 지우고 다시 굽는다 */
   ['products', 'columns', 'companies'].forEach(dir => {
@@ -608,7 +622,7 @@ ${forceLang(lang)}${SCRIPTS()}
         ko: { title: 'MAKENOV — 전 세계 혁신 제품 B2B 소싱 플랫폼',
               desc: '전 세계 공급사의 혁신 제품을 한자리에서 보고 공급사에 바로 미팅을 요청합니다. 사업자 인증을 마치면 단가와 최소주문수량이 열립니다. 인증은 무료입니다.' },
         en: { title: 'MAKENOV — B2B sourcing for innovative products worldwide',
-              desc: 'See innovative products from suppliers worldwide in one place and request a meeting directly. Verify your business to unlock unit prices and minimum order quantities. Verification is free.' },
+              desc: 'See innovative products from suppliers worldwide in one place and request a meeting directly. Verify your business to unlock prices and MOQ. Free.' },
       },
     },
     'directory.html': {
@@ -788,6 +802,11 @@ ${forceLang(lang)}${SCRIPTS()}
         .replace(/<!-- mk:pre[\s\S]*?<!-- \/mk:pre -->\n?/, '')
         .replace(/<!-- mk:seo[\s\S]*?<!-- \/mk:seo -->/, seo)
         .replace(/<html lang="[^"]*">/, `<html lang="${HTML_LANG[lang]}">`);
+
+      /* 언어 폴더로 한 단계 내려가므로 <base> 로 루트를 잡아준다.
+         charset 다음, 첫 상대 URL(스타일시트)보다 앞에 와야 한다. */
+      html = html.replace(/<meta charset="UTF-8">/i,
+        `<meta charset="UTF-8">\n${baseTag(rel)}`);
 
       /* 첫 스크립트 앞에 언어 고정 — i18n.js 가 localStorage 를 보기 전이어야 한다 */
       html = html.replace(/<script src="assets\/js\/config\.js/,
