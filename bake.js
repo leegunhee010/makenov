@@ -55,6 +55,26 @@ const today = new Date().toISOString().slice(0, 10);
 const VER = (read('index.html').match(/\?v=([0-9a-zA-Z]+)/) || [, ''])[1];
 const v = f => VER ? `${f}?v=${VER}` : f;
 
+/* ---------- 언어판 ----------
+   베트남어가 기본형(about.html)이고, 한국어·영어는 파일을 따로 굽는다
+   (about.ko.html / about.en.html). 같은 폴더에 두므로 상대경로가 그대로 산다.
+   주소마다 언어가 하나로 정해져야 hreflang 으로 세 판을 묶을 수 있다. */
+const LANGS = ['vi', 'ko', 'en'];
+const HTML_LANG = { vi: 'vi', ko: 'ko', en: 'en' };
+
+/* 'about.html' + 'ko' → 'about.ko.html' (vi 는 그대로) */
+const langFile = (rel, lang) => lang === 'vi' ? rel : rel.replace(/\.html$/, `.${lang}.html`);
+
+/* 기본형 상대경로를 주면 세 언어 + x-default 의 hreflang 링크를 만든다.
+   href 는 절대주소여야 검색엔진이 짝을 인식한다. */
+function altTags(relVi){
+  const url = rel => SITE + '/' + (rel === 'index.html' ? '' : rel);
+  return [
+    ...LANGS.map(l => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${url(langFile(relVi, l))}">`),
+    `<link rel="alternate" hreflang="x-default" href="${url(relVi)}">`,
+  ].join('\n');
+}
+
 /* ---------- 1. 데이터 로드 ---------- */
 function confVal(name){
   const m = read('assets/js/config.js').match(new RegExp(name + `\\s*=\\s*'([^']*)'`));
@@ -116,15 +136,16 @@ function loadFromSeed(){
 
 /* 카테고리는 DB가 아니라 data.js 에만 있으므로 어느 경로로 로드하든 여기서 가져온다 */
 const CATS = runSeed().MK_CATEGORIES || [];
-const catName = id => { const c = CATS.find(x => x.id === id); return c ? T(c.name, 'vi') : ''; };
+const catName = (id, lang) => { const c = CATS.find(x => x.id === id); return c ? T(c.name, lang || 'vi') : ''; };
 
 /* ---------- 2. 공통 head 블록 ---------- */
-function seoBlock({ title, desc, canonical, ogImage, ogType, robots, jsonld }){
+function seoBlock({ title, desc, canonical, ogImage, ogType, robots, jsonld, alt }){
   const lines = [];
   lines.push(`<title>${esc(title)}</title>`);
   if(desc)      lines.push(`<meta name="description" content="${esc(desc)}">`);
   if(robots)    lines.push(`<meta name="robots" content="${robots}">`);
   if(canonical) lines.push(`<link rel="canonical" href="${canonical}">`);
+  if(alt)       lines.push(altTags(alt));      // alt = 기본형(베트남어) 상대경로
   if(canonical){
     lines.push(`<meta property="og:type" content="${ogType || 'website'}">`);
     lines.push(`<meta property="og:site_name" content="MAKENOV">`);
@@ -164,14 +185,42 @@ const SCRIPTS = () => [
   ? `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>`
   : `<script src="${v(s)}"></script>`).join('\n');
 
-function productPage(p, co, related){
-  const name = T(p.name, 'vi'), tagline = T(p.tagline, 'vi');
+/* 정적 페이지에만 쓰는 고정 문구. 화면을 JS가 다시 그리기 전까지 크롤러가 읽는 말들이라
+   i18n.js 키를 쓰지 못하고 여기서 언어별로 들고 있는다. */
+const LB = {
+  vi: { home:'Trang chủ', dir:'Danh mục sản phẩm', cos:'Danh bạ nhà cung cấp', cols:'Bài viết & hướng dẫn',
+        detail:'Chi tiết sản phẩm', brand:'Về thương hiệu', related:'Sản phẩm cùng danh mục',
+        post:'Bài viết', faq:'Câu hỏi thường gặp', prev:'Bài trước', next:'Bài sau',
+        others:'Bài viết khác', more:'Xem thêm', supplier:'Nhà cung cấp', intro:'Giới thiệu',
+        products:'Sản phẩm', loc:'Địa điểm', founded:'Thành lập', certs:'Chứng nhận',
+        moq:'MOQ tham khảo', regProd:'Đăng sản phẩm' },
+  ko: { home:'홈', dir:'제품 목록', cos:'공급사 목록', cols:'칼럼과 가이드',
+        detail:'제품 상세', brand:'브랜드 소개', related:'같은 카테고리 제품',
+        post:'칼럼', faq:'자주 묻는 질문', prev:'이전 글', next:'다음 글',
+        others:'다른 칼럼', more:'더 보기', supplier:'공급사', intro:'회사 소개',
+        products:'제품', loc:'소재지', founded:'설립', certs:'보유 인증',
+        moq:'참고 MOQ', regProd:'제품 등록 문의' },
+  en: { home:'Home', dir:'Product directory', cos:'Supplier directory', cols:'Articles & guides',
+        detail:'Product details', brand:'About the brand', related:'More in this category',
+        post:'Article', faq:'Frequently asked', prev:'Previous', next:'Next',
+        others:'Other articles', more:'See more', supplier:'Supplier', intro:'About',
+        products:'Products', loc:'Location', founded:'Founded', certs:'Certifications',
+        moq:'Indicative MOQ', regProd:'List a product' },
+};
+
+/* 언어판이면 i18n 이 localStorage 를 보기 전에 언어를 못 박는다 */
+const forceLang = lang => lang === 'vi' ? '' : `<script>window.MK_FORCE_LANG=${JSON.stringify(lang)};</script>\n`;
+
+function productPage(p, co, related, lang){
+  const L = LB[lang];
+  const name = T(p.name, lang), tagline = T(p.tagline, lang);
   const title = `${name} — ${p.brand} | MAKENOV`;
-  const canonical = `${SITE}/products/${p.id}.html`;
+  const relVi = `products/${p.id}.html`;
+  const canonical = `${SITE}/${langFile(relVi, lang)}`;
   const gallery = (p.gallery && p.gallery.length ? p.gallery : [p.img]).filter(Boolean);
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Product',
-    name, alternateName: [T(p.name, 'ko'), T(p.name, 'en')].filter(x => x && x !== name),
+    name, alternateName: LANGS.map(l => T(p.name, l)).filter(x => x && x !== name),
     description: tagline, image: gallery.map(absUrl), url: canonical,
     brand: { '@type': 'Brand', name: p.brand },
     ...(co ? { manufacturer: { '@type': 'Organization', name: T(co.name, 'en') || T(co.name, 'ko') } } : {}),
@@ -180,25 +229,25 @@ function productPage(p, co, related){
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'MAKENOV', item: SITE + '/' },
-      { '@type': 'ListItem', position: 2, name: 'Danh mục sản phẩm', item: SITE + '/directory.html' },
+      { '@type': 'ListItem', position: 2, name: L.dir, item: `${SITE}/${langFile('directory.html', lang)}` },
       { '@type': 'ListItem', position: 3, name, item: canonical },
     ],
   }];
 
-  /* 크롤러용 사전 렌더(베트남어) — 부팅 후 같은 구조로 하이드레이션됨 */
+  /* 크롤러용 사전 렌더 — 부팅 후 같은 구조로 하이드레이션됨 */
   const detailHtml = (p.detail || []).map(b => {
-    if(b.type === 'p')   return `<p>${esc(T(b.text, 'vi'))}</p>`;
+    if(b.type === 'p')   return `<p>${esc(T(b.text, lang))}</p>`;
     if(b.type === 'img') return `<img src="${esc(b.src)}" alt="${esc(name)}" loading="lazy">`;
     return '';
   }).join('\n        ');
 
   return `<!DOCTYPE html>
-<html lang="vi">
+<html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType: 'product', jsonld })}
+${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType: 'product', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 </head>
@@ -210,15 +259,15 @@ ${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType:
     <div class="pd-main">
       <div class="pd-gallery"><div class="main"><img src="${esc(gallery[0])}" alt="${esc(name)}"></div></div>
       <div class="pd-sec">
-        <h2>Chi tiết sản phẩm</h2>
+        <h2>${esc(L.detail)}</h2>
         <div class="pd-body">
         ${detailHtml || `<p>${esc(tagline)}</p>`}
         </div>
       </div>
       <div class="pd-sec">
-        <h2>Về thương hiệu</h2>
-        <div class="pd-body"><p>${esc(T(p.brandStory, 'vi'))}</p></div>
-        ${co ? `<p class="pd-co-static">${esc(T(co.name, 'vi'))} · ${esc(T(co.location, 'vi'))} · ${esc((co.certs || []).slice(0, 3).join(' · '))}</p>` : ''}
+        <h2>${esc(L.brand)}</h2>
+        <div class="pd-body"><p>${esc(T(p.brandStory, lang))}</p></div>
+        ${co ? `<p class="pd-co-static">${esc(T(co.name, lang))} · ${esc(T(co.location, lang))} · ${esc((co.certs || []).slice(0, 3).join(' · '))}</p>` : ''}
       </div>
     </div>
     <aside class="pd-side">
@@ -226,16 +275,15 @@ ${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType:
         <div class="brand">${esc(p.brand)}</div>
         <h1>${esc(name)}</h1>
         <p class="tagline">${esc(tagline)}</p>
-        <p class="tagline">${esc(T(p.tagline, 'en'))}</p>
       </div>
     </aside>
   </div>
-${staticProdLinks(p, co, related)}
+${staticProdLinks(p, co, related, lang)}
 </main>
 
 <footer class="mk-footer" id="mk-footer"></footer>
 
-${SCRIPTS()}
+${forceLang(lang)}${SCRIPTS()}
 <script>window.MK_PID=${JSON.stringify(p.id)};</script>
 <script src="${v('assets/js/page-product.js')}"></script>
 </body>
@@ -246,11 +294,14 @@ ${SCRIPTS()}
 /* ---------- 공급사 정적 페이지 ----------
    회사 프로필은 company.html?id= 로만 볼 수 있어서 크롤러가 읽을 내용이 0이었다.
    기업 자체가 하나의 엔티티라 AI 답변 엔진에도 필요한 문서다. */
-function companyPage(co, prods){
-  const name = T(co.name, 'vi') || co.brand;
-  const canonical = `${SITE}/companies/${co.id}.html`;
-  const intro = stripHtml(T(co.intro, 'vi'));
-  const desc = clip(T(co.tagline, 'vi') || intro || name, 155);
+function companyPage(co, prods, lang){
+  const L = LB[lang];
+  const f = rel => langFile(rel, lang);
+  const name = T(co.name, lang) || co.brand;
+  const relVi = `companies/${co.id}.html`;
+  const canonical = `${SITE}/${langFile(relVi, lang)}`;
+  const intro = stripHtml(T(co.intro, lang));
+  const desc = clip(T(co.tagline, lang) || intro || name, 155);
   const certs = (co.certs || []).filter(Boolean);
 
   const jsonld = [{
@@ -259,7 +310,7 @@ function companyPage(co, prods){
     name, alternateName: co.brand, url: canonical,
     ...(co.logo ? { logo: absUrl(co.logo) } : {}),
     ...(intro ? { description: clip(intro, 300) } : {}),
-    ...(T(co.location, 'vi') ? { address: { '@type': 'PostalAddress', addressLocality: T(co.location, 'vi') } } : {}),
+    ...(T(co.location, lang) ? { address: { '@type': 'PostalAddress', addressLocality: T(co.location, lang) } } : {}),
     ...(co.since ? { foundingDate: String(co.since) } : {}),
     ...(certs.length ? { hasCredential: certs } : {}),
     parentOrganization: { '@id': SITE + '/#organization' },
@@ -267,48 +318,48 @@ function companyPage(co, prods){
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'MAKENOV', item: SITE + '/' },
-      { '@type': 'ListItem', position: 2, name: 'Nhà cung cấp', item: SITE + '/companies.html' },
+      { '@type': 'ListItem', position: 2, name: L.supplier, item: `${SITE}/${langFile('companies.html', lang)}` },
       { '@type': 'ListItem', position: 3, name, item: canonical },
     ],
   }];
 
   return `<!DOCTYPE html>
-<html lang="vi">
+<html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-${seoBlock({ title: `${name} | MAKENOV`, desc, canonical, ogImage: co.cover || co.logo, jsonld })}
+${seoBlock({ title: `${name} | MAKENOV`, desc, canonical, ogImage: co.cover || co.logo, jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>
 <main class="wrap" id="co-root">
-  <nav class="blog-breadcrumb"><a href="index.html">Trang chủ</a> - <a href="companies.html">Nhà cung cấp</a> - <span>${esc(name)}</span></nav>
+  <nav class="blog-breadcrumb"><a href="${f('index.html')}">${esc(L.home)}</a> - <a href="${f('companies.html')}">${esc(L.supplier)}</a> - <span>${esc(name)}</span></nav>
   <h1>${esc(name)}</h1>
-  ${T(co.tagline, 'vi') ? `<p class="tagline">${esc(T(co.tagline, 'vi'))}</p>` : ''}
+  ${T(co.tagline, lang) ? `<p class="tagline">${esc(T(co.tagline, lang))}</p>` : ''}
   <ul class="sm-list">
-    ${T(co.location, 'vi') ? `<li>Địa điểm <span class="sm-meta">${esc(T(co.location, 'vi'))}</span></li>` : ''}
-    ${co.since ? `<li>Thành lập <span class="sm-meta">${esc(co.since)}</span></li>` : ''}
-    ${certs.length ? `<li>Chứng nhận <span class="sm-meta">${esc(certs.join(' · '))}</span></li>` : ''}
-    ${co.moq ? `<li>MOQ tham khảo <span class="sm-meta">${esc(co.moq)}</span></li>` : ''}
+    ${T(co.location, lang) ? `<li>${esc(L.loc)} <span class="sm-meta">${esc(T(co.location, lang))}</span></li>` : ''}
+    ${co.since ? `<li>${esc(L.founded)} <span class="sm-meta">${esc(co.since)}</span></li>` : ''}
+    ${certs.length ? `<li>${esc(L.certs)} <span class="sm-meta">${esc(certs.join(' · '))}</span></li>` : ''}
+    ${co.moq ? `<li>${esc(L.moq)} <span class="sm-meta">${esc(co.moq)}</span></li>` : ''}
   </ul>
-  ${intro ? `<div class="pd-sec"><h2>Giới thiệu</h2><div class="pd-body"><p>${esc(intro)}</p></div></div>` : ''}
+  ${intro ? `<div class="pd-sec"><h2>${esc(L.intro)}</h2><div class="pd-body"><p>${esc(intro)}</p></div></div>` : ''}
   ${!prods.length ? '' : `<div class="pd-sec">
-    <h2>Sản phẩm (${prods.length})</h2>
+    <h2>${esc(L.products)} (${prods.length})</h2>
     <ul class="sm-list">
-      ${prods.map(p => `<li><a href="products/${esc(p.id)}.html">${esc(T(p.name, 'vi'))}</a> <span class="sm-meta">${esc(p.brand)}</span></li>`).join('\n      ')}
+      ${prods.map(p => `<li><a href="${f(`products/${p.id}.html`)}">${esc(T(p.name, lang))}</a> <span class="sm-meta">${esc(p.brand)}</span></li>`).join('\n      ')}
     </ul>
   </div>`}
   <nav class="pd-links">
-    <a href="companies.html">Danh bạ nhà cung cấp</a>
-    <a href="directory.html">Danh mục sản phẩm</a>
-    <a href="maker.html">Đăng sản phẩm</a>
+    <a href="${f('companies.html')}">${esc(L.cos)}</a>
+    <a href="${f('directory.html')}">${esc(L.dir)}</a>
+    <a href="maker.html">${esc(L.regProd)}</a>
   </nav>
 </main>
 <footer class="mk-footer" id="mk-footer"></footer>
-${SCRIPTS()}
+${forceLang(lang)}${SCRIPTS()}
 <script>window.MK_COID=${JSON.stringify(co.id)};</script>
 <script src="${v('assets/js/page-company.js')}"></script>
 </body>
@@ -319,14 +370,16 @@ ${SCRIPTS()}
 /* 제품 페이지 정적 링크 묶음.
    page-product.js 가 #pd-root 를 통째로 다시 그리므로 그 바깥(main 끝)에 둔다.
    제품 페이지의 내부 링크가 '../' 하나뿐이라 크롤러가 여기서 더 갈 데가 없었다. */
-function staticProdLinks(p, co, related){
-  const cat = catName(p.cat);
+function staticProdLinks(p, co, related, lang){
+  const L = LB[lang];
+  const cat = catName(p.cat, lang);
+  const f = rel => langFile(rel, lang);
   const links = [
-    `<a href="directory.html">Danh mục sản phẩm</a>`,
-    cat ? `<a href="directory.html?category=${esc(p.cat)}">${esc(cat)}</a>` : '',
-    co ? `<a href="company.html?id=${esc(co.id)}">${esc(T(co.name, 'vi'))}</a>` : '',
-    `<a href="companies.html">Danh bạ nhà cung cấp</a>`,
-    `<a href="columns.html">Bài viết &amp; hướng dẫn</a>`,
+    `<a href="${f('directory.html')}">${esc(L.dir)}</a>`,
+    cat ? `<a href="${f('directory.html')}?category=${esc(p.cat)}">${esc(cat)}</a>` : '',
+    co ? `<a href="${f(`companies/${co.id}.html`)}">${esc(T(co.name, lang))}</a>` : '',
+    `<a href="${f('companies.html')}">${esc(L.cos)}</a>`,
+    `<a href="${f('columns.html')}">${esc(L.cols)}</a>`,
   ].filter(Boolean);
 
   return `
@@ -334,9 +387,9 @@ function staticProdLinks(p, co, related){
     ${links.join('\n    ')}
   </nav>${!related || !related.length ? '' : `
   <section class="pd-sec">
-    <h2>Sản phẩm cùng danh mục</h2>
+    <h2>${esc(L.related)}</h2>
     <div class="grid">
-      ${related.map(r => `<a class="p-card" href="products/${esc(r.id)}.html"><div class="thumb"><img src="${esc(r.img)}" alt="${esc(T(r.name, 'vi'))}" loading="lazy"></div><div class="body"><span class="brand">${esc(r.brand)}</span><h3>${esc(T(r.name, 'vi'))}</h3><div class="meta"><span class="left">${esc(r.origin || '')}</span></div></div></a>`).join('\n      ')}
+      ${related.map(r => `<a class="p-card" href="${f(`products/${r.id}.html`)}"><div class="thumb"><img src="${esc(r.img)}" alt="${esc(T(r.name, lang))}" loading="lazy"></div><div class="body"><span class="brand">${esc(r.brand)}</span><h3>${esc(T(r.name, lang))}</h3><div class="meta"><span class="left">${esc(r.origin || '')}</span></div></div></a>`).join('\n      ')}
     </div>
   </section>`}`;
 }
@@ -348,48 +401,53 @@ function colFile(c){ return c.slug || c.id; }   // 슬러그가 있으면 column
    JS를 실행하지 않는 크롤러에게만 의미가 있는 사본이다.
    FAQ는 그동안 JSON-LD 에만 있고 화면 텍스트로는 없었다. 답변 엔진이 본문을 읽을 때
    질문과 답이 통째로 빠져 있었다는 뜻이라, 여기서 <details> 로 같이 굽는다. */
-function staticColFaq(faqs){
+function staticColFaq(faqs, lang){
   if(!faqs || !faqs.length) return '';
   return `
   <section class="blog-faq">
-    <h2>Câu hỏi thường gặp</h2>
-    ${faqs.map(f => `<details><summary>${esc(T(f.q, 'vi'))}</summary><div>${esc(T(f.a, 'vi'))}</div></details>`).join('\n    ')}
+    <h2>${esc(LB[lang].faq)}</h2>
+    ${faqs.map(f => `<details><summary>${esc(T(f.q, lang))}</summary><div>${esc(T(f.a, lang))}</div></details>`).join('\n    ')}
   </section>`;
 }
 
-function staticColNav(prev, next){
+function staticColNav(prev, next, lang){
   if(!prev && !next) return '';
+  const f = c => langFile(`columns/${colFile(c)}.html`, lang);
   return `
   <div class="blog-nav">
-    ${prev ? `<a href="columns/${colFile(prev)}.html"><div class="dir">Bài trước</div><b>${esc(T(prev.title, 'vi'))}</b></a>` : '<span></span>'}
-    ${next ? `<a class="next" href="columns/${colFile(next)}.html"><div class="dir">Bài sau</div><b>${esc(T(next.title, 'vi'))}</b></a>` : '<span></span>'}
+    ${prev ? `<a href="${f(prev)}"><div class="dir">${esc(LB[lang].prev)}</div><b>${esc(T(prev.title, lang))}</b></a>` : '<span></span>'}
+    ${next ? `<a class="next" href="${f(next)}"><div class="dir">${esc(LB[lang].next)}</div><b>${esc(T(next.title, lang))}</b></a>` : '<span></span>'}
   </div>`;
 }
 
-function staticColOthers(others){
+function staticColOthers(others, lang){
   if(!others || !others.length) return '';
   /* ⚠ id 는 반드시 col-others 여야 한다.
      page-column.js 가 #col-others 를 지운 뒤 자기 것을 붙이므로,
      id 가 없으면 사용자 화면에 '다른 칼럼' 섹션이 두 개로 겹친다. */
+  const L = LB[lang];
   return `
 <section class="blog-main" id="col-others" style="margin-top:56px">
-  <div class="sec-head"><h2>Bài viết khác</h2><a class="more" href="columns.html">Xem thêm</a></div>
+  <div class="sec-head"><h2>${esc(L.others)}</h2><a class="more" href="${langFile('columns.html', lang)}">${esc(L.more)}</a></div>
   <div class="blog-list">
-    ${others.map(o => `<div class="blog-item"><a class="blog-item-link" href="columns/${colFile(o)}.html"><div class="blog-item-thumb"><img src="${esc(o.img)}" alt="${esc(T(o.title, 'vi'))}" loading="lazy"></div><div class="blog-item-info"><div class="blog-item-cat">${esc(T(o.cat, 'vi'))}</div><h3 class="blog-item-tit">${esc(T(o.title, 'vi'))}</h3><div class="blog-item-meta"><span>${esc(o.date)}</span></div></div></a></div>`).join('\n    ')}
+    ${others.map(o => `<div class="blog-item"><a class="blog-item-link" href="${langFile(`columns/${colFile(o)}.html`, lang)}"><div class="blog-item-thumb"><img src="${esc(o.img)}" alt="${esc(T(o.title, lang))}" loading="lazy"></div><div class="blog-item-info"><div class="blog-item-cat">${esc(T(o.cat, lang))}</div><h3 class="blog-item-tit">${esc(T(o.title, lang))}</h3><div class="blog-item-meta"><span>${esc(o.date)}</span></div></div></a></div>`).join('\n    ')}
   </div>
 </section>`;
 }
 
-function columnPage(c, colFaqs, prev, next, others){
-  const title = T(c.title, 'vi'), cat = T(c.cat, 'vi');
-  const canonical = `${SITE}/columns/${colFile(c)}.html`;
-  const desc = clip(c.seoDesc || T(c.excerpt, 'vi') || stripHtml(T(c.body, 'vi')), 155);
+function columnPage(c, colFaqs, prev, next, others, lang){
+  const L = LB[lang];
+  const f = rel => langFile(rel, lang);
+  const title = T(c.title, lang), cat = T(c.cat, lang);
+  const relVi = `columns/${colFile(c)}.html`;
+  const canonical = `${SITE}/${langFile(relVi, lang)}`;
+  const desc = clip((lang === 'vi' && c.seoDesc) || T(c.excerpt, lang) || stripHtml(T(c.body, lang)), 155);
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Article',
-    headline: title, alternativeHeadline: T(c.title, 'en'),
+    headline: title, alternativeHeadline: LANGS.map(l => T(c.title, l)).find(x => x && x !== title),
     description: desc, image: absUrl(c.img),
     datePublished: c.date, dateModified: c.updatedAt || c.date,
-    inLanguage: 'vi', mainEntityOfPage: canonical,
+    inLanguage: lang, mainEntityOfPage: canonical,
     /* 신선도·출처 신호. 저자를 조직으로 두되 발행처와 구분해 둔다 */
     author: { '@type': 'Organization', name: 'MAKENOV', url: SITE + '/' },
     publisher: { '@type': 'Organization', name: 'MAKENOV', url: SITE + '/', logo: { '@type': 'ImageObject', url: SITE + '/assets/img/logo.png' } },
@@ -399,7 +457,7 @@ function columnPage(c, colFaqs, prev, next, others){
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'MAKENOV', item: SITE + '/' },
-      { '@type': 'ListItem', position: 2, name: 'Bài viết', item: SITE + '/columns.html' },
+      { '@type': 'ListItem', position: 2, name: L.post, item: `${SITE}/${langFile('columns.html', lang)}` },
       { '@type': 'ListItem', position: 3, name: title, item: canonical },
     ],
   }];
@@ -408,20 +466,22 @@ function columnPage(c, colFaqs, prev, next, others){
   if(colFaqs && colFaqs.length){
     jsonld.push({
       '@context': 'https://schema.org', '@type': 'FAQPage',
-      mainEntity: colFaqs.map(f => ({
-        '@type': 'Question', name: T(f.q, 'vi'),
-        acceptedAnswer: { '@type': 'Answer', text: T(f.a, 'vi') },
+      mainEntity: colFaqs.map(q => ({
+        '@type': 'Question', name: T(q.q, lang),
+        acceptedAnswer: { '@type': 'Answer', text: T(q.a, lang) },
       })),
     });
   }
 
+  const headTitle = (lang === 'vi' && c.seoTitle) ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV`;
+
   return `<!DOCTYPE html>
-<html lang="vi">
+<html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="UTF-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-${seoBlock({ title: c.seoTitle ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV`, desc, canonical, ogImage: c.img, ogType: 'article', jsonld })}
+${seoBlock({ title: headTitle, desc, canonical, ogImage: c.img, ogType: 'article', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 </head>
@@ -430,19 +490,19 @@ ${seoBlock({ title: c.seoTitle ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV
 <header class="mk-header" id="mk-header"></header>
 <main class="wrap">
 <article class="blog-single" id="col-root">
-  <nav class="blog-breadcrumb"><a href="index.html">Trang chủ</a> - <a href="columns.html">Bài viết</a> - <span>${esc(title)}</span></nav>
+  <nav class="blog-breadcrumb"><a href="${f('index.html')}">${esc(L.home)}</a> - <a href="${f('columns.html')}">${esc(L.post)}</a> - <span>${esc(title)}</span></nav>
   <span class="blog-single-cat">${esc(cat)}</span>
   <h1>${esc(title)}</h1>
   <div class="blog-single-meta"><span>${esc(c.date)}</span></div>
   <div class="blog-cover"><img src="${esc(c.img)}" alt="${esc(title)}"></div>
-  <div class="blog-body">${T(c.body, 'vi')}</div>
-${staticColFaq(colFaqs)}${staticColNav(prev, next)}
+  <div class="blog-body">${T(c.body, lang)}</div>
+${staticColFaq(colFaqs, lang)}${staticColNav(prev, next, lang)}
 </article>
-${staticColOthers(others)}
+${staticColOthers(others, lang)}
 </main>
 <footer class="mk-footer" id="mk-footer"></footer>
 
-${SCRIPTS()}
+${forceLang(lang)}${SCRIPTS()}
 <script>window.MK_CID=${JSON.stringify(c.id)};</script>
 <script src="${v('assets/js/page-column.js')}"></script>
 </body>
@@ -477,13 +537,15 @@ ${SCRIPTS()}
   const faqsFor = page => livingFaqs.filter(f => (f.page || 'home') === page);
   const faqs = faqsFor('home');
 
-  /* 제품·칼럼 정적 생성 */
+  /* 제품·칼럼·공급사 정적 생성 — 언어마다 한 벌씩.
+     baseX.html(베트남어) 옆에 X.ko.html · X.en.html 이 함께 생기고 hreflang 으로 묶인다. */
   data.products.forEach(p => {
     /* 같은 카테고리 제품 3개를 정적으로 연결한다 */
     const related = data.products.filter(x => x.id !== p.id && x.cat === p.cat).slice(0, 3);
-    write(`products/${p.id}.html`, productPage(p, coMap[p.companyId], related));
+    LANGS.forEach(l => write(langFile(`products/${p.id}.html`, l),
+      productPage(p, coMap[p.companyId], related, l)));
   });
-  console.log(`products/*.html ${data.products.length}개 생성`);
+  console.log(`products/*.html ${data.products.length * LANGS.length}개 생성 (${data.products.length} × ${LANGS.length}개 국어)`);
   let colFaqCount = 0;
   data.columns.forEach((c, i) => {
     const cf = faqsFor(c.id);
@@ -491,14 +553,15 @@ ${SCRIPTS()}
     /* 이전·다음·다른 칼럼을 정적으로 깔아 칼럼끼리 링크가 이어지게 한다.
        이전에는 칼럼 페이지의 내부 링크가 2개(홈·목록)뿐이라 크롤러가 다음 문서로 갈 길이 없었다 */
     const others = data.columns.filter(x => x.id !== c.id).slice(0, 2);
-    write(`columns/${colFile(c)}.html`,
-      columnPage(c, cf, data.columns[i - 1], data.columns[i + 1], others));
+    LANGS.forEach(l => write(langFile(`columns/${colFile(c)}.html`, l),
+      columnPage(c, cf, data.columns[i - 1], data.columns[i + 1], others, l)));
   });
-  console.log(`columns/*.html ${data.columns.length}개 생성 (${data.columns.filter(c=>c.slug).length}개 슬러그 사용, 칼럼 FAQ ${colFaqCount}개)`);
-  data.companies.forEach(co =>
-    write(`companies/${co.id}.html`,
-      companyPage(co, data.products.filter(p => p.companyId === co.id))));
-  console.log(`companies/*.html ${data.companies.length}개 생성`);
+  console.log(`columns/*.html ${data.columns.length * LANGS.length}개 생성 (칼럼 FAQ ${colFaqCount}개)`);
+  data.companies.forEach(co => {
+    const mine = data.products.filter(p => p.companyId === co.id);
+    LANGS.forEach(l => write(langFile(`companies/${co.id}.html`, l), companyPage(co, mine, l)));
+  });
+  console.log(`companies/*.html ${data.companies.length * LANGS.length}개 생성`);
   console.log(`FAQ ${faqs.length}개 → 홈 FAQPage 스키마\n`);
 
   /* 공개 페이지 head 주입 */
@@ -522,55 +585,125 @@ ${SCRIPTS()}
       email: 'contact@makenov.com', availableLanguage: ['Vietnamese', 'Korean', 'English'],
     },
   };
+  /* 언어판을 만드는 허브 페이지들.
+     t 에 세 언어의 제목·설명을 들고 있다가 언어별 파일에 각각 심는다.
+     maker.html 은 한국 공급사 대상이라 본문 자체가 한국어뿐이므로 언어판을 만들지 않는다. */
+  const HUB = {
+    'index.html': {
+      ogType: 'website',
+      t: {
+        vi: { title: 'MAKENOV — Nền tảng B2B sản phẩm sáng tạo toàn cầu',
+              desc: 'MAKENOV kết nối sản phẩm sáng tạo từ các nhà cung cấp toàn cầu với nhà mua hàng đã xác thực. Xác thực doanh nghiệp miễn phí để xem giá và gửi yêu cầu báo giá.' },
+        ko: { title: 'MAKENOV — 전 세계 혁신 제품 B2B 소싱 플랫폼',
+              desc: '전 세계 공급사의 혁신 제품을 한자리에서 보고 공급사에 바로 미팅을 요청합니다. 사업자 인증을 마치면 단가와 최소주문수량이 열립니다. 인증은 무료입니다.' },
+        en: { title: 'MAKENOV — B2B sourcing for innovative products worldwide',
+              desc: 'See innovative products from suppliers worldwide in one place and request a meeting directly. Verify your business to unlock unit prices and minimum order quantities. Verification is free.' },
+      },
+    },
+    'directory.html': {
+      t: {
+        vi: { title: 'Danh mục sản phẩm | MAKENOV',
+              desc: 'Khám phá sản phẩm sáng tạo theo danh mục — mỹ phẩm, thực phẩm, đồ gia dụng, sức khỏe, mẹ & bé, công nghệ. Thông tin bằng tiếng Việt, Hàn, Anh.' },
+        ko: { title: '제품 목록 | MAKENOV',
+              desc: '카테고리별로 등록된 혁신 제품을 봅니다. 뷰티·식품·리빙·헬스·키즈·테크. 제품 정보는 베트남어·한국어·영어로 제공됩니다.' },
+        en: { title: 'Product directory | MAKENOV',
+              desc: 'Browse listed products by category — beauty, food, home, health, kids, tech. Product information is available in Vietnamese, Korean and English.' },
+      },
+    },
+    'columns.html': {
+      t: {
+        vi: { title: 'Bài viết & hướng dẫn | MAKENOV',
+              desc: 'Hướng dẫn sourcing và ghi chép thị trường cho nhà mua hàng — yêu cầu báo giá, hàng mẫu, hồ sơ nhập khẩu.' },
+        ko: { title: '칼럼과 가이드 | MAKENOV',
+              desc: '바이어를 위한 소싱 가이드와 시장 이야기. 견적 요청서 작성법, 샘플 요청 체크리스트, 공급사 회신 요령을 다룹니다.' },
+        en: { title: 'Articles & guides | MAKENOV',
+              desc: 'Sourcing guides and market notes for buyers — writing a quote request, sample checklists, and how suppliers should reply.' },
+      },
+    },
+    'companies.html': {
+      t: {
+        vi: { title: 'Danh bạ nhà cung cấp | MAKENOV',
+              desc: 'Nhà cung cấp đã đăng sản phẩm trên MAKENOV — chứng nhận, năng lực sản xuất và thành tích xuất khẩu.' },
+        ko: { title: '공급사 목록 | MAKENOV',
+              desc: 'MAKENOV에 제품을 등록한 공급사입니다. 보유 인증, 생산 능력, 수출 실적을 함께 봅니다.' },
+        en: { title: 'Supplier directory | MAKENOV',
+              desc: 'Suppliers listing products on MAKENOV — certifications, production capability and export track record.' },
+      },
+    },
+    'about.html': {
+      t: {
+        vi: { title: 'Giới thiệu dịch vụ cho nhà mua hàng | MAKENOV',
+              desc: 'Xem sản phẩm đổi mới từ khắp thế giới ở một nơi và đặt lịch trao đổi thẳng với nhà cung cấp. Xác thực doanh nghiệp là giá và MOQ mở ngay.' },
+        ko: { title: '서비스 소개 — 바이어라면 | MAKENOV',
+              desc: '전 세계 혁신 제품을 한자리에서 보고 공급사에 바로 미팅을 요청합니다. 전시회를 기다리거나 출장을 가지 않아도 됩니다. 사업자 인증이면 단가와 MOQ가 열립니다.' },
+        en: { title: 'For buyers | MAKENOV',
+              desc: 'See innovative products from around the world in one place and request a meeting with the supplier directly. Verify once to unlock prices and MOQ.' },
+      },
+    },
+    'guide.html': {
+      t: {
+        vi: { title: 'Hướng dẫn sử dụng | MAKENOV',
+              desc: 'Từ đăng ký, xác thực doanh nghiệp, xem giá đến gửi yêu cầu báo giá — từng bước cho nhà mua hàng và nhà cung cấp.' },
+        ko: { title: '이용 가이드 | MAKENOV',
+              desc: '가입, 사업자 인증, 가격 열람, 견적 요청까지 기능별로 설명합니다. 바이어와 공급사가 각각 무엇을 하면 되는지 정리했습니다.' },
+        en: { title: 'User guide | MAKENOV',
+              desc: 'From signing up and verifying your business to viewing prices and sending a quote request — step by step for buyers and suppliers.' },
+      },
+    },
+    'support.html': {
+      t: {
+        vi: { title: 'Hỗ trợ khách hàng | MAKENOV',
+              desc: 'Thông báo, câu hỏi thường gặp và hỏi đáp 1:1. Chúng tôi trả lời trong vòng hai ngày làm việc.' },
+        ko: { title: '고객센터 | MAKENOV',
+              desc: '공지사항, 자주 묻는 질문, 1:1 문의. 영업일 2일 이내에 답변드립니다.' },
+        en: { title: 'Support | MAKENOV',
+              desc: 'Notices, frequently asked questions and one-to-one enquiries. We reply within two business days.' },
+      },
+    },
+  };
+
+  /* 언어별 FAQPage 스키마 */
+  const faqSchema = lang => faqs.length ? [{
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({ '@type': 'Question', name: T(f.q, lang),
+      acceptedAnswer: { '@type': 'Answer', text: T(f.a, lang) } })),
+  }] : [];
+
   const PAGES = [
     { file: 'index.html', lang: 'vi', ogType: 'website',
-      title: 'MAKENOV — Nền tảng B2B sản phẩm sáng tạo toàn cầu',
-      desc: 'MAKENOV kết nối sản phẩm sáng tạo từ các nhà sản xuất toàn cầu với nhà mua hàng đã xác thực. Xác thực doanh nghiệp miễn phí để xem giá và gửi yêu cầu báo giá.',
-      canonical: SITE + '/',
+      title: HUB['index.html'].t.vi.title,
+      desc: HUB['index.html'].t.vi.desc,
+      canonical: SITE + '/', alt: 'index.html',
       jsonld: [ORG, {
         '@context': 'https://schema.org', '@type': 'WebSite',
         '@id': SITE + '/#website',
         name: 'MAKENOV', url: SITE + '/',
         publisher: { '@id': SITE + '/#organization' },
-        inLanguage: ['vi', 'ko', 'en'],
+        inLanguage: LANGS,
         potentialAction: { '@type': 'SearchAction',
           target: { '@type': 'EntryPoint', urlTemplate: SITE + '/directory.html?q={search_term_string}' },
           'query-input': 'required name=search_term_string' },
-      }, ...(faqs.length ? [{
-        '@context': 'https://schema.org', '@type': 'FAQPage',
-        mainEntity: faqs.map(f => ({ '@type': 'Question', name: T(f.q, 'vi'),
-          acceptedAnswer: { '@type': 'Answer', text: T(f.a, 'vi') } })),
-      }] : [])] },
-    { file: 'directory.html', lang: 'vi',
-      title: 'Danh mục sản phẩm | MAKENOV',
-      desc: 'Khám phá sản phẩm sáng tạo theo danh mục — mỹ phẩm, thực phẩm, đồ gia dụng, sức khỏe, mẹ & bé, công nghệ. Thông tin bằng tiếng Việt, Hàn, Anh.',
+      }, ...faqSchema('vi')] },
+    { file: 'directory.html', lang: 'vi', alt: 'directory.html',
+      title: HUB['directory.html'].t.vi.title, desc: HUB['directory.html'].t.vi.desc,
       canonical: SITE + '/directory.html' },
-    { file: 'columns.html', lang: 'vi',
-      title: 'Bài viết & Insights | MAKENOV',
-      desc: 'Xu hướng nhập khẩu, hướng dẫn sourcing và câu chuyện thương hiệu dành cho nhà mua hàng.',
+    { file: 'columns.html', lang: 'vi', alt: 'columns.html',
+      title: HUB['columns.html'].t.vi.title, desc: HUB['columns.html'].t.vi.desc,
       canonical: SITE + '/columns.html' },
-    { file: 'companies.html', lang: 'vi',
-      title: 'Nhà sản xuất | MAKENOV',
-      desc: 'Danh bạ nhà sản xuất đã đăng sản phẩm trên MAKENOV — chứng nhận, năng lực sản xuất, thành tích xuất khẩu.',
+    { file: 'companies.html', lang: 'vi', alt: 'companies.html',
+      title: HUB['companies.html'].t.vi.title, desc: HUB['companies.html'].t.vi.desc,
       canonical: SITE + '/companies.html' },
-    { file: 'about.html', lang: 'vi',
-      title: 'Giới thiệu MAKENOV — Nhà mua và nhà sản xuất đều đã xác thực',
-      desc: 'MAKENOV mở giá, MOQ và thời gian giao hàng cho nhà mua đã xác thực doanh nghiệp, và chuyển yêu cầu thẳng tới nhà sản xuất — không hội chợ, không trung gian.',
+    { file: 'about.html', lang: 'vi', alt: 'about.html',
+      title: HUB['about.html'].t.vi.title, desc: HUB['about.html'].t.vi.desc,
       canonical: SITE + '/about.html' },
-    { file: 'guide.html', lang: 'vi',
-      title: 'Hướng dẫn sử dụng | MAKENOV',
-      desc: 'Từ đăng ký, xác thực doanh nghiệp, xem giá đến gửi yêu cầu báo giá — bốn bước cho nhà mua và bốn bước cho nhà sản xuất.',
+    { file: 'guide.html', lang: 'vi', alt: 'guide.html',
+      title: HUB['guide.html'].t.vi.title, desc: HUB['guide.html'].t.vi.desc,
       canonical: SITE + '/guide.html' },
-    { file: 'support.html', lang: 'vi',
-      title: 'Hỗ trợ khách hàng | MAKENOV',
-      desc: 'Liên hệ MAKENOV — email, đăng sản phẩm, câu hỏi thường gặp và giờ làm việc. Chúng tôi trả lời trong hai ngày làm việc.',
+    { file: 'support.html', lang: 'vi', alt: 'support.html',
+      title: HUB['support.html'].t.vi.title, desc: HUB['support.html'].t.vi.desc,
       canonical: SITE + '/support.html',
       /* FAQ 탭이 이 페이지에 실제로 있으므로 스키마도 여기 둔다 */
-      jsonld: [...(faqs.length ? [{
-        '@context': 'https://schema.org', '@type': 'FAQPage',
-        mainEntity: faqs.map(f => ({ '@type': 'Question', name: T(f.q, 'vi'),
-          acceptedAnswer: { '@type': 'Answer', text: T(f.a, 'vi') } })),
-      }] : []), {
+      jsonld: [...faqSchema('vi'), {
         '@context': 'https://schema.org', '@type': 'ContactPage',
         url: SITE + '/support.html', isPartOf: { '@id': SITE + '/#website' },
         publisher: { '@id': SITE + '/#organization' },
@@ -610,27 +743,89 @@ ${SCRIPTS()}
   ];
   PAGES.forEach(p => injectSeo(p.file, p));
 
+  /* ---------- 허브 페이지 언어판 ----------
+     기본형(베트남어) 파일을 그대로 복사한 뒤 세 군데만 바꾼다.
+       1) <html lang>
+       2) mk:seo 블록을 그 언어의 제목·설명·canonical·hreflang 으로 교체
+       3) 스크립트가 로드되기 전에 window.MK_FORCE_LANG 을 박는다
+     사전 렌더 블록은 지운다. prerender.js 가 이 파일들도 따로 렌더하기 때문이다. */
+  let variantCount = 0;
+  Object.entries(HUB).forEach(([file, cfg]) => {
+    const base = read(file);
+    LANGS.filter(l => l !== 'vi').forEach(lang => {
+      const rel = langFile(file, lang);
+      const canonical = SITE + '/' + rel;
+      const seo = seoBlock({
+        title: cfg.t[lang].title, desc: cfg.t[lang].desc,
+        canonical, ogType: cfg.ogType, alt: file,
+        jsonld: file === 'index.html'
+          ? [ORG, {
+              '@context': 'https://schema.org', '@type': 'WebSite',
+              '@id': SITE + '/#website', name: 'MAKENOV', url: SITE + '/',
+              publisher: { '@id': SITE + '/#organization' }, inLanguage: LANGS,
+            }, ...faqSchema(lang)]
+          : file === 'support.html'
+            ? [...faqSchema(lang), {
+                '@context': 'https://schema.org', '@type': 'ContactPage',
+                url: canonical, isPartOf: { '@id': SITE + '/#website' },
+                publisher: { '@id': SITE + '/#organization' },
+              }]
+            : undefined,
+      });
+
+      let html = base
+        .replace(/<!-- mk:pre[\s\S]*?<!-- \/mk:pre -->\n?/, '')
+        .replace(/<!-- mk:seo[\s\S]*?<!-- \/mk:seo -->/, seo)
+        .replace(/<html lang="[^"]*">/, `<html lang="${HTML_LANG[lang]}">`);
+
+      /* 첫 스크립트 앞에 언어 고정 — i18n.js 가 localStorage 를 보기 전이어야 한다 */
+      html = html.replace(/<script src="assets\/js\/config\.js/,
+        `<script>window.MK_FORCE_LANG=${JSON.stringify(lang)};</script>\n<script src="assets/js/config.js`);
+
+      write(rel, html);
+      variantCount++;
+    });
+  });
+  console.log(`\n허브 언어판 ${variantCount}개 생성 (${Object.keys(HUB).length}개 페이지 × ko·en)`);
+
   /* sitemap.xml — 공개 페이지는 빠짐없이 넣는다.
      about/guide/support 가 빠져 있었다. 셋 다 내용이 있는 색인 대상이다. */
-  const urls = [
-    { loc: SITE + '/', lastmod: today },
-    { loc: SITE + '/directory.html', lastmod: today },
-    { loc: SITE + '/companies.html', lastmod: today },
-    { loc: SITE + '/columns.html', lastmod: today },
-    { loc: SITE + '/about.html', lastmod: today },
-    { loc: SITE + '/guide.html', lastmod: today },
-    { loc: SITE + '/support.html', lastmod: today },
-    { loc: SITE + '/sitemap.html', lastmod: today },
-    { loc: SITE + '/maker.html', lastmod: today },
-    ...data.products.map(p => ({ loc: `${SITE}/products/${p.id}.html`, lastmod: p.createdAt || today })),
-    ...data.columns.map(c => ({ loc: `${SITE}/columns/${colFile(c)}.html`, lastmod: c.date || today })),
-    ...data.companies.map(c => ({ loc: `${SITE}/companies/${c.id}.html`, lastmod: today })),
+  /* multi = 언어판이 있는 페이지. 세 언어 URL 을 모두 넣고 서로를 alternate 로 가리킨다.
+     single = 언어판이 없는 페이지(maker.html 은 한국어 전용, sitemap.html 은 유틸) */
+  const multi = [
+    { rel: 'index.html', lastmod: today },
+    { rel: 'directory.html', lastmod: today },
+    { rel: 'companies.html', lastmod: today },
+    { rel: 'columns.html', lastmod: today },
+    { rel: 'about.html', lastmod: today },
+    { rel: 'guide.html', lastmod: today },
+    { rel: 'support.html', lastmod: today },
+    ...data.products.map(p => ({ rel: `products/${p.id}.html`, lastmod: p.createdAt || today })),
+    ...data.columns.map(c => ({ rel: `columns/${colFile(c)}.html`, lastmod: c.date || today })),
+    ...data.companies.map(c => ({ rel: `companies/${c.id}.html`, lastmod: today })),
   ];
+  const single = [
+    { rel: 'sitemap.html', lastmod: today },
+    { rel: 'maker.html', lastmod: today },
+  ];
+
+  const abs = rel => SITE + '/' + (rel === 'index.html' ? '' : rel);
+  const entries = [];
+  multi.forEach(u => {
+    const links = LANGS.map(l =>
+      `      <xhtml:link rel="alternate" hreflang="${HTML_LANG[l]}" href="${abs(langFile(u.rel, l))}"/>`)
+      .concat(`      <xhtml:link rel="alternate" hreflang="x-default" href="${abs(u.rel)}"/>`).join('\n');
+    LANGS.forEach(l => entries.push(
+      `  <url>\n    <loc>${abs(langFile(u.rel, l))}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n${links}\n  </url>`));
+  });
+  single.forEach(u => entries.push(`  <url><loc>${abs(u.rel)}</loc><lastmod>${u.lastmod}</lastmod></url>`));
+
   write('sitemap.xml',
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    urls.map(u => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') +
-    `\n</urlset>\n`);
-  console.log(`\nsitemap.xml — URL ${urls.length}개`);
+    `<?xml version="1.0" encoding="UTF-8"?>\n`
+    + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"`
+    + ` xmlns:xhtml="http://www.w3.org/1999/xhtml">\n`
+    + entries.join('\n') + `\n</urlset>\n`);
+  console.log(`\nsitemap.xml — URL ${entries.length}개 (다국어 ${multi.length}쪽 × ${LANGS.length} + 단일 ${single.length})`);
 
   /* robots.txt */
   write('robots.txt',
@@ -719,6 +914,15 @@ ${SCRIPTS()}
 
 주요 이용자는 베트남을 비롯한 해외 바이어와, 해외 판로를 찾는 공급사입니다.
 제품 정보는 베트남어·영어·한국어로 제공됩니다.
+
+## 언어판
+
+같은 문서가 세 언어로 있습니다. 기본 주소는 베트남어이고, 파일명에 언어를 붙이면
+같은 내용의 한국어·영어판입니다. 셋은 hreflang 으로 서로 연결되어 있습니다.
+
+- 베트남어: ${SITE}/about.html
+- 한국어:   ${SITE}/about.ko.html
+- 영어:     ${SITE}/about.en.html
 
 ## 알아두어야 할 것
 

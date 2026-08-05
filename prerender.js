@@ -50,14 +50,19 @@ if (process.argv[2] === '--serve') {
 }
 
 /* 사전 렌더 대상. 로그인 상태에 따라 내용이 달라지는 mypage/admin 은 제외한다. */
+/* 허브 페이지. bake.js 가 같은 이름의 .ko.html / .en.html 을 함께 굽기 때문에
+   언어판도 그대로 렌더 대상에 넣는다(파일이 없으면 알아서 건너뛴다). */
+const HUBS = ['index.html', 'directory.html', 'companies.html', 'about.html', 'guide.html', 'columns.html'];
+const LANGS = ['', '.ko', '.en'];
+const withLangs = f => LANGS.map(sfx => f.replace(/\.html$/, sfx + '.html'));
+
 const PAGES = [
-  'index.html', 'directory.html', 'companies.html',
-  'about.html', 'guide.html', 'columns.html',
+  ...HUBS.flatMap(withLangs),
   /* 고객센터는 탭 페이지다. 기본(공지) 말고 FAQ·1:1 탭 내용도 같은 URL 안에 있으므로
      해시별로 한 번씩 더 렌더해서 사본에 이어 붙인다. 안 그러면 FAQ 답변이
      정적 HTML 에서 통째로 빠진다. */
-  { page: 'support.html', extraHashes: ['#faq', '#ask'] },
-];
+  ...withLangs('support.html').map(page => ({ page, extraHashes: ['#faq', '#ask'] })),
+].filter(e => fs.existsSync(path.join(ROOT, typeof e === 'string' ? e : e.page)));
 
 const CHROME = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -96,7 +101,19 @@ function renderMain(page, hash) {
 
   const m = dom.match(/<main[^>]*>([\s\S]*?)<\/main>/);
   if (!m) return null;
-  return m[1]
+
+  /* 헤더·푸터도 사본에 넣는다.
+     둘 다 JS로 그려지고 <main> 밖이라, main 만 담았을 때는 크롤러가 받는 HTML 에
+     사이트 내비게이션이 통째로 없었다. 언어판으로 가는 링크도 여기 들어 있다.
+     (원본 <header>·<footer> 는 비어 있는 채로 두고 사본만 채운다. 부팅하면 사본은
+      지워지고 원래 자리에 실제 헤더가 그려지므로 로그인 상태 깜빡임도 없다) */
+  const chrome = ['mk-header', 'mk-footer']
+    .map(id => {
+      const b = extractBlock(dom, null, id);
+      return b ? `<nav class="mk-static-${id}">${b}</nav>` : '';
+    }).join('\n');
+
+  return (m[1] + '\n' + chrome)
     /* 스크립트는 사본에 넣지 않는다. 두 번 실행될 이유가 없다 */
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     /* id 는 전부 뗀다. 사본과 원본 컨테이너의 id 가 겹쳐 문서에 중복 id 가 생기고,
@@ -109,15 +126,18 @@ function renderMain(page, hash) {
     .trim();
 }
 
-/* class 로 div 하나를 통째로 떼어낸다.
+/* 요소 하나를 통째로 떼어낸다(class 또는 id 로 찾음).
    정규식으로 `...</div></div>` 를 잡으면 중첩된 첫 닫는 태그에서 잘려서
-   FAQ 답변이 통째로 날아간다. 여는/닫는 div 를 세면서 짝을 맞춘다. */
-function extractBlock(html, cls) {
-  const open = new RegExp(`<div class="${cls}"[^>]*>`);
+   FAQ 답변이 통째로 날아간다. 여는/닫는 태그를 세면서 짝을 맞춘다. */
+function extractBlock(html, cls, id) {
+  const open = id
+    ? new RegExp(`<(div|header|footer|nav|section)[^>]*\\bid="${id}"[^>]*>`)
+    : new RegExp(`<div class="${cls}"[^>]*>`);
   const m = html.match(open);
   if (!m) return null;
+  const tagName = id ? m[0].match(/^<(\w+)/)[1] : 'div';
   let i = m.index + m[0].length, depth = 1;
-  const tag = /<\/?div\b[^>]*>/g;
+  const tag = new RegExp(`</?${tagName}\\b[^>]*>`, 'g');
   tag.lastIndex = i;
   let t;
   while ((t = tag.exec(html))) {

@@ -1287,10 +1287,56 @@ const I18N = {
   }
 };
 
-let MK_LANG = localStorage.getItem('mk_lang') || 'vi';
+/* 언어 결정
+   ---------------------------------------------------------------
+   한국어·영어 페이지는 파일이 따로 있다. about.html(베트남어) 옆에
+   about.ko.html / about.en.html 이 함께 구워지고, 그 파일들은 머리에
+   window.MK_FORCE_LANG 을 박아 둔다. 주소마다 언어가 하나로 정해져야
+   검색엔진이 hreflang 으로 세 판을 묶을 수 있기 때문이다.
+
+   기본형(.html)은 예전처럼 localStorage 를 따른다. 한국어로 보던 사람이
+   북마크한 주소로 돌아왔을 때 갑자기 베트남어가 되지 않게 하려는 것이고,
+   크롤러는 localStorage 가 비어 있으므로 항상 베트남어를 본다. */
+let MK_LANG = window.MK_FORCE_LANG || localStorage.getItem('mk_lang') || 'vi';
 function t(key){ return (I18N[MK_LANG] && I18N[MK_LANG][key]) || I18N.vi[key] || key; }
+
+/* 언어판이 있는 페이지 목록. 여기 있는 것만 .ko.html / .en.html 이 실제로 구워진다.
+   (maker.html 은 한국어 전용, mypage·admin 은 비공개라 언어판이 없다) */
+const MK_LANG_PAGES = ['index.html','directory.html','companies.html','columns.html',
+                       'about.html','guide.html','support.html'];
+
+/* 네비게이션 링크를 지금 언어판으로 맞춘다.
+   한국어 페이지에서 헤더 '제품'이 directory.html(베트남어)로 가면
+   한국어 페이지들로 들어오는 내부 링크가 하나도 생기지 않는다. */
+function mkUrl(rel){
+  const l = window.MK_FORCE_LANG;
+  if(!l || l === 'vi') return rel;
+  const m = String(rel).match(/^([^#?]+)([#?].*)?$/);
+  if(!m || MK_LANG_PAGES.indexOf(m[1]) < 0) return rel;
+  return m[1].replace(/\.html$/, '.' + l + '.html') + (m[2] || '');
+}
+
+/* 지금 주소의 다른 언어판 경로. 없으면 null */
+function mkLangHref(l){
+  /* 이 페이지에 언어판이 있는지는 head 의 hreflang 링크로 판단한다.
+     링크의 href 는 절대주소(확정 도메인 기준)라 이동에는 쓰지 않고,
+     존재 여부만 본다. 실제 이동 경로는 파일명 규칙으로 만든다. */
+  if(!document.querySelector('link[rel="alternate"][hreflang="' + l + '"]')) return null;
+  let p = location.pathname;
+  if(/\/$/.test(p)) p += 'index.html';
+  p = p.replace(/\.(ko|en)\.html$/, '.html');          // 기본형(베트남어)으로 되돌리고
+  if(l !== 'vi') p = p.replace(/\.html$/, '.' + l + '.html');
+  return p + location.search + location.hash;
+}
+
 function setLang(l){
-  MK_LANG = l; localStorage.setItem('mk_lang', l);
+  localStorage.setItem('mk_lang', l);
+  const href = mkLangHref(l);
+  if(href && href !== location.pathname + location.search + location.hash){
+    location.href = href;                              // 언어판이 있으면 그 주소로 간다
+    return;
+  }
+  MK_LANG = l;
   document.documentElement.lang = l;
   applyI18n();
   document.dispatchEvent(new CustomEvent('mk:lang'));
