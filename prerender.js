@@ -159,16 +159,19 @@ function inject(page, html) {
   const file = path.join(ROOT, page);
   let src = fs.readFileSync(file, 'utf8');
 
-  /* 이전 블록 제거 후 다시 넣는다 */
-  const old = new RegExp(OPEN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' + CLOSE, 'g');
-  src = src.replace(old, '');
+  /* 이전 블록 제거 후 다시 넣는다.
+     ⚠ 앞뒤 줄바꿈까지 같이 지운다. 안 그러면 돌릴 때마다 빈 줄이 쌓여서
+        내용이 그대로여도 매번 diff 가 생긴다(빌드가 멱등이 아니게 된다). */
+  const rx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const old = new RegExp('\\n*' + rx(OPEN) + '[\\s\\S]*?' + rx(CLOSE) + '\\n*', 'g');
+  src = src.replace(old, '\n');
 
   const block = `${OPEN}\n<div id="mk-prerender">${html}</div>\n${CLOSE}`;
   const mainOpen = src.match(/<main[^>]*>/);
   if (!mainOpen) throw new Error(`${page}: <main> 을 찾지 못했습니다`);
 
   const at = src.indexOf(mainOpen[0]) + mainOpen[0].length;
-  src = src.slice(0, at) + '\n' + block + '\n' + src.slice(at);
+  src = src.slice(0, at) + '\n' + block + src.slice(at).replace(/^\n*/, '\n');
   fs.writeFileSync(file, src, 'utf8');
 }
 
