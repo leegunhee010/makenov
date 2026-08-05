@@ -90,6 +90,7 @@ async function loadFromSupabase(){
     companies: co.map(c => ({
       id: c.id, brand: c.brand, name: c.name, location: c.location,
       certs: c.certs || [], logo: c.logo, since: c.since,
+      tagline: c.tagline, intro: c.intro, cover: c.cover, moq: c.moq,
     })),
     columns: cl.map(c => ({
       id: c.id, cat: c.cat, title: c.title, excerpt: c.excerpt, body: c.body,
@@ -99,14 +100,23 @@ async function loadFromSupabase(){
   };
 }
 
-function loadFromSeed(){
+function runSeed(){
   const sandbox = { localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} } };
   vm.createContext(sandbox);
   vm.runInContext(read('assets/js/data.js') +
-    '\n;__out = { MK_PRODUCTS, MK_COMPANIES, MK_COLUMNS, MK_FAQ: typeof MK_FAQ!=="undefined"?MK_FAQ:[] };', sandbox);
-  const { MK_PRODUCTS, MK_COMPANIES, MK_COLUMNS, MK_FAQ } = sandbox.__out;
+    '\n;__out = { MK_PRODUCTS, MK_COMPANIES, MK_COLUMNS, MK_CATEGORIES,'
+    + ' MK_FAQ: typeof MK_FAQ!=="undefined"?MK_FAQ:[] };', sandbox);
+  return sandbox.__out;
+}
+
+function loadFromSeed(){
+  const { MK_PRODUCTS, MK_COMPANIES, MK_COLUMNS, MK_FAQ } = runSeed();
   return { source: 'data.js(시드)', products: MK_PRODUCTS, companies: MK_COMPANIES, columns: MK_COLUMNS, faqs: MK_FAQ };
 }
+
+/* 카테고리는 DB가 아니라 data.js 에만 있으므로 어느 경로로 로드하든 여기서 가져온다 */
+const CATS = runSeed().MK_CATEGORIES || [];
+const catName = id => { const c = CATS.find(x => x.id === id); return c ? T(c.name, 'vi') : ''; };
 
 /* ---------- 2. 공통 head 블록 ---------- */
 function seoBlock({ title, desc, canonical, ogImage, ogType, robots, jsonld }){
@@ -154,7 +164,7 @@ const SCRIPTS = () => [
   ? `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>`
   : `<script src="${v(s)}"></script>`).join('\n');
 
-function productPage(p, co){
+function productPage(p, co, related){
   const name = T(p.name, 'vi'), tagline = T(p.tagline, 'vi');
   const title = `${name} — ${p.brand} | MAKENOV`;
   const canonical = `${SITE}/products/${p.id}.html`;
@@ -220,6 +230,7 @@ ${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType:
       </div>
     </aside>
   </div>
+${staticProdLinks(p, co, related)}
 </main>
 
 <footer class="mk-footer" id="mk-footer"></footer>
@@ -232,19 +243,158 @@ ${SCRIPTS()}
 `;
 }
 
+/* ---------- 공급사 정적 페이지 ----------
+   회사 프로필은 company.html?id= 로만 볼 수 있어서 크롤러가 읽을 내용이 0이었다.
+   기업 자체가 하나의 엔티티라 AI 답변 엔진에도 필요한 문서다. */
+function companyPage(co, prods){
+  const name = T(co.name, 'vi') || co.brand;
+  const canonical = `${SITE}/companies/${co.id}.html`;
+  const intro = stripHtml(T(co.intro, 'vi'));
+  const desc = clip(T(co.tagline, 'vi') || intro || name, 155);
+  const certs = (co.certs || []).filter(Boolean);
+
+  const jsonld = [{
+    '@context': 'https://schema.org', '@type': 'Organization',
+    '@id': canonical + '#org',
+    name, alternateName: co.brand, url: canonical,
+    ...(co.logo ? { logo: absUrl(co.logo) } : {}),
+    ...(intro ? { description: clip(intro, 300) } : {}),
+    ...(T(co.location, 'vi') ? { address: { '@type': 'PostalAddress', addressLocality: T(co.location, 'vi') } } : {}),
+    ...(co.since ? { foundingDate: String(co.since) } : {}),
+    ...(certs.length ? { hasCredential: certs } : {}),
+    parentOrganization: { '@id': SITE + '/#organization' },
+  }, {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'MAKENOV', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Nhà cung cấp', item: SITE + '/companies.html' },
+      { '@type': 'ListItem', position: 3, name, item: canonical },
+    ],
+  }];
+
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<base href="../">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+${seoBlock({ title: `${name} | MAKENOV`, desc, canonical, ogImage: co.cover || co.logo, jsonld })}
+<link rel="stylesheet" href="${v('assets/css/style.css')}">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+</head>
+<body>
+<header class="mk-header" id="mk-header"></header>
+<main class="wrap" id="co-root">
+  <nav class="blog-breadcrumb"><a href="index.html">Trang chủ</a> - <a href="companies.html">Nhà cung cấp</a> - <span>${esc(name)}</span></nav>
+  <h1>${esc(name)}</h1>
+  ${T(co.tagline, 'vi') ? `<p class="tagline">${esc(T(co.tagline, 'vi'))}</p>` : ''}
+  <ul class="sm-list">
+    ${T(co.location, 'vi') ? `<li>Địa điểm <span class="sm-meta">${esc(T(co.location, 'vi'))}</span></li>` : ''}
+    ${co.since ? `<li>Thành lập <span class="sm-meta">${esc(co.since)}</span></li>` : ''}
+    ${certs.length ? `<li>Chứng nhận <span class="sm-meta">${esc(certs.join(' · '))}</span></li>` : ''}
+    ${co.moq ? `<li>MOQ tham khảo <span class="sm-meta">${esc(co.moq)}</span></li>` : ''}
+  </ul>
+  ${intro ? `<div class="pd-sec"><h2>Giới thiệu</h2><div class="pd-body"><p>${esc(intro)}</p></div></div>` : ''}
+  ${!prods.length ? '' : `<div class="pd-sec">
+    <h2>Sản phẩm (${prods.length})</h2>
+    <ul class="sm-list">
+      ${prods.map(p => `<li><a href="products/${esc(p.id)}.html">${esc(T(p.name, 'vi'))}</a> <span class="sm-meta">${esc(p.brand)}</span></li>`).join('\n      ')}
+    </ul>
+  </div>`}
+  <nav class="pd-links">
+    <a href="companies.html">Danh bạ nhà cung cấp</a>
+    <a href="directory.html">Danh mục sản phẩm</a>
+    <a href="maker.html">Đăng sản phẩm</a>
+  </nav>
+</main>
+<footer class="mk-footer" id="mk-footer"></footer>
+${SCRIPTS()}
+<script>window.MK_COID=${JSON.stringify(co.id)};</script>
+<script src="${v('assets/js/page-company.js')}"></script>
+</body>
+</html>
+`;
+}
+
+/* 제품 페이지 정적 링크 묶음.
+   page-product.js 가 #pd-root 를 통째로 다시 그리므로 그 바깥(main 끝)에 둔다.
+   제품 페이지의 내부 링크가 '../' 하나뿐이라 크롤러가 여기서 더 갈 데가 없었다. */
+function staticProdLinks(p, co, related){
+  const cat = catName(p.cat);
+  const links = [
+    `<a href="directory.html">Danh mục sản phẩm</a>`,
+    cat ? `<a href="directory.html?category=${esc(p.cat)}">${esc(cat)}</a>` : '',
+    co ? `<a href="company.html?id=${esc(co.id)}">${esc(T(co.name, 'vi'))}</a>` : '',
+    `<a href="companies.html">Danh bạ nhà cung cấp</a>`,
+    `<a href="columns.html">Bài viết &amp; hướng dẫn</a>`,
+  ].filter(Boolean);
+
+  return `
+  <nav class="pd-links">
+    ${links.join('\n    ')}
+  </nav>${!related || !related.length ? '' : `
+  <section class="pd-sec">
+    <h2>Sản phẩm cùng danh mục</h2>
+    <div class="grid">
+      ${related.map(r => `<a class="p-card" href="products/${esc(r.id)}.html"><div class="thumb"><img src="${esc(r.img)}" alt="${esc(T(r.name, 'vi'))}" loading="lazy"></div><div class="body"><span class="brand">${esc(r.brand)}</span><h3>${esc(T(r.name, 'vi'))}</h3><div class="meta"><span class="left">${esc(r.origin || '')}</span></div></div></a>`).join('\n      ')}
+    </div>
+  </section>`}`;
+}
+
 function colFile(c){ return c.slug || c.id; }   // 슬러그가 있으면 columns/<슬러그>.html
 
-function columnPage(c, colFaqs){
+/* ---------- 칼럼 정적 부속물 ----------
+   셋 다 #col-root 안이거나 main 자식이라 page-column.js 가 부팅하면 다시 그린다.
+   JS를 실행하지 않는 크롤러에게만 의미가 있는 사본이다.
+   FAQ는 그동안 JSON-LD 에만 있고 화면 텍스트로는 없었다. 답변 엔진이 본문을 읽을 때
+   질문과 답이 통째로 빠져 있었다는 뜻이라, 여기서 <details> 로 같이 굽는다. */
+function staticColFaq(faqs){
+  if(!faqs || !faqs.length) return '';
+  return `
+  <section class="blog-faq">
+    <h2>Câu hỏi thường gặp</h2>
+    ${faqs.map(f => `<details><summary>${esc(T(f.q, 'vi'))}</summary><div>${esc(T(f.a, 'vi'))}</div></details>`).join('\n    ')}
+  </section>`;
+}
+
+function staticColNav(prev, next){
+  if(!prev && !next) return '';
+  return `
+  <div class="blog-nav">
+    ${prev ? `<a href="columns/${colFile(prev)}.html"><div class="dir">Bài trước</div><b>${esc(T(prev.title, 'vi'))}</b></a>` : '<span></span>'}
+    ${next ? `<a class="next" href="columns/${colFile(next)}.html"><div class="dir">Bài sau</div><b>${esc(T(next.title, 'vi'))}</b></a>` : '<span></span>'}
+  </div>`;
+}
+
+function staticColOthers(others){
+  if(!others || !others.length) return '';
+  /* ⚠ id 는 반드시 col-others 여야 한다.
+     page-column.js 가 #col-others 를 지운 뒤 자기 것을 붙이므로,
+     id 가 없으면 사용자 화면에 '다른 칼럼' 섹션이 두 개로 겹친다. */
+  return `
+<section class="blog-main" id="col-others" style="margin-top:56px">
+  <div class="sec-head"><h2>Bài viết khác</h2><a class="more" href="columns.html">Xem thêm</a></div>
+  <div class="blog-list">
+    ${others.map(o => `<div class="blog-item"><a class="blog-item-link" href="columns/${colFile(o)}.html"><div class="blog-item-thumb"><img src="${esc(o.img)}" alt="${esc(T(o.title, 'vi'))}" loading="lazy"></div><div class="blog-item-info"><div class="blog-item-cat">${esc(T(o.cat, 'vi'))}</div><h3 class="blog-item-tit">${esc(T(o.title, 'vi'))}</h3><div class="blog-item-meta"><span>${esc(o.date)}</span></div></div></a></div>`).join('\n    ')}
+  </div>
+</section>`;
+}
+
+function columnPage(c, colFaqs, prev, next, others){
   const title = T(c.title, 'vi'), cat = T(c.cat, 'vi');
   const canonical = `${SITE}/columns/${colFile(c)}.html`;
   const desc = clip(c.seoDesc || T(c.excerpt, 'vi') || stripHtml(T(c.body, 'vi')), 155);
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Article',
     headline: title, alternativeHeadline: T(c.title, 'en'),
-    description: desc, image: absUrl(c.img), datePublished: c.date,
+    description: desc, image: absUrl(c.img),
+    datePublished: c.date, dateModified: c.updatedAt || c.date,
     inLanguage: 'vi', mainEntityOfPage: canonical,
-    author: { '@type': 'Organization', name: 'MAKENOV' },
-    publisher: { '@type': 'Organization', name: 'MAKENOV', logo: { '@type': 'ImageObject', url: SITE + '/assets/img/logo.png' } },
+    /* 신선도·출처 신호. 저자를 조직으로 두되 발행처와 구분해 둔다 */
+    author: { '@type': 'Organization', name: 'MAKENOV', url: SITE + '/' },
+    publisher: { '@type': 'Organization', name: 'MAKENOV', url: SITE + '/', logo: { '@type': 'ImageObject', url: SITE + '/assets/img/logo.png' } },
+    isAccessibleForFree: true,
+    articleSection: cat,
   }, {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: [
@@ -286,7 +436,9 @@ ${seoBlock({ title: c.seoTitle ? `${c.seoTitle} | MAKENOV` : `${title} | MAKENOV
   <div class="blog-single-meta"><span>${esc(c.date)}</span></div>
   <div class="blog-cover"><img src="${esc(c.img)}" alt="${esc(title)}"></div>
   <div class="blog-body">${T(c.body, 'vi')}</div>
+${staticColFaq(colFaqs)}${staticColNav(prev, next)}
 </article>
+${staticColOthers(others)}
 </main>
 <footer class="mk-footer" id="mk-footer"></footer>
 
@@ -308,7 +460,7 @@ ${SCRIPTS()}
   console.log(`데이터: ${data.source} — 제품 ${data.products.length} · 칼럼 ${data.columns.length} · 기업 ${data.companies.length}\n`);
 
   /* 이전 산출물 정리 — 슬러그가 바뀌면 옛 파일이 남아 중복 URL이 되므로 싹 지우고 다시 굽는다 */
-  ['products', 'columns'].forEach(dir => {
+  ['products', 'columns', 'companies'].forEach(dir => {
     const d = path.join(ROOT, dir);
     if(fs.existsSync(d)) fs.readdirSync(d).filter(f => f.endsWith('.html'))
       .forEach(f => fs.unlinkSync(path.join(d, f)));
@@ -326,21 +478,49 @@ ${SCRIPTS()}
   const faqs = faqsFor('home');
 
   /* 제품·칼럼 정적 생성 */
-  data.products.forEach(p => write(`products/${p.id}.html`, productPage(p, coMap[p.companyId])));
+  data.products.forEach(p => {
+    /* 같은 카테고리 제품 3개를 정적으로 연결한다 */
+    const related = data.products.filter(x => x.id !== p.id && x.cat === p.cat).slice(0, 3);
+    write(`products/${p.id}.html`, productPage(p, coMap[p.companyId], related));
+  });
   console.log(`products/*.html ${data.products.length}개 생성`);
   let colFaqCount = 0;
-  data.columns.forEach(c => {
+  data.columns.forEach((c, i) => {
     const cf = faqsFor(c.id);
     colFaqCount += cf.length;
-    write(`columns/${colFile(c)}.html`, columnPage(c, cf));
+    /* 이전·다음·다른 칼럼을 정적으로 깔아 칼럼끼리 링크가 이어지게 한다.
+       이전에는 칼럼 페이지의 내부 링크가 2개(홈·목록)뿐이라 크롤러가 다음 문서로 갈 길이 없었다 */
+    const others = data.columns.filter(x => x.id !== c.id).slice(0, 2);
+    write(`columns/${colFile(c)}.html`,
+      columnPage(c, cf, data.columns[i - 1], data.columns[i + 1], others));
   });
   console.log(`columns/*.html ${data.columns.length}개 생성 (${data.columns.filter(c=>c.slug).length}개 슬러그 사용, 칼럼 FAQ ${colFaqCount}개)`);
+  data.companies.forEach(co =>
+    write(`companies/${co.id}.html`,
+      companyPage(co, data.products.filter(p => p.companyId === co.id))));
+  console.log(`companies/*.html ${data.companies.length}개 생성`);
   console.log(`FAQ ${faqs.length}개 → 홈 FAQPage 스키마\n`);
 
   /* 공개 페이지 head 주입 */
+  /* 엔티티 정의. @id 를 붙여 다른 스키마가 이 조직을 참조하게 한다.
+     ⚠ 확인되지 않은 값은 넣지 않는다. 주소·설립연도·SNS 계정은 확정되면 추가할 것
+        (푸터 SNS 링크는 아직 전부 '#' 자리표시자라 sameAs 에 못 넣는다) */
   const ORG = {
     '@context': 'https://schema.org', '@type': 'Organization',
+    '@id': SITE + '/#organization',
     name: 'MAKENOV', url: SITE + '/', logo: SITE + '/assets/img/logo.png',
+    description: 'Nền tảng B2B tập hợp sản phẩm đổi mới của các nhà cung cấp toàn cầu. '
+      + 'Đơn giá và số lượng đặt tối thiểu được mở cho nhà mua hàng đã xác thực doanh nghiệp, '
+      + 'và yêu cầu được chuyển thẳng tới nhà cung cấp, không qua trung gian.',
+    knowsLanguage: ['vi', 'ko', 'en'],
+    areaServed: [
+      { '@type': 'Country', name: 'Vietnam' },
+      { '@type': 'Country', name: 'South Korea' },
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint', contactType: 'customer support',
+      email: 'contact@makenov.com', availableLanguage: ['Vietnamese', 'Korean', 'English'],
+    },
   };
   const PAGES = [
     { file: 'index.html', lang: 'vi', ogType: 'website',
@@ -349,7 +529,10 @@ ${SCRIPTS()}
       canonical: SITE + '/',
       jsonld: [ORG, {
         '@context': 'https://schema.org', '@type': 'WebSite',
+        '@id': SITE + '/#website',
         name: 'MAKENOV', url: SITE + '/',
+        publisher: { '@id': SITE + '/#organization' },
+        inLanguage: ['vi', 'ko', 'en'],
         potentialAction: { '@type': 'SearchAction',
           target: { '@type': 'EntryPoint', urlTemplate: SITE + '/directory.html?q={search_term_string}' },
           'query-input': 'required name=search_term_string' },
@@ -381,17 +564,29 @@ ${SCRIPTS()}
     { file: 'support.html', lang: 'vi',
       title: 'Hỗ trợ khách hàng | MAKENOV',
       desc: 'Liên hệ MAKENOV — email, đăng sản phẩm, câu hỏi thường gặp và giờ làm việc. Chúng tôi trả lời trong hai ngày làm việc.',
-      canonical: SITE + '/support.html' },
-    /* 동적 조회 페이지 — 개별 콘텐츠의 정식 URL은 구운 페이지 쪽 */
-    { file: 'company.html', lang: 'vi',
-      title: 'Hồ sơ nhà sản xuất | MAKENOV',
-      desc: 'Thông tin nhà sản xuất trên MAKENOV.', canonical: SITE + '/companies.html' },
+      canonical: SITE + '/support.html',
+      /* FAQ 탭이 이 페이지에 실제로 있으므로 스키마도 여기 둔다 */
+      jsonld: [...(faqs.length ? [{
+        '@context': 'https://schema.org', '@type': 'FAQPage',
+        mainEntity: faqs.map(f => ({ '@type': 'Question', name: T(f.q, 'vi'),
+          acceptedAnswer: { '@type': 'Answer', text: T(f.a, 'vi') } })),
+      }] : []), {
+        '@context': 'https://schema.org', '@type': 'ContactPage',
+        url: SITE + '/support.html', isPartOf: { '@id': SITE + '/#website' },
+        publisher: { '@id': SITE + '/#organization' },
+      }] },
+    /* ?id= 로 보는 뷰어 화면. 같은 내용의 정식 주소는
+       products/ · columns/ · companies/ 쪽이라 색인은 막고 링크만 따라가게 둔다.
+       안 그러면 같은 제품이 두 주소로 크롤링된다. */
     { file: 'product.html', lang: 'vi',
       title: 'Sản phẩm | MAKENOV',
-      desc: 'Chi tiết sản phẩm trên MAKENOV.', canonical: SITE + '/directory.html' },
+      desc: 'Chi tiết sản phẩm trên MAKENOV.', robots: 'noindex,follow' },
+    { file: 'company.html', lang: 'vi',
+      title: 'Nhà cung cấp | MAKENOV',
+      desc: 'Hồ sơ nhà cung cấp trên MAKENOV.', robots: 'noindex,follow' },
     { file: 'column.html', lang: 'vi',
       title: 'Bài viết | MAKENOV',
-      desc: 'Bài viết trên MAKENOV.', canonical: SITE + '/columns.html' },
+      desc: 'Bài viết trên MAKENOV.', robots: 'noindex,follow' },
     /* 한국 공급사 대상 랜딩 — 한국어 + FAQ 스키마 */
     { file: 'maker.html', lang: 'ko',
       title: '제품 등록 문의 | MAKENOV · 전시회 없이 해외 바이어를 만나는 방법',
@@ -415,15 +610,21 @@ ${SCRIPTS()}
   ];
   PAGES.forEach(p => injectSeo(p.file, p));
 
-  /* sitemap.xml */
+  /* sitemap.xml — 공개 페이지는 빠짐없이 넣는다.
+     about/guide/support 가 빠져 있었다. 셋 다 내용이 있는 색인 대상이다. */
   const urls = [
     { loc: SITE + '/', lastmod: today },
     { loc: SITE + '/directory.html', lastmod: today },
     { loc: SITE + '/companies.html', lastmod: today },
     { loc: SITE + '/columns.html', lastmod: today },
+    { loc: SITE + '/about.html', lastmod: today },
+    { loc: SITE + '/guide.html', lastmod: today },
+    { loc: SITE + '/support.html', lastmod: today },
+    { loc: SITE + '/sitemap.html', lastmod: today },
     { loc: SITE + '/maker.html', lastmod: today },
     ...data.products.map(p => ({ loc: `${SITE}/products/${p.id}.html`, lastmod: p.createdAt || today })),
     ...data.columns.map(c => ({ loc: `${SITE}/columns/${colFile(c)}.html`, lastmod: c.date || today })),
+    ...data.companies.map(c => ({ loc: `${SITE}/companies/${c.id}.html`, lastmod: today })),
   ];
   write('sitemap.xml',
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
@@ -441,5 +642,113 @@ Disallow: /mypage.html
 Sitemap: ${SITE}/sitemap.xml
 `);
   console.log('robots.txt 생성');
+
+  /* sitemap.html — 사람도 크롤러도 읽는 전체 목록.
+     제품·칼럼 카드가 전부 product.html?id= / column.html?id= 로 링크해서,
+     정작 색인 대상인 products/*.html · columns/*.html 로 가는 내부 링크가
+     sitemap.xml 밖에 없었다. 푸터에서 이 페이지를 걸어 모든 페이지가 이어지게 한다. */
+  const smHtml = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+${seoBlock({
+    title: 'Sơ đồ trang | MAKENOV',
+    desc: 'Toàn bộ trang của MAKENOV — sản phẩm, nhà cung cấp, bài viết và hướng dẫn.',
+    canonical: SITE + '/sitemap.html',
+    jsonld: [{ '@context': 'https://schema.org', '@type': 'WebPage',
+      url: SITE + '/sitemap.html', name: 'Sơ đồ trang',
+      isPartOf: { '@id': SITE + '/#website' } }],
+  })}
+<link rel="stylesheet" href="${v('assets/css/style.css')}">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+</head>
+<body>
+<header class="mk-header" id="mk-header"></header>
+<main class="wrap">
+  <div class="dir-top"><h1>Sơ đồ trang</h1><p>Toàn bộ trang công khai của MAKENOV.</p></div>
+
+  <section class="sec"><h2>Trang chính</h2>
+    <ul class="sm-list">
+      <li><a href="index.html">Trang chủ</a></li>
+      <li><a href="directory.html">Danh mục sản phẩm</a></li>
+      <li><a href="companies.html">Danh bạ nhà cung cấp</a></li>
+      <li><a href="columns.html">Bài viết &amp; hướng dẫn</a></li>
+      <li><a href="about.html">Giới thiệu dịch vụ (nhà mua hàng)</a></li>
+      <li><a href="maker.html">Đăng sản phẩm (nhà cung cấp)</a></li>
+      <li><a href="guide.html">Hướng dẫn sử dụng</a></li>
+      <li><a href="support.html">Hỗ trợ khách hàng</a></li>
+    </ul>
+  </section>
+
+  <section class="sec"><h2>Sản phẩm (${data.products.length})</h2>
+    <ul class="sm-list">
+      ${data.products.map(p => `<li><a href="products/${esc(p.id)}.html">${esc(T(p.name, 'vi'))}</a> <span class="sm-meta">${esc(p.brand)}${catName(p.cat) ? ' · ' + esc(catName(p.cat)) : ''}</span></li>`).join('\n      ')}
+    </ul>
+  </section>
+
+  <section class="sec"><h2>Bài viết (${data.columns.length})</h2>
+    <ul class="sm-list">
+      ${data.columns.map(c => `<li><a href="columns/${colFile(c)}.html">${esc(T(c.title, 'vi'))}</a> <span class="sm-meta">${esc(c.date)}</span></li>`).join('\n      ')}
+    </ul>
+  </section>
+
+  <section class="sec"><h2>Nhà cung cấp (${data.companies.length})</h2>
+    <ul class="sm-list">
+      ${data.companies.map(c => `<li><a href="companies/${esc(c.id)}.html">${esc(T(c.name, 'vi'))}</a> <span class="sm-meta">${esc(T(c.location, 'vi'))}</span></li>`).join('\n      ')}
+    </ul>
+  </section>
+</main>
+<footer class="mk-footer" id="mk-footer"></footer>
+${SCRIPTS()}
+</body>
+</html>
+`;
+  write('sitemap.html', smHtml);
+  console.log('sitemap.html 생성 (제품·칼럼 정적 페이지로 가는 내부 링크)');
+
+  /* llms.txt — AI 답변 엔진용 안내 파일.
+     검색 크롤러가 robots.txt 를 보듯, 요즘 LLM 도구들이 이 파일을 먼저 본다.
+     사이트가 무엇이고 어느 문서를 읽어야 하는지를 사람이 읽는 문장으로 적는다. */
+  const llms =
+`# MAKENOV
+
+> 전 세계 공급사의 혁신 제품을 한자리에 모아 두고, 사업자 인증을 통과한 해외 바이어에게
+> 단가와 최소주문수량을 공개하는 B2B 소싱 플랫폼입니다. 문의는 중간상 없이 공급사에
+> 바로 전달되며, 필요하면 화상 미팅도 요청할 수 있습니다.
+
+주요 이용자는 베트남을 비롯한 해외 바이어와, 해외 판로를 찾는 공급사입니다.
+제품 정보는 베트남어·영어·한국어로 제공됩니다.
+
+## 알아두어야 할 것
+
+- 가격, 최소주문수량(MOQ), 납기는 기본적으로 가려져 있습니다. 사업자 인증을 통과한
+  계정에만 열립니다. 그래서 제품 페이지에 단가가 보이지 않는 것은 오류가 아닙니다.
+- 인증 방식은 국가별로 다릅니다. 베트남은 세금코드(MST), 한국은 사업자등록번호 상태조회,
+  그 외 국가는 회사 도메인 이메일로 확인합니다.
+- 가입, 인증, 제품 열람, 견적 요청은 모두 무료입니다.
+- 공급사에게 제품 등록비를 받지 않으며 독점 조건을 요구하지 않습니다.
+
+## 문서
+
+- [서비스 소개(바이어)](${SITE}/about.html): 바이어가 무엇을 할 수 있는지
+- [공급사 안내](${SITE}/maker.html): 제품 등록 절차와 조건. 한국어
+- [이용 가이드](${SITE}/guide.html): 가입부터 견적 요청까지 기능별 설명
+- [제품 목록](${SITE}/directory.html): 카테고리별 등록 제품
+- [공급사 목록](${SITE}/companies.html): 등록 기업 프로필
+- [고객센터](${SITE}/support.html): 공지사항, 자주 묻는 질문, 1:1 문의
+
+## 칼럼
+
+${data.columns.map(c => `- [${T(c.title, 'ko') || T(c.title, 'vi')}](${SITE}/columns/${colFile(c)}.html): ${clip(T(c.excerpt, 'ko') || T(c.excerpt, 'vi'), 120)}`).join('\n')}
+
+## 연락
+
+- 이메일: contact@makenov.com
+- 사이트맵: ${SITE}/sitemap.xml
+`;
+  write('llms.txt', llms);
+  console.log('llms.txt 생성');
+
   console.log('\n완료. (제품·칼럼을 관리자에서 수정했다면 이 스크립트를 다시 실행해야 반영됩니다)');
 })();

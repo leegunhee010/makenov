@@ -52,7 +52,11 @@ if (process.argv[2] === '--serve') {
 /* 사전 렌더 대상. 로그인 상태에 따라 내용이 달라지는 mypage/admin 은 제외한다. */
 const PAGES = [
   'index.html', 'directory.html', 'companies.html',
-  'about.html', 'guide.html', 'support.html', 'columns.html',
+  'about.html', 'guide.html', 'columns.html',
+  /* 고객센터는 탭 페이지다. 기본(공지) 말고 FAQ·1:1 탭 내용도 같은 URL 안에 있으므로
+     해시별로 한 번씩 더 렌더해서 사본에 이어 붙인다. 안 그러면 FAQ 답변이
+     정적 HTML 에서 통째로 빠진다. */
+  { page: 'support.html', extraHashes: ['#faq', '#ask'] },
 ];
 
 const CHROME = [
@@ -70,7 +74,7 @@ if (!CHROME) {
 const PROFILE = path.join(require('os').tmpdir(), 'makenov-prerender-profile');
 
 /* ---------- 1. 헤드리스 렌더 ---------- */
-function renderMain(page) {
+function renderMain(page, hash) {
   /* ⚠ --headless=old 를 쓴다.
      새 헤드리스는 Supabase 연결이 열려 있으면 --dump-dom 후에도 프로세스가 끝나지 않아
      index.html 에서 무한 대기했다. 구 헤드리스는 --timeout 으로 강제 종료된다.
@@ -83,7 +87,7 @@ function renderMain(page) {
          기존 인스턴스에 넘기고 바로 종료해서 빈 DOM(41자)만 돌아온다. */
       `--user-data-dir=${PROFILE}`,
       '--timeout=15000', '--virtual-time-budget=9000', '--dump-dom',
-      `http://localhost:${PORT}/${page}`,
+      `http://localhost:${PORT}/${page}${hash || ''}`,
     ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 60000, stdio: ['ignore', 'pipe', 'ignore'] });
   } catch (e) {
     dom = e.stdout || '';                 /* 강제 종료돼도 받아둔 DOM 은 쓴다 */
@@ -103,6 +107,24 @@ function renderMain(page) {
        사본 안에 마커가 딸려 들어가 블록이 중첩된다. */
     .replace(/<!--[\s\S]*?-->/g, '')
     .trim();
+}
+
+/* class 로 div 하나를 통째로 떼어낸다.
+   정규식으로 `...</div></div>` 를 잡으면 중첩된 첫 닫는 태그에서 잘려서
+   FAQ 답변이 통째로 날아간다. 여는/닫는 div 를 세면서 짝을 맞춘다. */
+function extractBlock(html, cls) {
+  const open = new RegExp(`<div class="${cls}"[^>]*>`);
+  const m = html.match(open);
+  if (!m) return null;
+  let i = m.index + m[0].length, depth = 1;
+  const tag = /<\/?div\b[^>]*>/g;
+  tag.lastIndex = i;
+  let t;
+  while ((t = tag.exec(html))) {
+    depth += t[0][1] === '/' ? -1 : 1;
+    if (depth === 0) return html.slice(i, t.index);
+  }
+  return null;
 }
 
 /* ---------- 3. 주입 ---------- */
@@ -135,10 +157,18 @@ child.stdout.once('data', () => {
   console.log(`임시 서버 :${PORT} (별도 프로세스)\n크롬: ${CHROME}\n`);
   const report = [];
   let failed = 0;
-  for (const page of PAGES) {
+  for (const entry of PAGES) {
+    const page = typeof entry === 'string' ? entry : entry.page;
+    const extras = (typeof entry === 'string' ? [] : entry.extraHashes) || [];
     process.stdout.write(`  ${page} … `);
     try {
-      const html = renderMain(page);
+      let html = renderMain(page);
+      /* 탭 페이지: 나머지 탭은 본문 영역만 떼어 이어 붙인다 */
+      for (const h of extras) {
+        const alt = renderMain(page, h);
+        const pane = alt && extractBlock(alt, 'nb-body');
+        if (pane) html += `\n<div class="nb-body">${pane}</div>`;
+      }
       if (!html || text(html) < 200) {
         console.log(`건너뜀 (렌더 결과 ${html ? text(html) : 0}자)`);
         failed++;

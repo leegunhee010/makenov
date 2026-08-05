@@ -3,22 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/css/style.css?v=20260805n">
+<link rel="stylesheet" href="assets/css/style.css?v=20260805r">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->
-<title>Hồ sơ nhà sản xuất | MAKENOV</title>
-<meta name="description" content="Thông tin nhà sản xuất trên MAKENOV.">
-<link rel="canonical" href="https://makenov.com/companies.html">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="MAKENOV">
-<meta property="og:title" content="Hồ sơ nhà sản xuất | MAKENOV">
-<meta property="og:description" content="Thông tin nhà sản xuất trên MAKENOV.">
-<meta property="og:url" content="https://makenov.com/companies.html">
-<meta property="og:image" content="https://makenov.com/assets/img/og.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Hồ sơ nhà sản xuất | MAKENOV">
-<meta name="twitter:description" content="Thông tin nhà sản xuất trên MAKENOV.">
-<meta name="twitter:image" content="https://makenov.com/assets/img/og.png">
+<title>Nhà cung cấp | MAKENOV</title>
+<meta name="description" content="Hồ sơ nhà cung cấp trên MAKENOV.">
+<meta name="robots" content="noindex,follow">
 <!-- /mk:seo -->
 </head>
 <body>
@@ -28,114 +18,16 @@
 
 <footer class="mk-footer" id="mk-footer"></footer>
 
-<script src="assets/js/config.js?v=20260805n"></script>
-<script src="assets/js/pixel.js?v=20260805n"></script>
+<script src="assets/js/config.js?v=20260805r"></script>
+<script src="assets/js/pixel.js?v=20260805r"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/i18n.js?v=20260805n"></script>
-<script src="assets/js/data.js?v=20260805n"></script>
-<script src="assets/js/store.js?v=20260805n"></script>
-<script src="assets/js/verify.js?v=20260805n"></script>
-<script src="assets/js/upload.js?v=20260805n"></script>
-<script src="assets/js/store-supabase.js?v=20260805n"></script>
-<script src="assets/js/app.js?v=20260805n"></script>
-<script>
-function pageInit(){
-  const id = new URLSearchParams(location.search).get('id');
-  const c = mkCompany(id) || MK_COMPANIES[0];
-  const prods = mkCompanyProducts(c.id);
-  const cat = mkCat(c.cat);
-  const totalInq = prods.reduce((s,p)=>s+p.inquiries,0);
-  const yrs = new Date().getFullYear() - Number(c.since);
-  document.title = L(c.name) + ' | MAKENOV';
-
-  document.getElementById('co-root').innerHTML = `
-    <div class="co-cover"><img src="${c.cover}" alt=""></div>
-
-    <div class="co-wrap">
-      <div class="co-head">
-        <img class="lg" src="${c.logo}" alt="">
-        <div class="tx">
-          <h1>${esc(L(c.name))}</h1>
-          <p class="sub">${esc(L(c.tagline))}</p>
-          <div class="chips">
-            <span>${esc(L(c.location))}</span>
-            ${cat?`<span>${esc(L(cat.name))}</span>`:''}
-            <span>${yrs}${t('co_years')}</span>
-            ${c.brn?`<span>${esc(c.brn)}</span>`:''}
-          </div>
-        </div>
-      </div>
-
-      <div class="co-body">
-        <div class="co-main">
-
-          <section class="co-sec">
-            <h2 data-i18n="co_metrics"></h2>
-            <div class="co-metrics">
-              <div class="co-metric"><b>${esc(c.since)}</b><span data-i18n="co_since"></span></div>
-              <div class="co-metric"><b>${esc(c.staff)}</b><span data-i18n="co_staff"></span></div>
-              <div class="co-metric"><b>${esc(c.export)}</b><span data-i18n="co_export"></span></div>
-              <div class="co-metric"><b>${prods.length}</b><span data-i18n="co_prod_unit"></span></div>
-            </div>
-          </section>
-
-          <section class="co-sec">
-            <h2 data-i18n="co_about"></h2>
-            <p class="co-intro">${esc(L(c.intro))}</p>
-          </section>
-
-          <section class="co-sec">
-            <h2 data-i18n="co_certs_title"></h2>
-            <div class="co-certs">${(c.certs||[]).map(x=>`<span>${esc(x)}</span>`).join('')}</div>
-          </section>
-
-          <section class="co-sec">
-            <h2 data-i18n="co_basic"></h2>
-            <table class="co-table">
-              <tr><th data-i18n="co_th_name"></th><td>${esc(L(c.name))}</td></tr>
-              ${c.ceo?`<tr><th data-i18n="co_th_ceo"></th><td>${esc(c.ceo)}</td></tr>`:''}
-              <tr><th data-i18n="co_since"></th><td>${esc(c.since)}</td></tr>
-              <tr><th data-i18n="auth_address"></th><td>${esc(L(c.location))}</td></tr>
-              ${c.brn?`<tr><th data-i18n="auth_brn"></th><td>${esc(c.brn)}</td></tr>`:''}
-              ${c.moqPolicy?`<tr><th data-i18n="moq"></th><td>${esc(c.moqPolicy)}</td></tr>`:''}
-              ${c.site?`<tr><th data-i18n="co_th_site"></th><td>${esc(c.site)}</td></tr>`:''}
-            </table>
-          </section>
-
-          <section class="co-sec">
-            <h2><span data-i18n="co_products"></span><span class="n">${prods.length}</span></h2>
-            <div class="co-prods">${prods.map(productCard).join('')}</div>
-          </section>
-
-        </div>
-
-        <aside class="co-aside">
-          <div class="co-box">
-            <div class="t" data-i18n="co_cta_title"></div>
-            <p class="d" data-i18n="co_cta_desc"></p>
-            <button class="btn btn-primary"
-              onclick="openInquiry(${JSON.stringify(prods.map(p=>p.id)).replace(/"/g,"'")})"
-              data-i18n="co_cta_btn"></button>
-            <div class="meta">
-              <div><span data-i18n="co_products"></span> <b>${prods.length}</b></div>
-              <div><span data-i18n="inquiries_count"></span> <b>${totalInq}</b></div>
-              <div><span data-i18n="co_since"></span> <b>${esc(c.since)}</b></div>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <section class="co-sec" style="border-top:1px solid var(--mk-line);padding-top:36px">
-        <div class="sec-head">
-          <h2 data-i18n="co_other"></h2>
-          <a class="more" href="companies.html" data-i18n="view_more"></a>
-        </div>
-        <div class="co-grid">${MK_COMPANIES.filter(x=>x.id!==c.id).slice(0,3).map(companyCard).join('')}</div>
-      </section>
-    </div>`;
-
-  applyI18n(document.getElementById('co-root'));
-}
-</script>
+<script src="assets/js/i18n.js?v=20260805r"></script>
+<script src="assets/js/data.js?v=20260805r"></script>
+<script src="assets/js/store.js?v=20260805r"></script>
+<script src="assets/js/verify.js?v=20260805r"></script>
+<script src="assets/js/upload.js?v=20260805r"></script>
+<script src="assets/js/store-supabase.js?v=20260805r"></script>
+<script src="assets/js/app.js?v=20260805r"></script>
+<script src="assets/js/page-company.js?v=20260805r"></script>
 </body>
 </html>

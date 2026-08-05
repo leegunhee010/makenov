@@ -1440,3 +1440,11 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 /* 칼럼 본문 안의 FAQ — 본문 폭(780)에 맞춰 붙는다 */
 .col-faq{max-width:780px;margin:56px auto 0;padding-top:40px;border-top:1px solid var(--mk-line)}
 .col-faq h2{font-size:24px;font-weight:800;color:var(--mk-ink);margin-bottom:18px}
+
+/* ---------- HTML 사이트맵 ---------- */
+.sm-list{list-style:none;margin:0 0 8px;padding:0;columns:2;column-gap:40px}
+.sm-list li{break-inside:avoid;padding:7px 0;border-bottom:1px solid var(--mk-line);font-size:15px}
+.sm-list a{color:var(--col-ink);font-weight:500}
+.sm-list a:hover{color:var(--mk-primary);text-decoration:underline}
+.sm-meta{color:var(--col-meta);font-size:13px;margin-left:6px}
+@media(max-width:760px){.sm-list{columns:1}}

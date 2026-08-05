@@ -96,7 +96,7 @@ function renderChrome(active){
     </div></div><nav class="mk-nav mk-head-nav"><a href="directory.html" data-i18n="nav_directory"></a><a href="companies.html" data-i18n="nav_companies"></a><a href="columns.html" data-i18n="nav_columns"></a><span class="gnb"><span class="drop"><a href="about.html" data-i18n="nav_about"></a><span class="menu"><a href="about.html" data-i18n="nav_about_buyer"></a><a href="maker.html" data-i18n="nav_about_maker"></a></span></span><a href="guide.html" data-i18n="nav_guide"></a><span class="drop"><a href="support.html" data-i18n="nav_support"></a><span class="menu"><a href="support.html#notice" data-i18n="nav_sp_notice"></a><a href="support.html#faq" data-i18n="nav_sp_faq"></a><a href="support.html#ask" data-i18n="nav_sp_ask"></a></span></span></span></nav></div>`;
   document.getElementById('mk-footer').innerHTML = `
   <div class="wrap"><div><div class="logo"><img src="${mkAsset('assets/img/logo.png')}" alt="MAKENOV"
-      onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a></div><div><h4 data-i18n="ft_support"></h4><a href="support.html" data-i18n="nav_support"></a><a href="guide.html" data-i18n="nav_guide"></a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="about.html" data-i18n="nav_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;
+      onerror="this.parentNode.classList.add(&quot;txt&quot;);this.remove()"><span>MAKE<b>NOV</b></span></div><p class="desc" data-i18n="ft_desc"></p><div class="social"><a href="#" title="Facebook">f</a><a href="#" title="TikTok">t</a><a href="#" title="YouTube">▶</a><a href="#" title="Instagram">◎</a><a href="#" title="Zalo">Z</a></div></div><div><h4 data-i18n="ft_platform"></h4><a href="directory.html" data-i18n="nav_directory"></a><a href="columns.html" data-i18n="nav_columns"></a></div><div><h4 data-i18n="ft_support"></h4><a href="support.html" data-i18n="nav_support"></a><a href="guide.html" data-i18n="nav_guide"></a><a href="sitemap.html">Sơ đồ trang</a><a href="mailto:contact@makenov.com" data-i18n="ft_contact"></a></div><div><h4 data-i18n="ft_company"></h4><a href="about.html" data-i18n="nav_about"></a><a href="maker.html" data-i18n="ft_kr"></a></div></div><div class="base">© 2026 MAKENOV. All rights reserved. · Innovative Korean products for global buyers.</div>`;
   updateCartBadge();
   applyI18n();
 }
@@ -625,7 +625,7 @@ function openCatalog(pid){
 function companyCard(c){
   const n = mkCompanyProducts(c.id).length;
   return `
-  <a class="co-card" href="company.html?id=${c.id}"><div class="cv"><img src="${c.cover}" alt="" loading="lazy"></div><div class="bd"><img class="lg" src="${c.logo}" alt="" loading="lazy"><h3>${esc(L(c.name))}</h3><p class="tag">${esc(L(c.tagline))}</p><div class="meta"><span>${esc(L(c.location))}</span><i></i><span><b>${n}</b> <span data-i18n="co_prod_unit"></span></span><i></i><span>since ${esc(c.since)}</span></div></div></a>`;
+  <a class="co-card" href="company.html?id=${c.id}"><div class="cv"><img src="${c.cover}" alt="" loading="lazy"></div><div class="bd"><img class="lg" src="${c.logo}" alt="${esc(L(c.name))}" loading="lazy"><h3>${esc(L(c.name))}</h3><p class="tag">${esc(L(c.tagline))}</p><div class="meta"><span>${esc(L(c.location))}</span><i></i><span><b>${n}</b> <span data-i18n="co_prod_unit"></span></span><i></i><span>since ${esc(c.since)}</span></div></div></a>`;
 }
 /* 카드 지표 — 문의수는 0이어도 항상 표시한다(사용자 지시).
    관심(wish)은 0이면 생략. */
@@ -641,7 +641,7 @@ function productCard(p){
   const inCart = Store.cartHas(p.id);
   const flag = p.isNew ? `<span class="flag" data-i18n="spot_new"></span>` : (p.featured?`<span class="flag">FEATURED</span>`:'');
   return `
-  <a class="p-card" href="product.html?id=${p.id}"><div class="thumb"><img src="${p.img}" alt="" loading="lazy">${flag}
+  <a class="p-card" href="product.html?id=${p.id}"><div class="thumb"><img src="${p.img}" alt="${esc(L(p.name))}" loading="lazy">${flag}
       <button class="heart ${inCart?'on':''}" onclick="event.preventDefault();event.stopPropagation();toggleCart('${p.id}',this)">${inCart?'♥':'♡'}</button></div><div class="body"><span class="brand">${esc(p.brand)}</span><h3>${esc(L(p.name))}</h3><div class="meta">${cardMeta(p)}<span class="left">${esc(p.origin)}</span></div></div></a>`;
 }
 
