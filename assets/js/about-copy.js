@@ -86,6 +86,13 @@ vs:{
 
 lock:{
   tag:{ko:'가격 공개 방식',vi:'Cách hiển thị giá',en:'How pricing works'},
+  /* 인증 후 화면에 보이는 예시 값 — 실제 단가가 아니라 보여주기용이다 */
+  demo:{
+    price:{ko:'US$ 4.20',vi:'US$ 4.20',en:'US$ 4.20'},
+    moq:{ko:'500',vi:'500',en:'500'},
+    lead:{ko:'30일',vi:'30 ngày',en:'30 days'},
+    terms:{ko:'FOB · OEM',vi:'FOB · OEM',en:'FOB · OEM'},
+  },
   h2:{ko:'가격은 인증한 바이어에게만 보냅니다',
       vi:'Giá chỉ được gửi tới nhà mua đã xác thực',
       en:'Prices are sent only to verified buyers'},
