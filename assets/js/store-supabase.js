@@ -123,6 +123,16 @@ const MkData = {
       }
     }catch(e){}
 
+    /* 관리자에서 고친 문구 — 원본 객체(I18N·AB·MK_MAKER·MK_SETTINGS)에 덮어쓴다.
+       MK_SETTINGS 를 먼저 반영한 뒤에 와야 상단 배너도 오버라이드가 이긴다. */
+    try{
+      const cp = await SB.from('settings').select('*').eq('key', 'copy').maybeSingle();
+      if(!cp.error && cp.data && cp.data.value){
+        window.MK_COPY_OVERRIDE = cp.data.value;
+        if(typeof mkApplyCopy === 'function') mkApplyCopy(cp.data.value);
+      }
+    }catch(e){}
+
     if(he.data && he.data.length){
       MK_HERO.length = 0;
       he.data.forEach(h => MK_HERO.push({
@@ -515,6 +525,17 @@ Object.assign(Admin, {
       throw new Error('settings 테이블이 없습니다 — supabase/07_settings.sql 을 실행하세요 (' + error.message + ')');
     }
     await MkData.loadContent();
+  },
+
+  /* ---- 카피 오버라이드 ----
+     바꾼 문구만 settings 의 key='copy' 한 줄에 모은다. 원본 파일은 건드리지 않는다. */
+  async saveCopy(map){
+    window.MK_COPY_OVERRIDE = map;
+    const { error } = await SB.from('settings').upsert({
+      key:'copy', value:map, updated_at:new Date().toISOString(),
+    });
+    if(error) throw new Error('카피 저장 실패: ' + error.message);
+    if(typeof mkApplyCopy === 'function') mkApplyCopy(map);
   },
 
   /* ---- FAQ CRUD ---- */

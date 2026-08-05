@@ -281,7 +281,7 @@ function imgSrc(v){
 }
 
 /* ---------- 사이드바 · 탭 ---------- */
-const TABS = ['dash','inq','leads','buyers','products','columns','faq','notices','settings'];
+const TABS = ['dash','inq','leads','buyers','products','columns','faq','notices','copy','settings'];
 const NAV = [
   { id:'dash',     label:'대시보드', title:'대시보드',      desc:'플랫폼 현황 한눈에 보기' },
   { id:'inq',      label:'문의함',   title:'문의함',        desc:'바이어가 보낸 견적 문의' },
@@ -291,6 +291,7 @@ const NAV = [
   { id:'columns',  label:'칼럼',     title:'칼럼 관리',      desc:'인사이트 글 작성 및 발행' },
   { id:'faq',      label:'FAQ',      title:'FAQ 관리',       desc:'메인페이지 자주 묻는 질문' },
   { id:'notices',  label:'공지사항', title:'공지사항 관리',   desc:'고객센터 공지 게시판 (신제품·업데이트 소식)' },
+  { id:'copy',     label:'카피',     title:'카피 수정',      desc:'사이트 문구를 코드 수정 없이 고칩니다' },
   { id:'settings', label:'설정',     title:'설정 · 내보내기', desc:'배포용 데이터와 계정 관리' },
 ];
 let curTab = 'dash';
@@ -334,7 +335,7 @@ function toggleSb(open){
 
 function renderAll(){
   renderNav(); renderDash();
-  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderNotices(); renderSettings();
+  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderNotices(); renderCopy(); renderSettings();
   showTab(curTab);
 }
 
@@ -1085,6 +1086,114 @@ function saveNotice(id){
 /* ============================================================
    5. 설정 · 내보내기
    ============================================================ */
+/* ============================================================
+   카피 수정 — 사이트 문구를 코드 없이 고친다
+   ============================================================ */
+let cpSrc = 'ui', cpSearch = '', cpOnlyEdited = false;
+let cpDraft = {};          // 저장 전 편집분 { path: {vi,ko,en} }
+
+/* 지금 화면에서 쓰는 값 = 저장분 + 편집분 */
+function cpValue(f){
+  const saved = (window.MK_COPY_OVERRIDE || {})[f.path] || {};
+  const draft = cpDraft[f.path] || {};
+  return { ...f.val, ...saved, ...draft };
+}
+function cpIsEdited(f){
+  const o = (window.MK_COPY_OVERRIDE || {})[f.path], d = cpDraft[f.path];
+  return !!(o || d);
+}
+
+function cpEdit(path, lang, v){
+  const f = mkCopyFields().find(x=>x.path===path);
+  if(!f) return;
+  cpDraft[path] = { ...cpValue(f), [lang]: v };
+  document.getElementById('cp-dirty').textContent = Object.keys(cpDraft).length + '건 편집됨';
+  document.getElementById('cp-save').disabled = false;
+}
+
+async function cpSave(){
+  const map = { ...(window.MK_COPY_OVERRIDE || {}) };
+  Object.keys(cpDraft).forEach(p=>{ map[p] = cpDraft[p]; });
+  try{
+    await Store.saveCopy(map);
+    cpDraft = {};
+    toastA('사이트에 반영되었습니다');
+    renderCopy();
+    if(typeof applyI18n === 'function') applyI18n();
+  }catch(e){ alert(e.message); }
+}
+
+/* 한 항목만 원래 문구로 되돌린다 */
+async function cpReset(path){
+  delete cpDraft[path];
+  const map = { ...(window.MK_COPY_OVERRIDE || {}) };
+  if(map[path]){
+    delete map[path];
+    if(!confirm('이 문구를 원래대로 되돌릴까요?\n(저장된 수정이 지워지고 화면을 새로 고쳐야 원문이 보입니다)')) return;
+    try{ await Store.saveCopy(map); }catch(e){ return alert(e.message); }
+    toastA('되돌렸습니다 — 새로고침하면 원문이 보입니다');
+  }
+  renderCopy();
+}
+
+function renderCopy(){
+  const el = document.getElementById('tab-copy');
+  if(!el) return;
+  const sources = mkCopySources();
+  if(!sources.length){ el.innerHTML = `<div class="card"><p class="note">문구 원본을 찾지 못했습니다.</p></div>`; return; }
+
+  const all = mkCopyFields();
+  const q = cpSearch.trim().toLowerCase();
+  const list = all.filter(f=>{
+    if(f.src !== cpSrc) return false;
+    if(cpOnlyEdited && !cpIsEdited(f)) return false;
+    if(q){
+      const v = cpValue(f);
+      const hay = [f.label, v.ko, v.vi, v.en].map(x=>String(x||'').toLowerCase()).join(' ');
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const editedCnt = all.filter(cpIsEdited).length;
+  const cur = sources.find(s=>s.id===cpSrc) || sources[0];
+
+  const row = f => {
+    const v = cpValue(f);
+    const on = cpIsEdited(f);
+    const box = (l, label) => v[l] === undefined ? '' : `
+      <div class="fld" style="margin:0">
+        <label><span class="lang-tag">${label}</span></label>
+        <textarea rows="${String(v[l]||'').length > 70 ? 3 : 1}"
+          oninput="cpEdit('${esc(f.path)}','${l}',this.value)">${esc(v[l]||'')}</textarea>
+      </div>`;
+    return `<div class="cfaq" style="${on?'border-color:var(--mk-primary)':''}">
+      <div class="blk-head" style="margin-bottom:8px">
+        <b style="font-family:var(--font-body);color:${on?'var(--mk-primary)':'var(--adm-sub)'}">${esc(f.label)}${on?' · 수정됨':''}</b>
+        ${on?`<div class="acts"><button onclick="cpReset('${esc(f.path)}')">되돌리기</button></div>`:''}
+      </div>
+      <div class="fgrid">${box('ko','KO')}${box('vi','VI')}${box('en','EN')}</div>
+    </div>`;
+  };
+
+  el.innerHTML = `
+    <div class="card">
+      <p class="note">사이트에 나가는 문구를 여기서 고칩니다. 저장하면 바로 반영되고, 원본 파일은 그대로 있어서 언제든 되돌릴 수 있습니다.
+      <br><b>${esc(cur.label)}</b> — ${esc(cur.hint)}</p>
+      <div class="bar">
+        ${sources.map(s=>`<button class="btn btn-sm ${cpSrc===s.id?'btn-primary':'btn-ghost'}" onclick="cpSrc='${s.id}';renderCopy()">${esc(s.label)}</button>`).join('')}
+      </div>
+      <div class="bar">
+        <input class="srch" style="min-width:240px" placeholder="문구 또는 키 검색" value="${esc(cpSearch)}" oninput="cpSearch=this.value;renderCopy()">
+        <label class="chk"><input type="checkbox" ${cpOnlyEdited?'checked':''} onchange="cpOnlyEdited=this.checked;renderCopy()"> 수정한 것만</label>
+        <span class="grow"></span>
+        <span class="note" style="margin:0">${list.length}개 · 전체 수정 <b>${editedCnt}</b>건</span>
+        <span class="note" style="margin:0" id="cp-dirty">${Object.keys(cpDraft).length?Object.keys(cpDraft).length+'건 편집됨':''}</span>
+        <button class="btn btn-primary btn-sm" id="cp-save" ${Object.keys(cpDraft).length?'':'disabled'} onclick="cpSave()">저장</button>
+      </div>
+      ${list.length ? list.map(row).join('') : `<p class="note" style="text-align:center;padding:40px 0">조건에 맞는 문구가 없습니다</p>`}
+    </div>`;
+}
+
 function renderSettings(){
   const S = (typeof MK_SETTINGS !== 'undefined') ? MK_SETTINGS : { topbar:{} };
   const tb = S.topbar || {};
