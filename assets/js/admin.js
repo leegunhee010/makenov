@@ -262,6 +262,8 @@ async function doAdminLogin(){
 }
 async function boot(){
   document.getElementById('gate').classList.add('hidden');
+  const w = document.getElementById('boot-wait');
+  if(w) w.classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   /* 관리자는 데이터의 mkimg: 참조를 그대로 두고(내보내기 때문에) 캐시만 채운 뒤 표시할 때 해석한다 */
   try{ await MkImg.loadCache(); }catch(e){}
@@ -1454,25 +1456,62 @@ function importJson(input){
   r.readAsText(f);
 }
 
-/* ---------- 부팅 ---------- */
+/* ---------- 부팅 ----------
+   ⚠ 순서가 중요하다.
+     예전엔 이메일 칸 추가와 로그인 판정을 전부 `await MkData.boot()` 뒤에 뒀다.
+     그런데 boot() 는 콘텐츠까지 다 받느라 1초 넘게 걸린다(세션 확인 자체는 0ms).
+     그 사이 화면에는 백엔드가 없을 때 쓰는 로컬 모드 폼
+     ("비밀번호 / 초기 비밀번호 makenov2026")이 떠 있었다.
+     이미 로그인한 사람도 들어올 때마다 로그인 창을 보게 되니 계속 뜨는 것처럼 보인다.
+     그래서 기다리지 않아도 되는 일은 전부 먼저 한다. */
+
+/* Supabase 세션이 저장돼 있는지 — 네트워크 없이 즉시 판단 */
+function hasSbSession(){
+  try{ return Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k)); }
+  catch(e){ return false; }
+}
+
+/* 게이트를 계정 로그인 폼으로 바꾼다 (동기) */
+function setupSbGate(){
+  const pw = document.getElementById('gate-pw');
+  if(!pw || document.getElementById('gate-email')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'fld';
+  wrap.innerHTML = `<label>관리자 이메일</label><input id="gate-email" type="email" autocomplete="username" placeholder="admin@makenov.com" onkeydown="if(event.key==='Enter')doAdminLogin()">`;
+  pw.closest('.fld').parentNode.insertBefore(wrap, pw.closest('.fld'));
+  /* 로컬용 안내문(초기 비밀번호 makenov2026)은 Supabase 모드에선 틀린 말이라 교체 */
+  const hint = pw.closest('.fld').querySelector('.hint');
+  if(hint) hint.innerHTML = '가입된 <b>관리자 계정</b>의 이메일·비밀번호로 로그인하세요.';
+  pw.setAttribute('autocomplete','current-password');
+}
+
+function showBootWait(on){
+  const g = document.getElementById('gate');
+  const w = document.getElementById('boot-wait');
+  if(g) g.classList.toggle('hidden', !!on);
+  if(w) w.classList.toggle('hidden', !on);
+}
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   if(isSB()){
-    /* 관리자 화면도 콘텐츠·세션을 Supabase에서 받아온다 */
+    setupSbGate();                       /* 1) 폼부터 제 모습으로 (기다리지 않는다) */
+    const maybeIn = hasSbSession();
+    if(maybeIn) showBootWait(true);      /* 2) 세션이 있으면 로그인 창 대신 대기 화면 */
+    else { const el = document.getElementById('gate-email'); if(el) el.focus(); }
+
     try{ await MkData.boot(); }catch(e){ console.error('백엔드 연결 실패', e); }
-    /* 게이트에 이메일 칸 추가 (Supabase는 계정 로그인) */
-    const pw = document.getElementById('gate-pw');
-    if(pw && !document.getElementById('gate-email')){
-      const wrap = document.createElement('div');
-      wrap.className = 'fld';
-      wrap.innerHTML = `<label>관리자 이메일</label><input id="gate-email" type="email" autocomplete="username" placeholder="admin@makenov.com" onkeydown="if(event.key==='Enter')doAdminLogin()">`;
-      pw.closest('.fld').parentNode.insertBefore(wrap, pw.closest('.fld'));
-      /* 로컬용 안내문(초기 비밀번호 makenov2026)은 Supabase 모드에선 틀린 말이라 교체 */
-      const hint = pw.closest('.fld').querySelector('.hint');
-      if(hint) hint.innerHTML = '가입된 <b>관리자 계정</b>의 이메일·비밀번호로 로그인하세요. (Supabase Auth)';
-      pw.setAttribute('autocomplete','current-password');
+
+    if(MkData.admin){ showBootWait(false); boot(); return; }
+    if(maybeIn){                         /* 세션은 있는데 관리자가 아니거나 만료됐다 */
+      showBootWait(false);
+      const err = document.getElementById('gate-err');
+      if(err && MkData.session){
+        err.textContent = '이 계정은 관리자로 등록돼 있지 않습니다 (admins 테이블 확인)';
+        err.style.display = 'block';
+      }
       const el = document.getElementById('gate-email'); if(el) el.focus();
     }
-    if(MkData.admin){ boot(); return; }
+    return;
   }
   if(Admin.isIn()) boot();
 });
