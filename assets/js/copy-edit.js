@@ -1,0 +1,172 @@
+/* ============================================================
+   MAKENOV 화면 편집 모드
+   ------------------------------------------------------------
+   사이트를 보면서 글자를 눌러 그 자리에서 고친다.
+   관리자로 로그인한 사람에게만 보인다.
+
+   켜는 법
+     주소 끝에 ?edit=1 을 붙이거나, 관리자로 로그인하면 우하단에 뜨는
+     '문구 수정' 버튼을 누른다.
+
+   글자를 경로에 되짚는 방법 (두 단계)
+     1) data-i18n="nav_directory"  → ui.nav_directory   (정확. 헷갈릴 일 없음)
+     2) 그 외 요소는 화면 글자를 copy.js 의 문구 목록과 대조해 찾는다.
+        같은 문구가 여러 곳에 쓰이면 어디를 고칠지 고르게 한다.
+        (about-copy·maker-copy 처럼 마크업에 표시가 없는 본문을 위한 길)
+
+   저장하면 settings 의 copy 한 줄에 들어가고 전 페이지에 반영된다.
+   ⚠ 정적 페이지(크롤러가 보는 사본)에는 `node build.js` 를 돌려야 들어간다.
+   ============================================================ */
+(function(){
+  const LANGS = ['ko', 'vi', 'en'];
+  let on = false, pop = null;
+
+  const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+
+  /* 이 요소가 어느 문구인지 찾는다. 후보를 배열로 돌려준다 */
+  function resolve(el){
+    const key = el.getAttribute && el.getAttribute('data-i18n');
+    const all = (typeof mkCopyFields === 'function') ? mkCopyFields() : [];
+    if(key){
+      const f = all.find(x => x.path === 'ui.' + key);
+      if(f) return [f];
+    }
+    const txt = norm(el.textContent);
+    if(!txt || txt.length > 400) return [];
+    const lang = (typeof MK_LANG !== 'undefined') ? MK_LANG : 'vi';
+    /* 원본의 \n 은 화면에서 <br> 이 되는데 textContent 에는 공백이 남지 않는다.
+       그래서 공백을 전부 지운 형태로도 한 번 더 대조한다. */
+    const squash = s => norm(s).replace(/\s+/g, '');
+    const flat = squash(txt);
+    return all.filter(f => {
+      const v = f.val[lang] != null ? f.val[lang] : f.val.ko;
+      return norm(v) === txt || squash(v) === flat;
+    });
+  }
+
+  /* 편집 가능한 가장 안쪽 요소만 고른다 (부모까지 잡히면 통째로 바뀐다) */
+  function target(node){
+    let el = node;
+    while(el && el !== document.body){
+      if(el.nodeType === 1 && !el.closest('.mkedit-pop') && resolve(el).length) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function closePop(){ if(pop){ pop.remove(); pop = null; } }
+
+  function openPop(el, fields){
+    closePop();
+    const saved = window.MK_COPY_OVERRIDE || {};
+    let field = fields[0];
+
+    pop = document.createElement('div');
+    pop.className = 'mkedit-pop';
+    const draw = () => {
+      const cur = { ...field.val, ...(saved[field.path] || {}) };
+      pop.innerHTML = `
+        <div class="hd">
+          <b>${esc(mkCopyGroup(field))}</b>
+          <span class="pt">${esc(field.label)}</span>
+          <button class="x" type="button">&times;</button>
+        </div>
+        ${fields.length > 1 ? `<div class="pick">이 문구가 ${fields.length}군데에 쓰입니다
+          <select>${fields.map((f,i)=>`<option value="${i}" ${f===field?'selected':''}>${esc(mkCopyGroup(f))} · ${esc(f.label)}</option>`).join('')}</select></div>` : ''}
+        ${LANGS.filter(l => cur[l] !== undefined).map(l => `
+          <label><span>${l.toUpperCase()}</span>
+            <textarea data-l="${l}" rows="${String(cur[l]||'').length > 60 ? 3 : 2}">${esc(cur[l]||'')}</textarea>
+          </label>`).join('')}
+        <div class="ft">
+          <span class="msg"></span>
+          <button class="btn btn-ghost btn-sm cancel" type="button">취소</button>
+          <button class="btn btn-primary btn-sm save" type="button">저장</button>
+        </div>`;
+
+      pop.querySelector('.x').onclick = closePop;
+      pop.querySelector('.cancel').onclick = closePop;
+      const sel = pop.querySelector('.pick select');
+      if(sel) sel.onchange = () => { field = fields[+sel.value]; draw(); };
+      pop.querySelector('.save').onclick = save;
+    };
+
+    async function save(){
+      const msg = pop.querySelector('.msg');
+      const val = { ...field.val, ...(saved[field.path] || {}) };
+      pop.querySelectorAll('textarea').forEach(t => { val[t.dataset.l] = t.value; });
+      msg.textContent = '저장 중…';
+      try{
+        const map = { ...(window.MK_COPY_OVERRIDE || {}) };
+        map[field.path] = val;
+        await Store.saveCopy(map);
+        /* 화면에 바로 반영 */
+        const lang = (typeof MK_LANG !== 'undefined') ? MK_LANG : 'vi';
+        if(val[lang] != null) el.textContent = val[lang];
+        if(typeof applyI18n === 'function') applyI18n();
+        closePop();
+      }catch(e){ msg.textContent = e.message; }
+    }
+
+    draw();
+    document.body.appendChild(pop);
+    const r = el.getBoundingClientRect();
+    const top = Math.max(8, Math.min(window.innerHeight - pop.offsetHeight - 8, r.bottom + 8));
+    pop.style.top = (top + window.scrollY) + 'px';
+    pop.style.left = Math.max(8, Math.min(window.innerWidth - pop.offsetWidth - 8, r.left)) + 'px';
+    const ta = pop.querySelector('textarea');
+    if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }
+
+  function onClick(e){
+    if(!on) return;
+    if(e.target.closest('.mkedit-pop') || e.target.closest('.mkedit-bar')) return;
+    const el = target(e.target);
+    if(!el) return;
+    e.preventDefault(); e.stopPropagation();
+    openPop(el, resolve(el));
+  }
+
+  function onOver(e){
+    if(!on) return;
+    document.querySelectorAll('.mkedit-hot').forEach(x=>x.classList.remove('mkedit-hot'));
+    if(e.target.closest('.mkedit-pop') || e.target.closest('.mkedit-bar')) return;
+    const el = target(e.target);
+    if(el) el.classList.add('mkedit-hot');
+  }
+
+  function setMode(v){
+    on = v;
+    document.body.classList.toggle('mkedit-on', on);
+    if(!on){
+      closePop();
+      document.querySelectorAll('.mkedit-hot').forEach(x=>x.classList.remove('mkedit-hot'));
+    }
+    const b = document.querySelector('.mkedit-bar');
+    if(b) b.innerHTML = on
+      ? `<b>문구 수정 중</b> <span>고칠 글자를 누르세요</span><button type="button">끝내기</button>`
+      : `<button type="button">문구 수정</button>`;
+    if(b) b.querySelector('button').onclick = () => setMode(!on);
+  }
+
+  function mount(){
+    if(document.querySelector('.mkedit-bar')) return;
+    const bar = document.createElement('div');
+    bar.className = 'mkedit-bar';
+    document.body.appendChild(bar);
+    document.addEventListener('click', onClick, true);
+    document.addEventListener('mouseover', onOver, true);
+    setMode(new URLSearchParams(location.search).get('edit') === '1');
+  }
+
+  /* 관리자 판단 전에도 부를 수 있게 열어 둔다 (수동 실행·점검용) */
+  window.MkEdit = { mount, setMode, resolve, target, isOn: () => on };
+
+  /* 관리자에게만 — 부팅이 끝난 뒤 판단한다 */
+  document.addEventListener('DOMContentLoaded', () => {
+    const tick = setInterval(() => {
+      if(typeof MkData === 'undefined') return clearInterval(tick);
+      if(MkData.admin){ clearInterval(tick); mount(); }
+    }, 400);
+    setTimeout(() => clearInterval(tick), 12000);
+  });
+})();

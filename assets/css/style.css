@@ -1448,3 +1448,30 @@ i.top{display:inline-block;font-style:normal;font-size:11px;font-weight:600;colo
 .sm-list a:hover{color:var(--mk-primary);text-decoration:underline}
 .sm-meta{color:var(--col-meta);font-size:13px;margin-left:6px}
 @media(max-width:760px){.sm-list{columns:1}}
+
+/* ---------- 화면 편집 모드 (관리자 전용) ---------- */
+.mkedit-bar{position:fixed;right:18px;bottom:18px;z-index:9000;display:flex;align-items:center;gap:10px;
+  background:#0F1A33;color:#fff;border-radius:var(--r-pill);padding:9px 10px 9px 16px;
+  box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:13px}
+.mkedit-bar b{font-weight:700}
+.mkedit-bar span{color:rgba(255,255,255,.7);font-size:12px}
+.mkedit-bar button{background:var(--mk-primary);color:#fff;border:0;border-radius:var(--r-pill);
+  padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
+body.mkedit-on .mkedit-hot{outline:2px solid var(--mk-primary);outline-offset:2px;
+  border-radius:3px;cursor:pointer;background:var(--mk-primary-soft)}
+.mkedit-pop{position:absolute;z-index:9100;width:min(440px,calc(100vw - 24px));background:#fff;
+  border:1px solid var(--mk-line);border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.24);padding:14px 16px 12px}
+.mkedit-pop .hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.mkedit-pop .hd b{font-size:13px;color:var(--mk-primary)}
+.mkedit-pop .hd .pt{font-size:11px;color:var(--mk-sub);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mkedit-pop .hd .x{border:0;background:none;font-size:20px;line-height:1;color:var(--mk-sub);cursor:pointer}
+.mkedit-pop .pick{font-size:12px;color:var(--mk-sub);margin-bottom:10px}
+.mkedit-pop .pick select{width:100%;margin-top:5px;border:1px solid var(--mk-line);border-radius:7px;
+  padding:7px 9px;font-size:13px;font-family:var(--font-body)}
+.mkedit-pop label{display:block;margin-bottom:9px}
+.mkedit-pop label span{display:block;font-size:10px;font-weight:700;color:var(--mk-sub);margin-bottom:4px}
+.mkedit-pop textarea{width:100%;border:1px solid var(--mk-line);border-radius:7px;padding:8px 10px;
+  font-size:14px;line-height:1.6;font-family:var(--font-body);resize:vertical}
+.mkedit-pop textarea:focus{outline:none;border-color:var(--mk-primary)}
+.mkedit-pop .ft{display:flex;align-items:center;gap:8px;margin-top:4px}
+.mkedit-pop .ft .msg{flex:1;font-size:12px;color:var(--mk-sub)}

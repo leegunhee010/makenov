@@ -196,7 +196,7 @@ const SCRIPTS = () => [
   'assets/js/config.js', 'assets/js/pixel.js', null /* supabase CDN */,
   'assets/js/i18n.js', 'assets/js/baked.js', 'assets/js/data.js', 'assets/js/copy.js',
   'assets/js/store.js', 'assets/js/verify.js', 'assets/js/upload.js',
-  'assets/js/store-supabase.js', 'assets/js/app.js',
+  'assets/js/store-supabase.js', 'assets/js/copy-edit.js', 'assets/js/app.js',
 ].map(s => s === null
   ? `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>`
   : `<script src="${v(s)}"></script>`).join('\n');

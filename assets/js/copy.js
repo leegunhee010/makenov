@@ -31,6 +31,8 @@ function mkCopySources(){
       kind:'tree', strLeaf:true, root:(typeof MKC !== 'undefined') ? MKC : null },
     { id:'maker', label:'공급사 안내 수치',  hint:'통계 4칸·주요 시장·연락처',
       kind:'tree', strLeaf:true, root:(typeof MK_MAKER !== 'undefined') ? MK_MAKER : null },
+    { id:'hero',  label:'홈 히어로',       hint:'홈 최상단 슬라이드 문구',
+      kind:'tree', root:(typeof MK_HERO !== 'undefined') ? MK_HERO : null },
     { id:'site',  label:'상단 배너',       hint:'전 페이지 최상단 띠',
       kind:'tree', root:(typeof MK_SETTINGS !== 'undefined') ? MK_SETTINGS : null },
   ].filter(s => s.root);
@@ -49,7 +51,8 @@ function mkCopyIsLeaf(v){
 function mkCopyWalk(node, prefix, out, strLeaf){
   if(strLeaf && typeof node === 'string'){ out.push({ path:prefix, val:{ ko:node }, str:true }); return; }
   if(mkCopyIsLeaf(node)){ out.push({ path:prefix, val:node }); return; }
-  if(Array.isArray(node)){ node.forEach((v,i)=>mkCopyWalk(v, prefix+'.'+i, out, strLeaf)); return; }
+  /* 최상위가 배열이면 prefix 가 비어 있다. 그대로 이으면 'hero..1.sub' 처럼 점이 겹친다 */
+  if(Array.isArray(node)){ node.forEach((v,i)=>mkCopyWalk(v, prefix ? prefix+'.'+i : String(i), out, strLeaf)); return; }
   if(node && typeof node === 'object'){
     Object.keys(node).forEach(k=>mkCopyWalk(node[k], prefix ? prefix+'.'+k : k, out, strLeaf));
   }
@@ -149,6 +152,7 @@ const MK_COPY_GROUPS = {
     faq:'9 FAQ', apply:'10 신청 폼', last:'11 마무리',
   },
   maker: { stats:'통계 4칸', markets:'주요 시장', contactEmail:'연락처', contactTel:'연락처' },
+  hero:  { 0:'슬라이드 1', 1:'슬라이드 2', 2:'슬라이드 3', 3:'슬라이드 4', 4:'슬라이드 5' },
   site:  { topbar:'상단 배너' },
 };
 

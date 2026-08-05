@@ -123,8 +123,16 @@ const MkData = {
       }
     }catch(e){}
 
-    /* 관리자에서 고친 문구 — 원본 객체(I18N·AB·MK_MAKER·MK_SETTINGS)에 덮어쓴다.
-       MK_SETTINGS 를 먼저 반영한 뒤에 와야 상단 배너도 오버라이드가 이긴다. */
+    if(he.data && he.data.length){
+      MK_HERO.length = 0;
+      he.data.forEach(h => MK_HERO.push({
+        art:h.art, link:h.link, kicker:h.kicker, title:h.title, sub:h.sub,
+      }));
+    }
+
+    /* 관리자에서 고친 문구 — 원본 객체(I18N·AB·MKC·MK_MAKER·MK_HERO·MK_SETTINGS)에 덮어쓴다.
+       ⚠ 반드시 맨 마지막이어야 한다. 앞서 채운 값 위에 덮어야 오버라이드가 이긴다.
+          예전엔 히어로보다 먼저 적용해서, 히어로 문구를 고쳐도 곧바로 DB 값에 덮여 사라졌다. */
     try{
       const cp = await SB.from('settings').select('*').eq('key', 'copy').maybeSingle();
       if(!cp.error && cp.data && cp.data.value){
@@ -132,13 +140,6 @@ const MkData = {
         if(typeof mkApplyCopy === 'function') mkApplyCopy(cp.data.value);
       }
     }catch(e){}
-
-    if(he.data && he.data.length){
-      MK_HERO.length = 0;
-      he.data.forEach(h => MK_HERO.push({
-        art:h.art, link:h.link, kicker:h.kicker, title:h.title, sub:h.sub,
-      }));
-    }
   },
 };
 window.MkData = MkData;
