@@ -71,7 +71,7 @@ vs:{
      b:{ko:'등록된 제품 전체',vi:'Toàn bộ sản phẩm đã đăng',en:'Everything that is listed'}},
     {k:{ko:'단가 확인',vi:'Xem đơn giá',en:'Getting a price'},
      a:{ko:'현장에서는 어렵고, 메일로 문의',vi:'Tại chỗ khó hỏi, phải email sau',en:'Hard on site; you email afterwards'},
-     b:{ko:'인증 후 상세페이지에서 바로',vi:'Xác thực xong xem ngay trên trang sản phẩm',en:'Right on the product page once verified'}},
+     b:{ko:'인증 후 제품 페이지에서 바로',vi:'Xác thực xong xem ngay trên trang sản phẩm',en:'Right on the product page once verified'}},
     {k:{ko:'제품 비교',vi:'So sánh sản phẩm',en:'Comparing products'},
      a:{ko:'받아온 카탈로그로',vi:'Bằng catalogue mang về',en:'Using the brochures you carried home'},
      b:{ko:'관심제품에 담아 조건 나란히',vi:'Lưu vào danh sách rồi đặt điều kiện cạnh nhau',en:'Saved to a list with terms side by side'}},
