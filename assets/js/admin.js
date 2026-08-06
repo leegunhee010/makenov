@@ -1460,9 +1460,9 @@ function renderSeo(){
           <span class="seolen${cls}" id="seolen-${cssId(p.file)}-${lang}-${k}">${n}자</span>
         </label>
         ${k === 'title'
-          ? `<input value="${esc(v)}" placeholder="${esc(ph)}"
+          ? `<input value="${esc(v)}" placeholder="${esc(ph)}" data-seo-ph="${cssId(p.file)}-${lang}-title"
                oninput="seoEdit('${p.file}','${lang}','title',this.value)">`
-          : `<textarea rows="2" placeholder="${esc(ph)}"
+          : `<textarea rows="2" placeholder="${esc(ph)}" data-seo-ph="${cssId(p.file)}-${lang}-desc"
                oninput="seoEdit('${p.file}','${lang}','desc',this.value)">${esc(v)}</textarea>`}
       </div>`;
   };
@@ -1536,6 +1536,36 @@ function renderSeo(){
         <tr><th>구조화 데이터</th><td>조직·FAQ·제품 정보 — 등록한 내용에서 자동 생성됩니다.</td></tr>
       </tbody></table>
     </div>`;
+
+  seoFillCurrent();
+}
+
+/* 빈 칸에 "지금 나가는 문구"를 흐리게 채운다.
+   OG 미리보기와 같은 문제 — 비어 있으면 아무것도 없는 것처럼 보였다.
+   구워진 각 페이지의 HTML 에서 title 과 description 을 읽어 placeholder 로 넣는다.
+   그게 곧 지금 검색엔진이 보는 값이다. 한 번 읽으면 세션 동안 기억한다. */
+const _seoCur = {};
+async function seoFillCurrent(){
+  for(const p of SEO_PAGES){
+    for(const lang of p.langs){
+      const rel = lang === 'vi' || p.file === 'maker.html' ? p.file : lang + '/' + p.file;
+      const key = cssId(p.file) + '-' + lang;
+      if(!_seoCur[key]){
+        try{
+          const html = await (await fetch('../' + rel, { cache:'no-store' })).text();
+          _seoCur[key] = {
+            title: (html.match(/<title>([^<]*)/) || [])[1] || '',
+            desc:  (html.match(/name="description" content="([^"]*)/) || [])[1] || '',
+          };
+        }catch(e){ continue; }
+      }
+      ['title','desc'].forEach(k => {
+        const inp = document.querySelector(`[data-seo-ph="${key}-${k}"]`);
+        if(inp && !inp.value && _seoCur[key][k])
+          inp.placeholder = '지금 나가는 문구: ' + _seoCur[key][k];
+      });
+    }
+  }
 }
 
 function renderSettings(){
