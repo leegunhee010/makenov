@@ -677,12 +677,12 @@ ${forceLang(lang)}${SCRIPTS()}
     },
     'guide.html': {
       t: {
-        vi: { title: 'Hướng dẫn sử dụng | MAKENOV',
-              desc: 'Từ đăng ký, xác thực doanh nghiệp, xem giá đến gửi yêu cầu báo giá — từng bước cho nhà mua hàng và nhà cung cấp.' },
-        ko: { title: '이용 가이드 | MAKENOV',
-              desc: '가입, 사업자 인증, 가격 열람, 견적 요청까지 기능별로 설명합니다. 바이어와 공급사가 각각 무엇을 하면 되는지 정리했습니다.' },
-        en: { title: 'User guide | MAKENOV',
-              desc: 'From signing up and verifying your business to viewing prices and sending a quote request — step by step for buyers and suppliers.' },
+        vi: { title: 'Hướng dẫn sử dụng MAKENOV | Dành cho nhà mua và nhà cung cấp',
+              desc: 'Hướng dẫn cách dùng MAKENOV: đăng ký, xác thực doanh nghiệp, tìm sản phẩm, xem giá và MOQ, gửi yêu cầu báo giá và đăng sản phẩm cho nhà cung cấp.' },
+        ko: { title: 'MAKENOV 이용 가이드 | 바이어·공급사 이용 방법',
+              desc: '회원가입과 사업자 인증부터 제품 탐색, 가격·MOQ 확인, 견적 요청, 공급사 제품 등록까지 MAKENOV 이용 방법을 안내합니다.' },
+        en: { title: 'MAKENOV user guide | For buyers and suppliers',
+              desc: 'How to use MAKENOV: signing up and verifying your business, finding products, checking price and MOQ, requesting quotes, and listing products as a supplier.' },
       },
     },
     'support.html': {
