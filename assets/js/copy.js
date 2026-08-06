@@ -58,6 +58,10 @@ function mkCopyWalk(node, prefix, out, strLeaf){
   }
 }
 
+/* 화면 어디에도 안 나오는 값. 목록에 두면 고쳐도 안 바뀌어 헷갈리므로 뺀다.
+   hero 의 kicker 는 예전 디자인의 잔재다. 지금 슬라이드는 title 과 sub 만 그린다. */
+const MK_COPY_HIDE = /^hero\.\d+\.kicker$/;
+
 /* 편집 가능한 문구 전체 목록 [{src, path, label, val}] */
 function mkCopyFields(){
   const out = [];
@@ -75,7 +79,7 @@ function mkCopyFields(){
     mkCopyWalk(s.root, '', found, s.strLeaf);
     found.forEach(f => out.push({ src:s.id, path:s.id+'.'+f.path, label:f.path, val:f.val, str:f.str }));
   });
-  return out;
+  return out.filter(f => !MK_COPY_HIDE.test(f.path));
 }
 
 /* 경로 하나에 값 쓰기 */
@@ -162,4 +166,48 @@ function mkCopyGroup(field){
   const head = field.src === 'ui' ? rest.split('_')[0] : rest.split('.')[0];
   const map = MK_COPY_GROUPS[field.src] || {};
   return map[head] || '기타';
+}
+
+/* ============================================================
+   한국어 → 베트남어 · 영어 자동번역
+   ------------------------------------------------------------
+   관리자 카피 탭과 화면 편집기가 같이 쓴다. 그래서 copy.js 에 둔다.
+   (예전엔 admin.js 안에만 있어서 사이트 쪽에서는 못 썼다)
+
+   ⚠ 기계번역이다. 채워 넣은 뒤 사람이 한 번 봐야 한다.
+     특히 베트남어는 바이어가 첫 화면에서 보는 말이다.
+   ============================================================ */
+
+/* 키가 필요 없는 무료 엔드포인트. 실패하면 다른 곳으로 한 번 더 시도한다 */
+async function mkTranslate(text, from, to){
+  const src = String(text || '').trim();
+  if(!src) return '';
+  try{
+    const u = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=` + encodeURIComponent(src);
+    const r = await fetch(u);
+    if(r.ok){ const j = await r.json(); const out = (j[0]||[]).map(s=>s[0]).join(''); if(out) return out; }
+  }catch(e){}
+  try{
+    const u = `https://api.mymemory.translated.net/get?q=` + encodeURIComponent(src) + `&langpair=${from}|${to}`;
+    const r = await fetch(u); const j = await r.json();
+    if(j && j.responseData && j.responseData.translatedText) return j.responseData.translatedText;
+  }catch(e){}
+  return '';
+}
+
+/* 줄바꿈을 지킨다.
+   히어로 제목처럼 \n 이 곧 <br> 인 문구가 있어서, 통째로 넘기면 줄이 뭉개진다.
+   줄 단위로 옮기고 다시 \n 으로 잇는다. */
+async function mkTranslateLines(ko, to){
+  const lines = String(ko == null ? '' : ko).split('\n');
+  const out = [];
+  for(const l of lines) out.push(l.trim() ? await mkTranslate(l, 'ko', to) : '');
+  return out.join('\n');
+}
+
+/* 한국어 하나로 두 언어를 만든다. 한쪽이라도 실패하면 그 칸은 빈 문자열이다 */
+async function mkTranslateKo(ko){
+  const vi = await mkTranslateLines(ko, 'vi');
+  const en = await mkTranslateLines(ko, 'en');
+  return { vi, en };
 }

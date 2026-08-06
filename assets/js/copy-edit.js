@@ -56,8 +56,19 @@
 
   function closePop(){ if(pop){ pop.remove(); pop = null; } }
 
+  /* 홈 히어로는 5초마다 저절로 넘어간다.
+     고칠 문구를 눌러 둔 사이에 슬라이드가 바뀌면 팝업이 사라진 글자를 가리키게 되므로
+     편집 중에는 멈춰 둔다. 점·화살표를 눌러 원하는 슬라이드로는 그대로 넘길 수 있다.
+     (heroTimer·setHero 는 index.html 의 전역이다. 다른 페이지엔 없으므로 있는지 먼저 본다) */
+  function heroAuto(run){
+    if(typeof heroTimer === 'undefined' || typeof setHero !== 'function') return;
+    clearInterval(heroTimer);
+    if(run) heroTimer = setInterval(() => setHero(heroIdx + 1), 5000);
+  }
+
   function openPop(el, fields){
     if(!isAdmin()) return;
+    heroAuto(false);   /* 부팅 순서에 따라 편집 모드보다 늦게 켜질 수 있어 여기서 한 번 더 */
     closePop();
     const saved = window.MK_COPY_OVERRIDE || {};
     let field = fields[0];
@@ -80,6 +91,8 @@
           </label>`).join('')}
         <div class="ft">
           <span class="msg"></span>
+          ${hasOther(cur) ? `<button class="btn btn-ghost btn-sm tr" type="button"
+            title="한국어를 베트남어·영어로 다시 번역합니다">🌐 번역</button>` : ''}
           <button class="btn btn-ghost btn-sm cancel" type="button">취소</button>
           <button class="btn btn-primary btn-sm save" type="button">저장</button>
         </div>`;
@@ -89,17 +102,61 @@
       const sel = pop.querySelector('.pick select');
       if(sel) sel.onchange = () => { field = fields[+sel.value]; draw(); };
       pop.querySelector('.save').onclick = save;
+      const tr = pop.querySelector('.tr');
+      if(tr) tr.onclick = () => translate(tr);
     };
+
+    /* 베트남어·영어 칸이 있는 문구인지. 공급사 안내처럼 한국어만 쓰는 문구도 있다 */
+    function hasOther(v){ return v.vi !== undefined || v.en !== undefined; }
+
+    function taOf(l){ return pop.querySelector(`textarea[data-l="${l}"]`); }
+
+    /* 한국어 칸을 읽어 나머지 두 칸을 채운다.
+       ⚠ 들어 있던 값을 덮어쓴다. 한국어를 고쳤으면 옛 번역은 이미 틀린 말이다. */
+    async function translate(btn){
+      const msg = pop.querySelector('.msg');
+      const ko = taOf('ko') ? taOf('ko').value.trim() : '';
+      if(!ko){ msg.textContent = '한국어 칸이 비어 있습니다'; return false; }
+      const orig = btn ? btn.textContent : '';
+      if(btn){ btn.disabled = true; btn.textContent = '번역 중…'; }
+      msg.textContent = '번역 중…';
+      try{
+        const { vi, en } = await mkTranslateKo(ko);
+        if(!vi && !en) throw new Error('번역을 받지 못했습니다');
+        if(taOf('vi') && vi) taOf('vi').value = vi;
+        if(taOf('en') && en) taOf('en').value = en;
+        msg.textContent = '번역했습니다 — 확인 후 저장하세요';
+      }catch(e){
+        msg.textContent = '번역 실패: ' + (e.message || e);
+        if(btn){ btn.disabled = false; btn.textContent = orig; }
+        return false;
+      }
+      if(btn){ btn.disabled = false; btn.textContent = orig; }
+      return true;
+    }
 
     async function save(){
       const msg = pop.querySelector('.msg');
-      const val = { ...field.val, ...(saved[field.path] || {}) };
+      const was = { ...field.val, ...(saved[field.path] || {}) };
+
+      /* 한국어만 고치고 저장하면 베트남어·영어는 옛 문구로 남는다.
+         언어마다 다른 말을 하게 되므로 저장 전에 물어본다. */
+      const koChanged = taOf('ko') && taOf('ko').value !== (was.ko || '');
+      const otherSame = ['vi','en'].every(l => !taOf(l) || taOf(l).value === (was[l] || ''));
+      if(hasOther(was) && koChanged && otherSame){
+        const ok = confirm(
+          '한국어만 고치셨습니다.\n이대로 저장하면 베트남어·영어는 옛 문구로 남습니다.\n\n' +
+          '확인 = 두 언어를 지금 번역해서 함께 저장\n취소 = 한국어만 저장');
+        if(ok && !(await translate(pop.querySelector('.tr')))) return;
+      }
+
+      const val = { ...was };
       pop.querySelectorAll('textarea').forEach(t => { val[t.dataset.l] = t.value; });
       msg.textContent = '저장 중…';
       try{
         const map = { ...(window.MK_COPY_OVERRIDE || {}) };
         map[field.path] = val;
-        await Store.saveCopy(map);
+        await Admin.saveCopy(map);
         /* 화면에 바로 반영 */
         const lang = (typeof MK_LANG !== 'undefined') ? MK_LANG : 'vi';
         if(val[lang] != null) el.textContent = val[lang];
@@ -146,6 +203,7 @@
     if(v && !isAdmin()) return;
     on = v;
     document.body.classList.toggle('mkedit-on', on);
+    heroAuto(!on);
     if(!on){
       closePop();
       document.querySelectorAll('.mkedit-hot').forEach(x=>x.classList.remove('mkedit-hot'));

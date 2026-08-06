@@ -728,24 +728,10 @@ function editProduct(id){
 }
 
 /* ============================================================
-   한국어 자동번역 — 무료 구글 엔드포인트(키 없이 브라우저 직접 호출).
-   실패 시 MyMemory로 폴백. HTML 태그(<p> 등)는 그대로 보존된다.
+   한국어 자동번역
+   mkTranslate · mkTranslateLines · mkTranslateKo 는 copy.js 에 있다.
+   화면 편집기(copy-edit.js)도 같은 함수를 써야 해서 그쪽으로 옮겼다.
    ============================================================ */
-async function mkTranslate(text, from, to){
-  const src = String(text || '').trim();
-  if(!src) return '';
-  try{
-    const u = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=` + encodeURIComponent(src);
-    const r = await fetch(u);
-    if(r.ok){ const j = await r.json(); const out = (j[0]||[]).map(s=>s[0]).join(''); if(out) return out; }
-  }catch(e){}
-  try{
-    const u = `https://api.mymemory.translated.net/get?q=` + encodeURIComponent(src) + `&langpair=${from}|${to}`;
-    const r = await fetch(u); const j = await r.json();
-    if(j && j.responseData && j.responseData.translatedText) return j.responseData.translatedText;
-  }catch(e){}
-  return '';
-}
 
 /* 폼의 한국어 필드를 읽어 비어있는 베트남어·영어 칸을 자동으로 채운다.
    prefixes: ['f-name','f-tag',...] → <prefix>-ko/-vi/-en 3칸 세트.
@@ -1094,6 +1080,7 @@ function saveNotice(id){
 let cpSrc = 'ui', cpSearch = '', cpOnlyEdited = false, cpGroup = 'all';
 let cpDraft = {};          // 저장 전 편집분 { path: {vi,ko,en} }
 let cpOpen = {};           // 펼쳐 놓은 항목
+let cpTouched = {};        // 어느 언어 칸을 손댔는지 { path: {ko:true,…} } — 저장 때 번역 누락 경고에 쓴다
 
 /* 지금 화면에서 쓰는 값 = 저장분 + 편집분 */
 function cpValue(f){
@@ -1110,16 +1097,78 @@ function cpEdit(path, lang, v){
   const f = mkCopyFields().find(x=>x.path===path);
   if(!f) return;
   cpDraft[path] = { ...cpValue(f), [lang]: v };
+  (cpTouched[path] = cpTouched[path] || {})[lang] = true;
   document.getElementById('cp-dirty').textContent = Object.keys(cpDraft).length + '건 편집됨';
   document.getElementById('cp-save').disabled = false;
 }
 
+/* 한국어를 베트남어·영어로 옮겨 두 칸을 채운다.
+   ⚠ 이미 들어 있는 값을 덮어쓴다. 한국어를 고쳤으면 옛 번역은 더 이상 맞지 않으니까.
+     (제품 폼의 자동번역 버튼은 빈 칸만 채우는데, 여기서는 그러면 아무것도 안 바뀐다) */
+async function cpTranslate(path, btn, quiet){
+  const f = mkCopyFields().find(x=>x.path===path);
+  if(!f) return;
+  const v = cpValue(f);
+  const ko = String(v.ko || '').trim();
+  if(!ko) return toastA('한국어 칸이 비어 있습니다');
+  if(v.vi === undefined && v.en === undefined) return toastA('이 문구는 한국어만 씁니다');
+
+  const orig = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = '번역 중…'; }
+  try{
+    const { vi, en } = await mkTranslateKo(ko);
+    if(!vi && !en) throw new Error('번역을 받지 못했습니다');
+    const next = { ...v };
+    if(v.vi !== undefined && vi) next.vi = vi;
+    if(v.en !== undefined && en) next.en = en;
+    cpDraft[path] = next;
+    cpTouched[path] = { ...(cpTouched[path]||{}), vi:true, en:true };
+    document.getElementById('cp-dirty').textContent = Object.keys(cpDraft).length + '건 편집됨';
+    document.getElementById('cp-save').disabled = false;
+    if(!quiet){ cpRefreshList(); toastA('번역했습니다 — 저장 전에 확인하세요'); }
+  }catch(e){
+    toastA('번역 실패: ' + (e.message || e));
+  }
+  if(btn){ btn.disabled = false; btn.textContent = orig; }
+}
+
+/* 한국어만 고치고 저장하면 베트남어·영어는 옛 문구로 남는다.
+   그러면 언어마다 다른 말을 하게 되는데, 바이어 대부분이 베트남 사람이라 이게 제일 나쁘다.
+   저장 직전에 그런 항목을 찾아 번역할지 물어본다. */
+function cpKoOnlyEdits(){
+  const all = mkCopyFields();
+  return Object.keys(cpDraft).filter(p=>{
+    const t = cpTouched[p] || {};
+    if(!t.ko || t.vi || t.en) return false;
+    const f = all.find(x=>x.path===p);
+    return f && (f.val.vi !== undefined || f.val.en !== undefined);
+  });
+}
+
 async function cpSave(){
+  const koOnly = cpKoOnlyEdits();
+  if(koOnly.length){
+    const ok = confirm(
+      `한국어만 고친 문구가 ${koOnly.length}건 있습니다.\n` +
+      `이대로 저장하면 베트남어·영어는 옛 문구로 남습니다.\n\n` +
+      `확인 = 두 언어를 지금 번역해서 함께 저장\n취소 = 한국어만 저장`);
+    if(ok){
+      const btn = document.getElementById('cp-save');
+      const orig = btn ? btn.textContent : '';
+      if(btn){ btn.disabled = true; btn.textContent = `번역 중… 0/${koOnly.length}`; }
+      for(let i = 0; i < koOnly.length; i++){
+        await cpTranslate(koOnly[i], null, true);
+        if(btn) btn.textContent = `번역 중… ${i+1}/${koOnly.length}`;
+      }
+      if(btn){ btn.disabled = false; btn.textContent = orig; }
+    }
+  }
+
   const map = { ...(window.MK_COPY_OVERRIDE || {}) };
   Object.keys(cpDraft).forEach(p=>{ map[p] = cpDraft[p]; });
   try{
-    await Store.saveCopy(map);
-    cpDraft = {};
+    await Admin.saveCopy(map);
+    cpDraft = {}; cpTouched = {};
     toastA('사이트에 반영되었습니다');
     renderCopy();
     if(typeof applyI18n === 'function') applyI18n();
@@ -1133,7 +1182,7 @@ async function cpReset(path){
   if(map[path]){
     delete map[path];
     if(!confirm('이 문구를 원래대로 되돌릴까요?\n(저장된 수정이 지워지고 화면을 새로 고쳐야 원문이 보입니다)')) return;
-    try{ await Store.saveCopy(map); }catch(e){ return alert(e.message); }
+    try{ await Admin.saveCopy(map); }catch(e){ return alert(e.message); }
     toastA('되돌렸습니다 — 새로고침하면 원문이 보입니다');
   }
   renderCopy();
@@ -1220,6 +1269,9 @@ function cpBuildList(){
       <div class="cp-head" onclick="cpToggle('${esc(f.path)}')">
         <span class="wh">${esc(mkCopyGroup(f))} · ${esc(f.label)}</span>
         <span class="grow"></span>
+        ${(v.vi !== undefined || v.en !== undefined)
+          ? `<button class="btn btn-ghost btn-sm" title="한국어를 베트남어·영어로 다시 번역합니다 (들어 있던 값을 덮어씁니다)"
+              onclick="event.stopPropagation();cpTranslate('${esc(f.path)}',this)">🌐 번역</button>` : ''}
         ${on?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();cpReset('${esc(f.path)}')">되돌리기</button>`:''}
         <span class="fold">접기</span>
       </div>
