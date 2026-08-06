@@ -683,55 +683,60 @@ ${forceLang(lang)}${SCRIPTS()}
      t 에 세 언어의 제목·설명을 들고 있다가 언어별 파일에 각각 심는다.
      maker.html 은 한국 공급사 대상이라 본문 자체가 한국어뿐이므로 언어판을 만들지 않는다. */
   const HUB = {
+    /* 제목·설명 원칙 (SEO · AEO · GEO 공통)
+       - 제목: 핵심 키워드를 앞에, 브랜드는 뒤에. 20~60자.
+       - 설명: 첫 문장이 "이 페이지가 무엇인지"에 대한 완결된 답이 되게 쓴다.
+         AI 검색이 그 문장을 그대로 인용해도 말이 되도록. 70~155자.
+       - 확정되지 않은 수치·실적은 쓰지 않는다. 3개 언어·무료 인증·거래조건 잠금은 확정 사실이라 쓴다. */
     'index.html': {
       ogType: 'website',
       t: {
-        vi: { title: 'MAKENOV — Nền tảng B2B sản phẩm sáng tạo toàn cầu',
-              desc: 'MAKENOV kết nối sản phẩm sáng tạo từ các nhà cung cấp toàn cầu với nhà mua hàng đã xác thực. Xác thực doanh nghiệp miễn phí để xem giá và gửi yêu cầu báo giá.' },
-        ko: { title: 'MAKENOV — 전 세계 혁신 제품 B2B 소싱 플랫폼',
-              desc: '전 세계 공급사의 혁신 제품을 한자리에서 보고 공급사에 바로 미팅을 요청합니다. 사업자 인증을 마치면 단가와 최소주문수량이 열립니다. 인증은 무료입니다.' },
-        en: { title: 'MAKENOV — B2B sourcing for innovative products worldwide',
-              desc: 'See innovative products from suppliers worldwide in one place and request a meeting directly. Verify your business to unlock prices and MOQ. Free.' },
+        vi: { title: 'MAKENOV | Nền tảng B2B kết nối nguồn cung và xuất khẩu',
+              desc: 'MAKENOV kết nối sản phẩm sáng tạo của nhà cung cấp toàn cầu với nhà mua đã xác thực. Xác thực miễn phí để xem giá, MOQ và gửi yêu cầu báo giá.' },
+        ko: { title: '메이크노브 MAKENOV | 글로벌 소싱과 수출을 연결하는 B2B 플랫폼',
+              desc: '메이크노브(MAKENOV)는 전 세계 공급사의 혁신 제품과 인증된 바이어를 연결하는 글로벌 B2B 플랫폼입니다. 사업자 인증은 무료이며, 인증 후 가격·MOQ·납기를 확인하고 공급사에 직접 견적을 요청할 수 있습니다.' },
+        en: { title: 'MAKENOV | B2B platform connecting global sourcing and export',
+              desc: 'MAKENOV connects innovative products from suppliers worldwide with verified buyers. Verify free to see price, MOQ and lead time, and request quotes.' },
       },
     },
     'directory.html': {
       t: {
-        vi: { title: 'Danh mục sản phẩm | MAKENOV',
-              desc: 'Khám phá sản phẩm sáng tạo theo danh mục — mỹ phẩm, thực phẩm, đồ gia dụng, sức khỏe, mẹ & bé, công nghệ. Thông tin bằng tiếng Việt, Hàn, Anh.' },
-        ko: { title: '제품 목록 | MAKENOV',
-              desc: '카테고리별로 등록된 혁신 제품을 봅니다. 뷰티·식품·리빙·헬스·키즈·테크. 제품 정보는 베트남어·한국어·영어로 제공됩니다.' },
-        en: { title: 'Product directory | MAKENOV',
-              desc: 'Browse listed products by category — beauty, food, home, health, kids, tech. Product information is available in Vietnamese, Korean and English.' },
+        vi: { title: 'Danh mục sản phẩm | Sản phẩm sáng tạo toàn cầu | MAKENOV',
+              desc: 'Danh mục sản phẩm MAKENOV: mỹ phẩm, thực phẩm, đồ gia dụng, sức khỏe, mẹ và bé, công nghệ. Giá và MOQ mở cho nhà mua đã xác thực doanh nghiệp.' },
+        ko: { title: '제품 목록 | 전 세계 공급사 혁신 제품 | MAKENOV',
+              desc: 'MAKENOV에 등록된 전 세계 공급사의 제품 목록입니다. 뷰티·식품·리빙·헬스·키즈·테크 카테고리로 탐색하며, 제품 정보는 3개 언어로 제공되고 가격·MOQ는 사업자 인증 후 확인할 수 있습니다.' },
+        en: { title: 'Product directory | Innovative products worldwide | MAKENOV',
+              desc: 'The MAKENOV product directory: beauty, food, home, health, kids and tech. Price and MOQ open after free business verification.' },
       },
     },
     'columns.html': {
       t: {
-        vi: { title: 'Bài viết & hướng dẫn | MAKENOV',
-              desc: 'Hướng dẫn sourcing và ghi chép thị trường cho nhà mua hàng — yêu cầu báo giá, hàng mẫu, hồ sơ nhập khẩu.' },
-        ko: { title: '칼럼과 가이드 | MAKENOV',
-              desc: '바이어를 위한 소싱 가이드와 시장 이야기. 견적 요청서 작성법, 샘플 요청 체크리스트, 공급사 회신 요령을 다룹니다.' },
-        en: { title: 'Articles & guides | MAKENOV',
-              desc: 'Sourcing guides and market notes for buyers — writing a quote request, sample checklists, and how suppliers should reply.' },
+        vi: { title: 'Bài viết và hướng dẫn sourcing | MAKENOV',
+              desc: 'Hướng dẫn sourcing và thông tin thị trường cho nhà mua: cách viết yêu cầu báo giá, checklist đặt hàng mẫu, cách nhà cung cấp trả lời, quy trình nhập khẩu.' },
+        ko: { title: '칼럼과 가이드 | 글로벌 소싱·수출 인사이트 | MAKENOV',
+              desc: '바이어를 위한 글로벌 소싱 가이드와 시장 인사이트입니다. 견적 요청서 작성법, 샘플 요청 체크리스트, 공급사 회신 요령, 수입 절차를 다룹니다.' },
+        en: { title: 'Articles and sourcing guides | MAKENOV',
+              desc: 'Sourcing guides and market insight for buyers: writing a quote request, sample order checklists, how suppliers reply, and the import process.' },
       },
     },
     'companies.html': {
       t: {
-        vi: { title: 'Danh bạ nhà cung cấp | MAKENOV',
-              desc: 'Nhà cung cấp đã đăng sản phẩm trên MAKENOV — chứng nhận, năng lực sản xuất và thành tích xuất khẩu.' },
-        ko: { title: '공급사 목록 | MAKENOV',
-              desc: 'MAKENOV에 제품을 등록한 공급사입니다. 보유 인증, 생산 능력, 수출 실적을 함께 봅니다.' },
-        en: { title: 'Supplier directory | MAKENOV',
-              desc: 'Suppliers listing products on MAKENOV — certifications, production capability and export track record.' },
+        vi: { title: 'Danh bạ nhà cung cấp đã xác thực | MAKENOV',
+              desc: 'Nhà cung cấp đăng sản phẩm trên MAKENOV: giới thiệu công ty, chứng nhận, năng lực sản xuất và toàn bộ sản phẩm trên một trang.' },
+        ko: { title: '공급사 목록 | 인증·생산능력·등록 제품 | MAKENOV',
+              desc: 'MAKENOV에 제품을 등록한 공급사 목록입니다. 회사 소개, 보유 인증, 생산 능력과 그 회사의 전체 등록 제품을 한 페이지에서 확인할 수 있습니다.' },
+        en: { title: 'Supplier directory | Certifications and capability | MAKENOV',
+              desc: 'Suppliers listing products on MAKENOV. See each supplier profile with certifications, production capability and all of its listed products on one page.' },
       },
     },
     'about.html': {
       t: {
         vi: { title: 'Giới thiệu dịch vụ cho nhà mua hàng | MAKENOV',
-              desc: 'Xem sản phẩm đổi mới từ khắp thế giới ở một nơi và đặt lịch trao đổi thẳng với nhà cung cấp. Xác thực doanh nghiệp là giá và MOQ mở ngay.' },
-        ko: { title: '서비스 소개 — 바이어라면 | MAKENOV',
-              desc: '전 세계 혁신 제품을 한자리에서 보고 공급사에 바로 미팅을 요청합니다. 전시회를 기다리거나 출장을 가지 않아도 됩니다. 사업자 인증이면 단가와 MOQ가 열립니다.' },
-        en: { title: 'For buyers | MAKENOV',
-              desc: 'See innovative products from around the world in one place and request a meeting with the supplier directly. Verify once to unlock prices and MOQ.' },
+              desc: 'MAKENOV dành cho nhà mua: khám phá sản phẩm sáng tạo toàn cầu, xác thực miễn phí, xem giá và MOQ rồi gửi yêu cầu báo giá tới nhà cung cấp.' },
+        ko: { title: '서비스 소개 | 바이어를 위한 MAKENOV 이용 안내',
+              desc: '바이어를 위한 MAKENOV 소개입니다. 전 세계 혁신 제품을 한자리에서 탐색하고, 무료 사업자 인증 후 가격·MOQ·납기를 확인해 공급사에 직접 견적을 요청하는 과정을 안내합니다.' },
+        en: { title: 'For buyers | How MAKENOV works',
+              desc: 'MAKENOV for buyers: explore innovative products worldwide, verify your business for free, then see price and MOQ and request quotes from suppliers.' },
       },
     },
     'guide.html': {
@@ -741,17 +746,17 @@ ${forceLang(lang)}${SCRIPTS()}
         ko: { title: 'MAKENOV 이용 가이드 | 바이어·공급사 이용 방법',
               desc: '회원가입과 사업자 인증부터 제품 탐색, 가격·MOQ 확인, 견적 요청, 공급사 제품 등록까지 MAKENOV 이용 방법을 안내합니다.' },
         en: { title: 'MAKENOV user guide | For buyers and suppliers',
-              desc: 'How to use MAKENOV: signing up and verifying your business, finding products, checking price and MOQ, requesting quotes, and listing products as a supplier.' },
+              desc: 'How to use MAKENOV: signing up and verifying your business, finding products, checking price and MOQ, requesting quotes, and listing as a supplier.' },
       },
     },
     'support.html': {
       t: {
-        vi: { title: 'Hỗ trợ khách hàng | MAKENOV',
-              desc: 'Thông báo, câu hỏi thường gặp và hỏi đáp 1:1. Chúng tôi trả lời trong vòng hai ngày làm việc.' },
-        ko: { title: '고객센터 | MAKENOV',
-              desc: '공지사항, 자주 묻는 질문, 1:1 문의. 영업일 2일 이내에 답변드립니다.' },
-        en: { title: 'Support | MAKENOV',
-              desc: 'Notices, frequently asked questions and one-to-one enquiries. We reply within two business days.' },
+        vi: { title: 'Hỗ trợ khách hàng | Thông báo · FAQ · Hỏi đáp 1:1 | MAKENOV',
+              desc: 'Trung tâm hỗ trợ MAKENOV: thông báo, câu hỏi thường gặp về xác thực doanh nghiệp, xem giá và yêu cầu báo giá, cùng kênh hỏi đáp 1:1.' },
+        ko: { title: '고객센터 | 공지사항·자주 묻는 질문·1:1 문의 | MAKENOV',
+              desc: 'MAKENOV 고객센터입니다. 공지사항과 사업자 인증·가격 확인·견적 요청에 대한 자주 묻는 질문, 1:1 문의 채널을 제공합니다.' },
+        en: { title: 'Support | Notices, FAQ and enquiries | MAKENOV',
+              desc: 'The MAKENOV support centre: notices, frequently asked questions about verification, pricing and quote requests, and a one-to-one enquiry channel.' },
       },
     },
   };
@@ -827,7 +832,7 @@ ${forceLang(lang)}${SCRIPTS()}
     /* 한국 공급사 대상 랜딩 — 한국어 + FAQ 스키마 */
     { file: 'maker.html', lang: 'ko',
       title: 'MAKENOV 공급사 입점 | 해외 바이어를 만나는 글로벌 B2B 혁신 플랫폼',
-      desc: '제품 등록비 없이 한국어·베트남어·영어로 제품을 소개하고, 사업자 인증을 완료한 글로벌 바이어의 견적 문의를 받아보세요.',
+      desc: '제품 등록비 없이 한국어·베트남어·영어로 제품을 소개하고, 사업자 인증을 완료한 글로벌 바이어의 견적 문의를 공급사가 직접 받아봅니다.',
       canonical: SITE + '/maker.html',
       jsonld: [{
         '@context': 'https://schema.org', '@type': 'FAQPage',
