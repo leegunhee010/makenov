@@ -1461,8 +1461,10 @@ function renderSeo(){
         </label>
         ${k === 'title'
           ? `<input value="${esc(v)}" placeholder="${esc(ph)}" data-seo-ph="${cssId(p.file)}-${lang}-title"
+               onfocus="seoPrefill(this,'${p.file}','${lang}','title')"
                oninput="seoEdit('${p.file}','${lang}','title',this.value)">`
           : `<textarea rows="2" placeholder="${esc(ph)}" data-seo-ph="${cssId(p.file)}-${lang}-desc"
+               onfocus="seoPrefill(this,'${p.file}','${lang}','desc')"
                oninput="seoEdit('${p.file}','${lang}','desc',this.value)">${esc(v)}</textarea>`}
       </div>`;
   };
@@ -1545,6 +1547,17 @@ function renderSeo(){
    구워진 각 페이지의 HTML 에서 title 과 description 을 읽어 placeholder 로 넣는다.
    그게 곧 지금 검색엔진이 보는 값이다. 한 번 읽으면 세션 동안 기억한다. */
 const _seoCur = {};
+
+/* 빈 칸을 누르면 지금 나가는 문구를 채워 준다 — 처음부터 다시 쓰지 않고 고치면 되게.
+   채우기만 하고 편집분(seoDraft)에는 넣지 않는다. 손대지 않고 나가면 저장되지 않는다. */
+function seoPrefill(el, file, lang, k){
+  if(el.value) return;
+  const cur = _seoCur[cssId(file) + '-' + lang];
+  if(!cur || !cur[k]) return;
+  el.value = cur[k];
+  seoCount(file, lang, k, cur[k]);
+}
+
 async function seoFillCurrent(){
   for(const p of SEO_PAGES){
     for(const lang of p.langs){
