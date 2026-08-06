@@ -127,6 +127,15 @@ function renderMain(page, hash) {
        <!-- mk:pre --> 주석 노드는 DOM 에 남는다. 그대로 두면 다음 실행 때
        사본 안에 마커가 딸려 들어가 블록이 중첩된다. */
     .replace(/<!--[\s\S]*?-->/g, '')
+    /* 홈 히어로는 5초마다 넘어간다. 굽는 순간 켜져 있던 슬라이드가 그대로 찍히는데,
+       브라우저에서는 JS 가 항상 1번부터 그린다. 그래서 새로고침하면 3번 문구가 잠깐
+       보였다가 1번 문구로 바뀌었다. 사람 눈에는 옛 문구가 나왔다 사라지는 것처럼 보인다.
+       사본에서는 언제나 첫 슬라이드만 켜 두어 JS 가 그린 첫 화면과 같게 맞춘다. */
+    .replace(/<div class="slide ?(?:on)?"/g, '<div class="slide"')   /* 먼저 전부 끈다 */
+    .replace(/<div class="slide"/, '<div class="slide on"')          /* 문서상 첫 장만 켠다 */
+    .replace(/(<div class="dots">)([\s\S]*?)(<\/div>)/,
+      (m, a, mid, z) => a + mid.replace(/ class="on"/g, ' class=""')
+                                .replace(/<i class=""/, '<i class="on"') + z)
     .trim();
 }
 

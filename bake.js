@@ -110,8 +110,18 @@ async function loadFromSupabase(){
   /* faqs 테이블은 06_faq_seo.sql 이후에만 존재 — 없으면 시드 폴백 */
   let fq = null;
   try { fq = await get('faqs?select=*&published=eq.true&order=sort'); } catch (e) {}
+
+  /* 관리자에서 고친 문구(settings.copy). baked.js 에 함께 실어
+     브라우저가 DB 를 다녀오기 전 첫 렌더부터 새 문구로 나오게 한다. */
+  let copy = null;
+  try {
+    const st = await get('settings?key=eq.copy&select=value');
+    copy = (st[0] && st[0].value) || null;
+  } catch (e) {}
+
   return {
     faqs: fq,
+    copy,
     source: 'supabase',
     products: pr.map(p => ({
       id: p.id, companyId: p.company_id, cat: p.cat, brand: p.brand, origin: p.origin,
@@ -882,8 +892,13 @@ window.MK_BAKED = ${JSON.stringify({
   companies: data.companies.map(c => c.id),
   columns: Object.fromEntries(data.columns.map(c => [c.id, colFile(c)])),
 }, null, 2)};
+
+/* 구울 때의 카피 수정분. app.js 가 첫 렌더 전에 이걸 덮는다.
+   없으면 브라우저가 DB 응답을 기다리는 1초 동안 옛 문구가 보였다가 바뀐다. */
+window.MK_COPY_BAKED = ${JSON.stringify(data.copy || {}, null, 2)};
 `);
-  console.log('assets/js/baked.js 생성 (정식 주소 링크용 목록)');
+  console.log('assets/js/baked.js 생성 (링크 목록 + 카피 수정분 '
+    + Object.keys(data.copy || {}).length + '건)');
 
   /* sitemap.html — 사람도 크롤러도 읽는 전체 목록.
      제품·칼럼 카드가 전부 product.html?id= / column.html?id= 로 링크해서,

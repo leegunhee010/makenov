@@ -656,6 +656,18 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const pre = document.getElementById('mk-prerender');
   if(pre) pre.remove();
 
+  /* 0-B) 구워둔 카피를 먼저 덮는다.
+     관리자에서 고친 문구는 DB에 있는데, 그걸 받아오는 데 1초쯤 걸린다.
+     그동안 화면은 data.js·i18n.js 의 옛 문구로 그려졌다가 나중에 새 문구로 바뀌었다.
+     새로고침할 때마다 옛 문구가 번쩍이던 이유다.
+     bake.js 가 굽는 시점의 수정분을 baked.js 에 함께 넣어 두므로, 첫 렌더 전에 씌운다.
+     ⚠ 여기여야 한다. about-copy.js · maker-copy.js 는 app.js 뒤에 실려서
+       copy.js 안에서 덮으면 그 두 파일은 아직 없다. */
+  if(window.MK_COPY_BAKED && typeof mkApplyCopy === 'function'){
+    window.MK_COPY_OVERRIDE = window.MK_COPY_BAKED;
+    mkApplyCopy(window.MK_COPY_BAKED);
+  }
+
   /* 1) 헤더·푸터·번역을 먼저 그린다.
         Supabase 응답을 기다렸다가 그리면, 그동안 정적 HTML(제목만)이 홀로 떠 있다가
         데이터가 도착하는 순간 전체가 다시 그려져 화면이 깜빡인다. */
