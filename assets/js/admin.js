@@ -1497,14 +1497,24 @@ function renderSeo(){
       <div class="sect" style="border-top:0;margin-top:0;padding-top:0">
         <h4>공유 이미지 (OG)</h4>
         <p class="note">카카오톡·페이스북 등에 링크를 붙였을 때 뜨는 그림입니다. 1200×630 권장.</p>
-        ${uploader('seo-og', seoSiteVal('ogImage'), { hint:'비우면 기본 이미지(assets/img/og.png)를 씁니다.' })}
+        ${seoSiteVal('ogImage') ? '' : `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--adm-sub);margin-bottom:6px">지금 적용 중 (기본 파일)</div>
+          <img src="../assets/img/og.png?t=${Date.now()}" style="max-width:340px;border:1px solid var(--adm-line);border-radius:8px">
+        </div>`}
+        ${uploader('seo-og', seoSiteVal('ogImage'), { hint:'비워두면 위의 기본 이미지가 그대로 나갑니다. 다른 걸 쓰고 싶을 때만 올리세요.' })}
         <button class="btn btn-ghost btn-sm" style="margin-top:8px"
           onclick="seoEditSite('ogImage', document.getElementById('seo-og').value)">이 이미지로 지정</button>
       </div>
       <div class="sect">
         <h4>파비콘</h4>
         <p class="note">브라우저 탭에 뜨는 작은 아이콘입니다. SVG 또는 PNG.</p>
-        ${uploader('seo-fav', seoSiteVal('favicon'), { hint:'비우면 기본 파비콘(assets/img/favicon.svg)을 씁니다.' })}
+        ${seoSiteVal('favicon') ? '' : `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--adm-sub);margin-bottom:6px">지금 적용 중 (기본 파일)</div>
+          <img src="../assets/img/favicon.svg?t=${Date.now()}" width="48" height="48" style="border:1px solid var(--adm-line);border-radius:10px">
+        </div>`}
+        ${uploader('seo-fav', seoSiteVal('favicon'), { hint:'비워두면 위의 기본 파비콘이 그대로 나갑니다. 다른 걸 쓰고 싶을 때만 올리세요.' })}
         <button class="btn btn-ghost btn-sm" style="margin-top:8px"
           onclick="seoEditSite('favicon', document.getElementById('seo-fav').value)">이 아이콘으로 지정</button>
       </div>
