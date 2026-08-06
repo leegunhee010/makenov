@@ -130,6 +130,14 @@ const MkData = {
       }));
     }
 
+    /* SEO 설정 — 관리자 > SEO 탭에서 고친 값.
+       화면에는 영향이 없고, `node build.js` 가 이 값을 읽어 각 페이지 head 에 심는다.
+       관리자 화면에서 지금 값을 보여줘야 하므로 여기서 함께 받아 둔다. */
+    try{
+      const se = await SB.from('settings').select('*').eq('key', 'seo').maybeSingle();
+      if(!se.error && se.data && se.data.value) window.MK_SEO = se.data.value;
+    }catch(e){}
+
     /* 관리자에서 고친 문구 — 원본 객체(I18N·AB·MKC·MK_MAKER·MK_HERO·MK_SETTINGS)에 덮어쓴다.
        ⚠ 반드시 맨 마지막이어야 한다. 앞서 채운 값 위에 덮어야 오버라이드가 이긴다.
           예전엔 히어로보다 먼저 적용해서, 히어로 문구를 고쳐도 곧바로 DB 값에 덮여 사라졌다. */
@@ -537,6 +545,17 @@ Object.assign(Admin, {
     });
     if(error) throw new Error('카피 저장 실패: ' + error.message);
     if(typeof mkApplyCopy === 'function') mkApplyCopy(map);
+  },
+
+  /* ---- SEO 설정 ----
+     settings 의 key='seo' 한 줄. bake.js 가 굽는 시점에 읽어 head 에 심는다.
+     ⚠ 저장만으로는 검색엔진이 보는 HTML 이 바뀌지 않는다. 굽기를 한 번 돌려야 한다. */
+  async saveSeo(map){
+    window.MK_SEO = map;
+    const { error } = await SB.from('settings').upsert({
+      key:'seo', value:map, updated_at:new Date().toISOString(),
+    });
+    if(error) throw new Error('SEO 저장 실패: ' + error.message);
   },
 
   /* ---- FAQ CRUD ---- */

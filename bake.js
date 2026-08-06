@@ -42,6 +42,11 @@ const ROOT = __dirname;
 const SITE = 'https://makenov.com';   // 확정 도메인 (2026-08-03)
 const OG_DEFAULT = '/assets/img/og.png';
 
+/* 관리자 > SEO 탭에서 지정하면 아래 두 값이 채워진다. 비어 있으면 위 기본값을 쓴다.
+   빌드 중간(loadFromSupabase 이후)에 채워지므로 const 가 아니라 let 이다. */
+let OG_OVERRIDE = '';
+let FAVICON_OVERRIDE = '';
+
 /* ---------- 유틸 ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const T  = (v, lang) => (v && typeof v === 'object') ? (v[lang] || v.vi || v.ko || v.en || '') : String(v ?? '');
@@ -119,9 +124,17 @@ async function loadFromSupabase(){
     copy = (st[0] && st[0].value) || null;
   } catch (e) {}
 
+  /* 관리자 > SEO 탭에서 고친 값(settings.seo). 아래 HUB·PAGES 기본값 위에 덮는다. */
+  let seo = null;
+  try {
+    const st = await get('settings?key=eq.seo&select=value');
+    seo = (st[0] && st[0].value) || null;
+  } catch (e) {}
+
   return {
     faqs: fq,
     copy,
+    seo,
     source: 'supabase',
     products: pr.map(p => ({
       id: p.id, companyId: p.company_id, cat: p.cat, brand: p.brand, origin: p.origin,
@@ -178,15 +191,33 @@ function seoBlock({ title, desc, canonical, ogUrl, ogImage, ogType, robots, json
     lines.push(`<meta property="og:title" content="${esc(title)}">`);
     if(desc) lines.push(`<meta property="og:description" content="${esc(desc)}">`);
     lines.push(`<meta property="og:url" content="${canonical}">`);
-    lines.push(`<meta property="og:image" content="${absUrl(ogImage || OG_DEFAULT)}">`);
+    lines.push(`<meta property="og:image" content="${absUrl(ogImage || OG_OVERRIDE || OG_DEFAULT)}">`);
     lines.push(`<meta name="twitter:card" content="summary_large_image">`);
     lines.push(`<meta name="twitter:title" content="${esc(title)}">`);
     if(desc) lines.push(`<meta name="twitter:description" content="${esc(desc)}">`);
-    lines.push(`<meta name="twitter:image" content="${absUrl(ogImage || OG_DEFAULT)}">`);
+    lines.push(`<meta name="twitter:image" content="${absUrl(ogImage || OG_OVERRIDE || OG_DEFAULT)}">`);
   }
   (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).forEach(j =>
     lines.push(`<script type="application/ld+json">${JSON.stringify(j)}</script>`));
   return `<!-- mk:seo (bake.js가 관리 — 직접 수정 금지) -->\n${lines.join('\n')}\n<!-- /mk:seo -->`;
+}
+
+/* 파비콘 태그 한 줄. 관리자에서 지정했으면 그 파일로, 아니면 기본값으로.
+   head 주입(injectSeo)과 통째로 생성하는 페이지(제품·공급사·칼럼) 양쪽이 같이 쓴다.
+
+   기본값 경로는 파일마다 다르다.
+     <base href> 가 있는 문서(언어판·생성 페이지)  → 사이트 루트 기준이라 'assets/…'
+     없는 문서(index.html)                        → 같은 폴더라 'assets/…'
+     없고 하위 폴더인 문서(admin/index.html)        → '../assets/…'
+   그래서 up 을 받아 붙인다. 관리자에서 지정한 값은 그대로 쓴다(절대경로나 업로드 URL). */
+function faviconTag(up){
+  if(!FAVICON_OVERRIDE)
+    return `<link rel="icon" type="image/svg+xml" href="${up || ''}assets/img/favicon.svg">`;
+  const ext = FAVICON_OVERRIDE.split('?')[0].toLowerCase();
+  const type = ext.endsWith('.svg') ? 'image/svg+xml'
+    : ext.endsWith('.png') ? 'image/png'
+    : ext.endsWith('.ico') ? 'image/x-icon' : '';
+  return `<link rel="icon"${type ? ` type="${type}"` : ''} href="${FAVICON_OVERRIDE}">`;
 }
 
 /* 기존 페이지의 head에 SEO 블록을 심는다(재실행 시 교체) */
@@ -196,6 +227,14 @@ function injectSeo(file, cfg){
   html = html.replace(/^<title>.*<\/title>\r?\n?/m, '');                    // 기존 title 제거
   html = html.replace(/^<meta name="description"[^>]*>\r?\n?/m, '');        // 기존 description 제거
   if(cfg.lang) html = html.replace(/<html lang="[^"]*">/, `<html lang="${cfg.lang}">`);
+  /* 파비콘 — mk:seo 블록 밖에 있는 태그라 블록 교체로는 안 바뀌어 여기서 따로 갈아 끼운다.
+     ⚠ 조건 없이 매번 다시 쓴다. 예전엔 지정했을 때만 바꿔서, 관리자에서 파비콘을 지워도
+       파일에 남은 옛 값이 그대로 굳었다. 지금은 지우면 기본값으로 되돌아온다. */
+  {
+    const hasBase = /<base href=/.test(html);
+    const up = hasBase ? '' : '../'.repeat(file.split('/').length - 1);
+    html = html.replace(/<link rel="icon"[^>]*>/, faviconTag(up));
+  }
   html = html.replace(/<\/head>/, seoBlock(cfg) + '\n</head>');
   write(file, html);
   console.log('  head 주입:', file);
@@ -275,7 +314,7 @@ ${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title, desc: clip(tagline, 155), canonical, ogImage: p.img, ogType: 'product', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
-<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+${faviconTag()}
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>
@@ -357,7 +396,7 @@ ${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title: `${name} | MAKENOV`, desc, canonical, ogImage: co.cover || co.logo, jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
-<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+${faviconTag()}
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>
@@ -515,7 +554,7 @@ ${baseTag(langFile(relVi, lang))}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ${seoBlock({ title: headTitle, desc, canonical, ogImage: c.img, ogType: 'article', jsonld, alt: relVi })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
-<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+${faviconTag()}
 </head>
 <body>
 <div class="blog-progress"><div class="blog-progress-bar" id="progress-bar"></div></div>
@@ -550,6 +589,26 @@ ${forceLang(lang)}${SCRIPTS()}
   const coMap = {};
   data.companies.forEach(c => coMap[c.id] = c);
   console.log(`데이터: ${data.source} — 제품 ${data.products.length} · 칼럼 ${data.columns.length} · 기업 ${data.companies.length}\n`);
+
+
+  /* ---------- 관리자 SEO 설정 (공용) ----------
+     settings.seo 의 공유 이미지·파비콘을 먼저 읽는다.
+     ⚠ 제품·공급사·칼럼 페이지는 아래에서 통째로 만들어지므로, 그보다 먼저 정해져 있어야 한다.
+        예전엔 이 블록이 HUB 뒤(생성 이후)에 있어서 생성 페이지만 옛 파비콘이 남았다.
+     모양: { site:{ ogImage, favicon }, pages:{ 'index.html':{ ko:{title,desc}, … } } } */
+  const SEO_SET = (data.seo && typeof data.seo === 'object') ? data.seo : {};
+  const seoPage = (file, lang) => {
+    const p = (SEO_SET.pages || {})[file];
+    return (p && p[lang]) || {};
+  };
+  OG_OVERRIDE = ((SEO_SET.site && SEO_SET.site.ogImage) || '').trim();
+  FAVICON_OVERRIDE = ((SEO_SET.site && SEO_SET.site.favicon) || '').trim();
+  {
+    const n = Object.keys(SEO_SET.pages || {}).length;
+    if(n || OG_OVERRIDE || FAVICON_OVERRIDE)
+      console.log(`관리자 SEO 설정 적용: 페이지 ${n}개`
+        + (OG_OVERRIDE ? ' · 공유 이미지 지정' : '') + (FAVICON_OVERRIDE ? ' · 파비콘 지정' : ''));
+  }
 
   /* 언어 폴더는 통째로 다시 만든다 (지운 문서가 남으면 중복 URL 이 된다) */
   ['ko', 'en'].forEach(d => fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }));
@@ -697,6 +756,16 @@ ${forceLang(lang)}${SCRIPTS()}
     },
   };
 
+  /* 관리자 SEO 설정 중 페이지별 제목·설명을 HUB 기본값 위에 덮는다.
+     빈 칸은 덮지 않는다 — 관리자에서 지우면 코드의 기본값으로 돌아간다. */
+  Object.entries(HUB).forEach(([file, cfg]) => {
+    LANGS.forEach(lang => {
+      const o = seoPage(file, lang);
+      if(o.title && o.title.trim()) cfg.t[lang].title = o.title.trim();
+      if(o.desc  && o.desc.trim())  cfg.t[lang].desc  = o.desc.trim();
+    });
+  });
+
   /* 언어별 FAQPage 스키마 */
   const faqSchema = lang => faqs.length ? [{
     '@context': 'https://schema.org', '@type': 'FAQPage',
@@ -776,6 +845,14 @@ ${forceLang(lang)}${SCRIPTS()}
     { file: 'mypage.html',  lang: 'vi', title: 'Trang của tôi | MAKENOV', robots: 'noindex,nofollow' },
     { file: 'admin/index.html', title: 'MAKENOV 관리자', robots: 'noindex,nofollow' },
   ];
+  /* 관리자 SEO 설정을 PAGES 에도 덮는다.
+     허브는 위에서 HUB.t 를 고쳐 이미 반영됐고, 여기서는 maker.html 처럼
+     언어판 없이 단독으로 도는 페이지가 대상이다. 빈 칸은 덮지 않는다. */
+  PAGES.forEach(p => {
+    const o = seoPage(p.file, p.lang || 'ko');
+    if(o.title && o.title.trim()) p.title = o.title.trim();
+    if(o.desc  && o.desc.trim())  p.desc  = o.desc.trim();
+  });
   PAGES.forEach(p => injectSeo(p.file, p));
 
   /* ---------- 허브 페이지 언어판 ----------
@@ -918,7 +995,7 @@ ${seoBlock({
       isPartOf: { '@id': SITE + '/#website' } }],
   })}
 <link rel="stylesheet" href="${v('assets/css/style.css')}">
-<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+${faviconTag()}
 </head>
 <body>
 <header class="mk-header" id="mk-header"></header>

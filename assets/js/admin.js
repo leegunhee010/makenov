@@ -294,6 +294,7 @@ const NAV = [
   { id:'faq',      label:'FAQ',      title:'FAQ 관리',       desc:'메인페이지 자주 묻는 질문' },
   { id:'notices',  label:'공지사항', title:'공지사항 관리',   desc:'고객센터 공지 게시판 (신제품·업데이트 소식)' },
   { id:'copy',     label:'카피',     title:'카피 수정',      desc:'사이트 문구를 코드 수정 없이 고칩니다' },
+  { id:'seo',      label:'SEO',      title:'SEO 설정',       desc:'검색결과 제목·설명, 공유 이미지, 파비콘' },
   { id:'settings', label:'설정',     title:'설정 · 내보내기', desc:'배포용 데이터와 계정 관리' },
 ];
 let curTab = 'dash';
@@ -337,7 +338,7 @@ function toggleSb(open){
 
 function renderAll(){
   renderNav(); renderDash();
-  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderNotices(); renderCopy(); renderSettings();
+  renderInq(); renderLeads(); renderBuyers(); renderProducts(); renderColumns(); renderFaqTab(); renderNotices(); renderCopy(); renderSeo(); renderSettings();
   showTab(curTab);
 }
 
@@ -1338,6 +1339,190 @@ function renderCopy(){
         <p class="note" style="margin:0 0 10px">${esc(cur.hint)}</p>
       </div>
       <div id="cp-list">${body}</div>
+    </div>`;
+}
+
+/* ============================================================
+   SEO 설정 — 검색결과에 나가는 제목·설명, 공유 이미지, 파비콘
+   ------------------------------------------------------------
+   settings 의 key='seo' 한 줄에 모은다. 저장해도 화면은 그대로다.
+   검색엔진이 읽는 HTML 은 굽기(node build.js)를 돌려야 바뀐다.
+
+   빈 칸으로 두면 코드(bake.js)의 기본값이 그대로 나간다.
+   그래서 "지우기"가 곧 "기본값으로 되돌리기"다.
+   ============================================================ */
+
+/* 언어판이 있는 허브 페이지 + 단독 페이지.
+   ⚠ bake.js 의 HUB · PAGES 와 파일명이 같아야 한다. 여기 없는 페이지는 코드 기본값만 쓴다. */
+const SEO_PAGES = [
+  { file:'index.html',      label:'홈',            langs:['ko','vi','en'] },
+  { file:'directory.html',  label:'제품 목록',      langs:['ko','vi','en'] },
+  { file:'companies.html',  label:'공급사 목록',    langs:['ko','vi','en'] },
+  { file:'columns.html',    label:'칼럼 목록',      langs:['ko','vi','en'] },
+  { file:'about.html',      label:'서비스 소개',    langs:['ko','vi','en'] },
+  { file:'guide.html',      label:'이용 가이드',    langs:['ko','vi','en'] },
+  { file:'support.html',    label:'고객센터',       langs:['ko','vi','en'] },
+  { file:'maker.html',      label:'공급사 입점',    langs:['ko'], note:'한국 공급사 대상이라 한국어만 있습니다' },
+];
+
+/* 권장 길이 — 검색결과에서 잘리지 않는 범위 */
+const SEO_LEN = { title:[20, 60], desc:[70, 155] };
+
+let seoDraft = {};   // 저장 전 편집분 { 'index.html': { ko:{title,desc} } }
+
+function seoStore(){ return (typeof MK_SEO !== 'undefined' && MK_SEO) ? MK_SEO : {}; }
+function seoVal(file, lang, k){
+  const d = ((seoDraft[file] || {})[lang] || {})[k];
+  if(d !== undefined) return d;
+  return (((seoStore().pages || {})[file] || {})[lang] || {})[k] || '';
+}
+function seoSiteVal(k){
+  if(seoDraft.__site && seoDraft.__site[k] !== undefined) return seoDraft.__site[k];
+  return (seoStore().site || {})[k] || '';
+}
+
+function seoEdit(file, lang, k, v){
+  const p = seoDraft[file] = seoDraft[file] || {};
+  const l = p[lang] = p[lang] || {};
+  l[k] = v;
+  seoMarkDirty();
+  seoCount(file, lang, k, v);
+}
+function seoEditSite(k, v){
+  seoDraft.__site = seoDraft.__site || {};
+  seoDraft.__site[k] = v;
+  seoMarkDirty();
+}
+function seoMarkDirty(){
+  const n = Object.keys(seoDraft).length;
+  const d = document.getElementById('seo-dirty');
+  if(d) d.textContent = n ? n + '개 항목 편집됨' : '';
+  const b = document.getElementById('seo-save');
+  if(b) b.disabled = !n;
+}
+
+/* 글자 수를 그 자리에서만 갱신한다. 전체를 다시 그리면 입력 중 포커스가 날아간다 */
+function seoCount(file, lang, k, v){
+  const el = document.getElementById(`seolen-${cssId(file)}-${lang}-${k}`);
+  if(!el) return;
+  const [min, max] = SEO_LEN[k];
+  const n = String(v || '').length;
+  el.textContent = n + '자';
+  el.className = 'seolen' + (n === 0 ? '' : n < min ? ' warn' : n > max ? ' over' : ' ok');
+}
+const cssId = f => String(f).replace(/[^a-z0-9]/gi, '_');
+
+async function seoSave(){
+  const cur = seoStore();
+  const next = { site: { ...(cur.site || {}) }, pages: JSON.parse(JSON.stringify(cur.pages || {})) };
+  Object.keys(seoDraft).forEach(file => {
+    if(file === '__site'){ Object.assign(next.site, seoDraft.__site); return; }
+    next.pages[file] = next.pages[file] || {};
+    Object.keys(seoDraft[file]).forEach(lang => {
+      next.pages[file][lang] = { ...(next.pages[file][lang] || {}), ...seoDraft[file][lang] };
+    });
+  });
+  /* 빈 값은 아예 지운다. 남겨두면 "빈 제목"으로 덮어써서 페이지 제목이 사라진다 */
+  Object.keys(next.pages).forEach(f => {
+    Object.keys(next.pages[f]).forEach(l => {
+      Object.keys(next.pages[f][l]).forEach(k => {
+        if(!String(next.pages[f][l][k] || '').trim()) delete next.pages[f][l][k];
+      });
+      if(!Object.keys(next.pages[f][l]).length) delete next.pages[f][l];
+    });
+    if(!Object.keys(next.pages[f]).length) delete next.pages[f];
+  });
+  Object.keys(next.site).forEach(k => { if(!String(next.site[k] || '').trim()) delete next.site[k]; });
+
+  try{
+    await Admin.saveSeo(next);
+    seoDraft = {};
+    toastA('저장했습니다 — 검색엔진에 반영하려면 굽기가 필요합니다');
+    renderSeo();
+  }catch(e){ alert(e.message); }
+}
+
+function renderSeo(){
+  const el = document.getElementById('tab-seo');
+  if(!el) return;
+  const LN = { ko:'한국어', vi:'베트남어', en:'영어' };
+
+  const field = (p, lang, k, ph) => {
+    const v = seoVal(p.file, lang, k);
+    const [min, max] = SEO_LEN[k];
+    const n = v.length;
+    const cls = n === 0 ? '' : n < min ? ' warn' : n > max ? ' over' : ' ok';
+    return `
+      <div class="fld" style="margin:0">
+        <label>${k === 'title' ? '제목' : '설명'}
+          <span class="seolen${cls}" id="seolen-${cssId(p.file)}-${lang}-${k}">${n}자</span>
+        </label>
+        ${k === 'title'
+          ? `<input value="${esc(v)}" placeholder="${esc(ph)}"
+               oninput="seoEdit('${p.file}','${lang}','title',this.value)">`
+          : `<textarea rows="2" placeholder="${esc(ph)}"
+               oninput="seoEdit('${p.file}','${lang}','desc',this.value)">${esc(v)}</textarea>`}
+      </div>`;
+  };
+
+  const page = p => `
+    <div class="cp-item open">
+      <div class="cp-head"><span class="wh">${esc(p.label)}</span>
+        <span class="grow"></span><code>${esc(p.file)}</code></div>
+      ${p.note ? `<p class="note" style="margin:0 0 10px">${esc(p.note)}</p>` : ''}
+      ${p.langs.map(l => `
+        <div class="sect" style="border-top:0;margin:0;padding:6px 0">
+          <h4><span class="lang-tag">${l.toUpperCase()}</span> ${LN[l]}</h4>
+          <div class="fgrid two">${field(p, l, 'title', '검색결과에 뜰 제목')}${field(p, l, 'desc', '검색결과에 뜰 설명')}</div>
+        </div>`).join('')}
+    </div>`;
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="bar">
+        <p class="note" style="margin:0;flex:1">검색결과와 공유 카드에 나가는 값입니다.
+          <b>비워두면 지금 쓰고 있는 기본 문구가 그대로 나갑니다.</b></p>
+        <span class="note" style="margin:0" id="seo-dirty"></span>
+        <button class="btn btn-primary btn-sm" id="seo-save" disabled onclick="seoSave()">저장</button>
+      </div>
+      <p class="note" style="margin:10px 0 0;color:var(--adm-warn,#b45309)">
+        ⚠ 저장해도 검색엔진이 읽는 HTML 은 바로 바뀌지 않습니다. 담당자에게 <b>굽기</b>를 요청하세요.</p>
+    </div>
+
+    <div class="card">
+      <h3>공용</h3>
+      <p class="note">모든 페이지에 함께 적용됩니다.</p>
+      <div class="sect" style="border-top:0;margin-top:0;padding-top:0">
+        <h4>공유 이미지 (OG)</h4>
+        <p class="note">카카오톡·페이스북 등에 링크를 붙였을 때 뜨는 그림입니다. 1200×630 권장.</p>
+        ${uploader('seo-og', seoSiteVal('ogImage'), { hint:'비우면 기본 이미지(assets/img/og.png)를 씁니다.' })}
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px"
+          onclick="seoEditSite('ogImage', document.getElementById('seo-og').value)">이 이미지로 지정</button>
+      </div>
+      <div class="sect">
+        <h4>파비콘</h4>
+        <p class="note">브라우저 탭에 뜨는 작은 아이콘입니다. SVG 또는 PNG.</p>
+        ${uploader('seo-fav', seoSiteVal('favicon'), { hint:'비우면 기본 파비콘(assets/img/favicon.svg)을 씁니다.' })}
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px"
+          onclick="seoEditSite('favicon', document.getElementById('seo-fav').value)">이 아이콘으로 지정</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>페이지별</h3>
+      <p class="note">제목은 ${SEO_LEN.title[0]}~${SEO_LEN.title[1]}자, 설명은 ${SEO_LEN.desc[0]}~${SEO_LEN.desc[1]}자를 권장합니다.
+        길면 검색결과에서 뒤가 잘립니다.</p>
+      <div style="margin-top:14px">${SEO_PAGES.map(page).join('')}</div>
+    </div>
+
+    <div class="card">
+      <h3>여기서 못 고치는 것</h3>
+      <table class="tbl"><tbody>
+        <tr><th style="width:180px">칼럼별 SEO</th><td>관리자 &gt; 칼럼 &gt; 해당 글 &gt; <b>SEO · 주소</b></td></tr>
+        <tr><th>제품·공급사 페이지</th><td>제품명과 소개 문구로 자동 생성됩니다.</td></tr>
+        <tr><th>주소·다국어 태그</th><td>canonical, hreflang, sitemap, robots — 굽기가 자동으로 만듭니다.</td></tr>
+        <tr><th>구조화 데이터</th><td>조직·FAQ·제품 정보 — 등록한 내용에서 자동 생성됩니다.</td></tr>
+      </tbody></table>
     </div>`;
 }
 
