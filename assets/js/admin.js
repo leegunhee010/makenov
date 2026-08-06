@@ -283,7 +283,9 @@ function imgSrc(v){
 }
 
 /* ---------- 사이드바 · 탭 ---------- */
-const TABS = ['dash','inq','leads','buyers','products','columns','faq','notices','copy','settings'];
+/* ⚠ 탭을 새로 만들면 NAV 와 여기 둘 다에 넣어야 한다.
+   여기 빠지면 메뉴는 보이는데 눌러도 화면이 hidden 인 채로 남는다 (SEO 탭에서 실제로 겪음) */
+const TABS = ['dash','inq','leads','buyers','products','columns','faq','notices','copy','seo','settings'];
 const NAV = [
   { id:'dash',     label:'대시보드', title:'대시보드',      desc:'플랫폼 현황 한눈에 보기' },
   { id:'inq',      label:'문의함',   title:'문의함',        desc:'바이어가 보낸 견적 문의' },
